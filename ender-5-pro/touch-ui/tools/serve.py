@@ -4,7 +4,7 @@ import os
 import sys
 
 STATIC = os.path.join(os.path.dirname(__file__),
-                      '..', 'octoprint_ender5touch', 'static')
+                      '..', 'octoprint_layer1', 'static')
 
 class Handler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *a, **kw):

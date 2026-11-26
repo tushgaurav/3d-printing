@@ -56,7 +56,7 @@ plugins all still apply.
 **Try it on your PC** (no printer needed):
 
 ```bash
-cd ender-5-pro/touch-ui/octoprint_ender5touch/static
+cd ender-5-pro/touch-ui/octoprint_layer1/static
 python -m http.server 8765
 # Open http://localhost:8765/index.html?demo=printing
 ```
@@ -76,4 +76,4 @@ ender-5-pro/
 
 ## License
 
-Geist fonts: [SIL OFL 1.1](ender-5-pro/touch-ui/octoprint_ender5touch/static/fonts/LICENSE-geist.txt) · Lucide icons: [ISC](ender-5-pro/touch-ui/octoprint_ender5touch/static/js/icons.LICENSE.txt)
+Geist fonts: [SIL OFL 1.1](ender-5-pro/touch-ui/octoprint_layer1/static/fonts/LICENSE-geist.txt) · Lucide icons: [ISC](ender-5-pro/touch-ui/octoprint_layer1/static/js/icons.LICENSE.txt)

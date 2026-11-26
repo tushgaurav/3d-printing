@@ -625,6 +625,8 @@ body.preview #app {
 .calib .target::after { top: 21px; left: 0; height: 2px; width: 44px; }
 .calib .target i { position: absolute; inset: 12px; border: 2px solid var(--signal-fg); border-radius: 50%; }
 .calib .help { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 300px; text-align: center; pointer-events: none; }
+/* the wordmark heads the instructions; .help ignores touches, so a tap on it still counts */
+.calib .help .logo { display: block; width: 92px; height: auto; margin: 0 auto 18px; color: var(--text); }
 .calib .help b { display: block; font-size: 18px; font-weight: 650; letter-spacing: -0.02em; margin-bottom: 6px; }
 .calib .help span { color: var(--text-2); font-size: 13px; line-height: 1.4; }
 .calib .dot { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; pointer-events: none; }

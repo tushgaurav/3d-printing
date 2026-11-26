@@ -8,6 +8,7 @@
 
 import { esc } from '../util.js';
 import { mount } from '../ui.js';
+import { logo } from '../logo.js';
 
 const TARGETS = [[0.1, 0.12], [0.9, 0.12], [0.9, 0.88], [0.1, 0.88]];
 const IDENTITY = [1, 0, 0, 0, 1, 0, 0, 0, 1];
@@ -106,7 +107,7 @@ export function openCalibration(ctx) {
 
   function drawTarget() {
     el.innerHTML = `<div class="target" style="${pct(TARGETS[index])}"><i></i></div>
-      <div class="help"><b>Tap the crosshair · ${index + 1} of ${TARGETS.length}</b>
+      <div class="help">${logo()}<b>Tap the crosshair · ${index + 1} of ${TARGETS.length}</b>
       <span>Use a stylus or fingernail and hold still for a moment. Every tap counts wherever it lands.</span></div>`;
   }
 
@@ -131,7 +132,7 @@ export function openCalibration(ctx) {
 
   function drawTest() {
     mode = 'test';
-    el.innerHTML = `<div class="help"><b>Tap anywhere</b><span>Grey = now · green = after calibration</span></div>
+    el.innerHTML = `<div class="help">${logo()}<b>Tap anywhere</b><span>Grey = now · green = after calibration</span></div>
       <button class="btn" data-a="back" style="position:absolute;left:50%;bottom:16px;transform:translateX(-50%);width:200px;height:56px">Back</button>`;
   }
 
