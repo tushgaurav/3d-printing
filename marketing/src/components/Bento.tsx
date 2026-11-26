@@ -45,7 +45,7 @@ export function Bento() {
       <article className="card card--clay">
         <div className="card__head">
           <h2 className="card__title">Try it without a printer</h2>
-          <a className="round-link" href="#demo" aria-label="Run the Demo">
+          <a className="round-link" href="#screens" aria-label="Try the Live Demo">
             <ArrowUpRight size={20} />
           </a>
         </div>

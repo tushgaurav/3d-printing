@@ -1,7 +1,6 @@
 import { Hero } from "@/components/Hero";
 import { Bento } from "@/components/Bento";
 import { Screens } from "@/components/Screens";
-import { Demo } from "@/components/Demo";
 import { Footer } from "@/components/Footer";
 
 export default function Page() {
@@ -12,7 +11,6 @@ export default function Page() {
         <main>
           <Bento />
           <Screens />
-          <Demo />
         </main>
       </div>
       <Footer />

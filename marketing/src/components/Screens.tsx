@@ -144,10 +144,6 @@ export function Screens() {
 
           {live && (
             <div className="device__caption">
-              <p>
-                <span className="device__dot" aria-hidden="true" />
-                {ready ? "Live demo with a simulated printer. Tap around." : "Starting the live demo…"}
-              </p>
               <button type="button" className="device__restart" onClick={restart} disabled={!ready}>
                 Restart Demo
               </button>
