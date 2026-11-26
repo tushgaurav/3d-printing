@@ -42,6 +42,28 @@ export function fitAffine(obs, tgt) {
   return px && py ? [...px, ...py] : null;
 }
 
+/**
+ * Is this fit trustworthy? Returns an error message, or null when it's fine.
+ * A real run puts the four taps far apart and the fit lands each within a few pixels
+ * of its crosshair; misclicks (e.g. pressing buttons while touch is still mirrored)
+ * bunch taps together and leave a large residual, giving a wild matrix.
+ */
+export function checkFit(obs, tgt, c) {
+  if (!c) return 'The taps were too close together. Tap each crosshair where it is drawn.';
+  let spread = Infinity;
+  for (let i = 0; i < obs.length; i++) {
+    for (let j = i + 1; j < obs.length; j++) {
+      spread = Math.min(spread, Math.hypot(obs[i][0] - obs[j][0], obs[i][1] - obs[j][1]));
+    }
+  }
+  if (spread < 0.2) return 'Two taps landed almost in the same place. Tap each crosshair once, where it is drawn.';
+  // residual in screen widths (y scaled by 320/480 so both axes count in the same units)
+  const miss = Math.max(...obs.map(([x, y], i) => Math.hypot(
+    c[0] * x + c[1] * y + c[2] - tgt[i][0], (c[3] * x + c[4] * y + c[5] - tgt[i][1]) * (320 / 480))));
+  if (miss > 0.06) return 'The taps didn’t line up with each other. Hold still on each crosshair and try again.';
+  return null;
+}
+
 export function mul3(a, b) {
   const out = [];
   for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) {
@@ -96,6 +118,8 @@ export function openCalibration(ctx) {
       return;
     }
     const m = mul3([...correction, 0, 0, 1], current);
+    // Also to the browser log, so the result can be read over SSH (kiosk/demo logs).
+    console.info(`[ender5] touch matrix: ${fmt(m)} | taps: ${JSON.stringify(observed.map((p) => p.map((v) => +v.toFixed(4))))}`);
     el.innerHTML = `<div class="result">
       <h3>Touch calibrated</h3>
       <div class="note">To keep it, run this on the Pi over SSH. The screen restarts with the new setting:</div>
@@ -113,7 +137,12 @@ export function openCalibration(ctx) {
 
   function finish() {
     correction = fitAffine(observed, TARGETS);
-    if (!correction) { drawResult('The taps were too close together. Tap each crosshair where it is drawn.'); return; }
+    const problem = checkFit(observed, TARGETS, correction);
+    if (problem) {
+      console.info(`[ender5] touch calibration rejected: ${problem} | taps: ${JSON.stringify(observed.map((p) => p.map((v) => +v.toFixed(4))))}`);
+      drawResult(problem);
+      return;
+    }
     drawResult();
   }
 

@@ -169,6 +169,7 @@ sudo ender5-kiosk reset-touch
 |---|---|
 | Touch UI in a browser (every screen, demo mode) | ✅ Chrome at 480×320 |
 | Plugin + UI against real OctoPrint 2.0.2 (virtual printer): pairing, socket, commands, bad-key → re-pair | ✅ |
+| UI on a real 3.5" panel (Pi 4, Raspberry Pi OS trixie, LCD-show `tft35a`, Chromium kiosk, demo mode) | ✅ Renders 1:1 on the ILI9486 panel. Touch not checked yet |
 | Kiosk service, X11 on the SPI framebuffer, touch matrix | ⚠️ Written for Raspberry Pi OS (Bullseye/Bookworm), not yet run on a Pi |
 | `setup-screen.sh` overlays | ⚠️ Depends on your exact screen; the doc lists fallbacks |
 | Filament load/unload lengths | ⚠️ Measure your Bowden tube before the first load |

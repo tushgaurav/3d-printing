@@ -79,11 +79,23 @@ function parseMatrix(text) {
 /** 480x320 shows 1:1. Anything else (a desktop preview) gets a scaled "device". */
 function fitStage(kiosk) {
   const app = document.getElementById('app');
-  const fit = Math.min(innerWidth / 480, innerHeight / 320);
+  // Chromium won't make a window narrower than 500px, so on a 480px-wide screen the
+  // kiosk viewport is wider than the screen. Fit to the visible screen and pin to its
+  // top-left, rather than centring in the (partly off-screen) window.
+  const w = kiosk ? Math.min(innerWidth, screen.width || innerWidth) : innerWidth;
+  const h = kiosk ? Math.min(innerHeight, screen.height || innerHeight) : innerHeight;
+  const fit = Math.min(w / 480, h / 320);
   const exact = Math.abs(fit - 1) < 0.05;
   const scale = exact ? 1 : kiosk ? fit : Math.max(0.5, Math.min(3, Math.floor(fit * 0.9 * 10) / 10));
   document.body.classList.toggle('preview', !exact && !kiosk);
-  app.style.transform = scale === 1 ? '' : `scale(${scale})`;
+  document.body.classList.toggle('kiosk', kiosk);
+  if (kiosk) {
+    const x = Math.max(0, Math.round((w - 480 * scale) / 2));
+    const y = Math.max(0, Math.round((h - 320 * scale) / 2));
+    app.style.transform = x || y || scale !== 1 ? `translate(${x}px, ${y}px) scale(${scale})` : '';
+  } else {
+    app.style.transform = scale === 1 ? '' : `scale(${scale})`;
+  }
   setScale(scale);
 }
 
