@@ -8,8 +8,9 @@ import { icon } from './icons.js';
 import { logo } from './logo.js';
 import { refs, setText, setHTML, setStyle, setData, show, toggle, esc, fmtTemp, fmtDuration, fmtClock, displayName } from './util.js';
 import { PHASES, ACTIVE, phaseOf, findFile, thumbUrl } from './model.js';
-import { mount } from './ui.js';
+import { mount, closeFullViews } from './ui.js';
 import { storedLocked, saveLocked, storedAutoLock } from './session.js';
+import { initIdle, idleFor, activity, screenBusy } from './idle.js';
 
 const HOLD_MS = 1000;
 const HOLD_STEPS = 8;       // the fill grows in steps: SPI screens redraw a few times a second
@@ -17,7 +18,6 @@ const NUDGE_MS = 1400;      // a tap away from the button points at it this long
 const IDLE_CHECK_MS = 10000;
 
 let current = null;         // the open lock screen: { el, close }
-let lastTouch = Date.now();
 
 /** Minutes without a touch before the screen locks itself; 0 = never. */
 export function autoLockMinutes(ctx) {
@@ -29,27 +29,19 @@ export function isLocked() { return !!current; }
 
 /** Start auto-lock, and lock again if the screen was locked before a reload. */
 export function initLock(ctx) {
-  document.addEventListener('pointerdown', () => { lastTouch = Date.now(); }, true);
+  initIdle();
   setInterval(() => {
     const min = autoLockMinutes(ctx);
-    if (!min || current || Date.now() - lastTouch < min * 60000) return;
-    // never over pairing or touch calibration: they need the screen
-    if (document.querySelector('.takeover, .calib')) return;
+    if (!min || current || idleFor() < min * 60000 || screenBusy()) return;
     lockScreen(ctx);
   }, IDLE_CHECK_MS);
   if (storedLocked()) lockScreen(ctx);
 }
 
-// Full-screen camera and 3D views keep streaming and rendering under the lock; close them.
-function closeHeavyViews() {
-  document.querySelectorAll('.camera-full').forEach((el) => el.click());
-  document.querySelectorAll('.model-full .close').forEach((b) => b.click());
-}
-
 export function lockScreen(ctx) {
   if (current) return current;
   const { store, cfg } = ctx;
-  closeHeavyViews();
+  closeFullViews();
   saveLocked(true);
 
   const el = document.createElement('div');
@@ -178,7 +170,7 @@ export function lockScreen(ctx) {
     el.remove();
     current = null;
     saveLocked(false);
-    lastTouch = Date.now();
+    activity();
   }
   current = { el, close };
   return current;

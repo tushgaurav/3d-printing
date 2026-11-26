@@ -61,7 +61,8 @@ export async function attempt(fn) {
   }
 }
 
-function scrim(html) {
+/** A dimmed backdrop holding `html` (a .modal), above sheets and below toasts. */
+export function scrim(html) {
   const s = document.createElement('div');
   s.className = 'scrim';
   s.innerHTML = html;
@@ -216,6 +217,15 @@ export function makeScrollable(el) {
   el.addEventListener('pointercancel', () => { down = false; dragging = false; });
   if (window.ResizeObserver) new ResizeObserver(update).observe(el);
   return { update };
+}
+
+/**
+ * Close the full-screen camera and 3D views: under a lock or a sleeping screen they
+ * would keep streaming and rendering for nobody.
+ */
+export function closeFullViews() {
+  document.querySelectorAll('.camera-full').forEach((el) => el.click());
+  document.querySelectorAll('.model-full .close').forEach((b) => b.click());
 }
 
 /** Full-screen live MJPEG view. hud(el) may return a cleanup fn. */

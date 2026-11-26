@@ -1,4 +1,4 @@
-// Version, plus what this screen remembers: its OctoPrint application key, theme, lock,
+// Version, plus what this screen remembers: its OctoPrint application key, theme, lock, sleep,
 // whether Home shows the camera or the model, and the Files view (list or grid) and sort.
 
 export const UI_VERSION = '0.2.0';
@@ -101,4 +101,19 @@ export function storedAutoLock() {
 
 export function saveAutoLock(minutes) {
   try { localStorage.setItem(AUTOLOCK_KEY, String(minutes)); } catch { /* remembered for this page load only */ }
+}
+
+// Screen sleep: minutes without a touch before the screen goes dark (0 = never), chosen on
+// the screen. null = not chosen yet, so the config default (ui.sleepMinutes) applies.
+const SLEEP_KEY = 'layer1.sleep';
+
+export function storedSleep() {
+  try {
+    const v = localStorage.getItem(SLEEP_KEY);
+    return v != null && Number.isFinite(+v) ? +v : null;
+  } catch { return null; }
+}
+
+export function saveSleep(minutes) {
+  try { localStorage.setItem(SLEEP_KEY, String(minutes)); } catch { /* remembered for this page load only */ }
 }

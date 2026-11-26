@@ -261,7 +261,7 @@ export class MockClient extends Emitter {
         this.progress.printTimeLeft = 0;
         this.t.tool0.target = 0; this.t.bed.target = 0;
         this._logPrint('done');
-        this.emit('event', 'PrintDone', { name: this.job.file.name, time: this.progress.printTime });
+        this.emit('event', 'PrintDone', { name: this.job.file.name, path: this.job.file.path, origin: 'local', time: this.progress.printTime });
       }
     }
     this.emit('status', this._status());

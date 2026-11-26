@@ -7,6 +7,7 @@
 //   ?sheet=tune|filament|printer|system|display|network|phone|quick|temps|history|lock|locked
 //                                                           open a sheet at start (quick = the status bar's quick info,
 //                                                           lock = the Lock Screen settings, locked = lock the screen)
+//   ?sheet=finished|asleep                                  demo only: the print-finished card, a sleeping screen
 //   ?theme=light|dark  or  #theme=…                         default theme (a choice saved on the screen wins)
 //   #key=…&tm=…&host=…&kiosk=1                              passed in by the kiosk launcher
 //   #desktop=1                                              a desktop is underneath: System offers "Exit to Desktop"
@@ -15,7 +16,7 @@ import { OctoClient } from './api.js';
 import { MockClient, DEMO_CAMERA } from './mock.js';
 import { icon } from './icons.js';
 import { logo } from './logo.js';
-import { refs, setText, setHTML, toggle, setData, deepMerge, debounce, fmtTemp, fmtClock, fmtDuration, setClock24 } from './util.js';
+import { refs, setText, setHTML, toggle, setData, deepMerge, debounce, fmtTemp, fmtClock, setClock24 } from './util.js';
 import { PHASES, ACTIVE, phaseOf } from './model.js';
 import { initUI, toast, closeSheets, setScale } from './ui.js';
 
@@ -42,6 +43,8 @@ import { openTemps } from './sheets/temps.js';
 import { openHistory } from './sheets/history.js';
 import { openLockSettings } from './sheets/lock.js';
 import { initLock, lockScreen } from './lock.js';
+import { initSleep, sleep, wake } from './sleep.js';
+import { showFinished, closeFinished } from './sheets/finished.js';
 import { TempHistory } from './temps.js';
 import { numberPad } from './ui.js';
 
@@ -307,9 +310,17 @@ async function boot() {
     const b = e.target.closest('[data-nav]');
     if (b) ctx.go(b.dataset.nav);
   });
+  // Screen sleep hides everything: let the current screen stop its camera and redraws.
+  ctx.setAwake = (awake) => {
+    const hooks = current && mounted[current].hooks;
+    if (!hooks) return;
+    if (awake && hooks.onShow) hooks.onShow();
+    if (!awake && hooks.onHide) hooks.onHide();
+  };
   ctx.go('home');
   app.classList.remove('booting');
   initLock(ctx); // stays locked across a reload, and starts the auto-lock timer
+  initSleep(ctx);
 
   // ~~ client
 
@@ -337,13 +348,16 @@ async function boot() {
       if (type === 'PrintDone' || type === 'PrintFailed' || type === 'PrintCancelled') {
         store.set({ historyRev: store.get().historyRev + 1 });
       }
+      // a sleeping screen wakes for things someone should look at
+      if (['PrintDone', 'PrintFailed', 'PrintPaused', 'Error'].includes(type)) wake(ctx);
       switch (type) {
         case 'PrintStarted':
           store.set({ feed: 100, flow: 100, dismissedJob: null });
+          closeFinished();
           refreshFilesSoon();
           break;
         case 'PrintDone':
-          toast(`Print Finished · ${fmtDuration(payload.time)}`, 'ok', 8000);
+          showFinished(ctx, payload);
           refreshFilesSoon();
           break;
         case 'PrintFailed':
@@ -397,6 +411,14 @@ async function boot() {
 // Demo-only shortcuts so every view can be previewed straight from a URL.
 function demoExtras(ctx, sheet) {
   if (sheet === 'camera') setTimeout(() => openLiveCamera(ctx), 400);
+  if (sheet === 'asleep') sleep(ctx);
+  if (sheet === 'finished') {
+    const unsub = ctx.store.subscribe((s) => {
+      if (!s.job || !s.files) return;
+      unsub();
+      showFinished(ctx);
+    });
+  }
   if (sheet === 'keypad') numberPad({ title: 'Nozzle target', value: 205, max: ctx.cfg.limits.nozzleMax });
   if (sheet === 'file') {
     const unsub = ctx.store.subscribe((s) => {
