@@ -28,6 +28,10 @@ controls, filament load/unload, speed/flow/fan tuning — all driven through Oct
 * **`pi-setup/`** – shell scripts for the Pi: screen driver, kiosk service, diagnostics.
 * **`deploy.ps1`** – copies everything to the Pi from Windows and runs the installers.
 
+The look: Geist for text, Geist Mono for live readings, [Lucide](https://lucide.dev)
+icons. All are bundled in the plugin, so the Pi needs no internet. To add an icon, see
+[touch-ui/README.md](touch-ui/README.md).
+
 Tested against OctoPrint 2.0.2 with its virtual printer: plugin loading, pairing,
 the live socket, every command the UI sends, and rejected-key handling. The kiosk
 and screen-driver scripts could not be tested here (no Pi), see *Status* below.

@@ -21,19 +21,19 @@ export default {
       <div class="heat">
         ${heaters.map((h) => `
           <div class="hcard">
-            <div class="head">${icon(h.icon)}<span class="label">${h.name}</span><span class="badge" data-r="${h.key}Badge">Off</span></div>
+            <div class="head">${icon(h.icon)}<span class="name">${h.name}</span><span class="badge" data-r="${h.key}Badge">Off</span></div>
             <div class="actual"><b data-r="${h.key}Actual">—</b><span>°C</span></div>
+            <div class="track"><div class="bar" data-r="${h.key}Bar"></div></div>
             <div class="ctl">
               <button class="btn" data-act="dec" data-h="${h.key}" aria-label="Lower">${icon('minus')}</button>
-              <button class="btn target" data-act="edit" data-h="${h.key}"><small>SET</small><span data-r="${h.key}Target">0°</span></button>
+              <button class="btn target" data-act="edit" data-h="${h.key}"><span data-r="${h.key}Target">0°</span><small>Target</small></button>
               <button class="btn" data-act="inc" data-h="${h.key}" aria-label="Raise">${icon('plus')}</button>
             </div>
             <button class="btn ghost off" data-act="off" data-h="${h.key}">Turn off</button>
-            <div class="bar" data-r="${h.key}Bar"></div>
           </div>`).join('')}
         <div class="presets">
-          ${cfg.presets.map((p, i) => `<button class="preset" data-preset="${i}"><b>${esc(p.name)}</b><span>${p.nozzle}° / ${p.bed}°</span></button>`).join('')}
-          <button class="preset cool" data-preset="off"><b>Cool</b><span>All off</span></button>
+          ${cfg.presets.map((p, i) => `<button class="preset" data-preset="${i}"><b>${esc(p.name)}</b><span>${p.nozzle}°/${p.bed}°</span></button>`).join('')}
+          <button class="preset cool" data-preset="off">${icon('cool')}<b>Off</b></button>
         </div>
       </div>`;
     const r = refs(el);
@@ -74,7 +74,7 @@ export default {
         const p = b.dataset.preset === 'off' ? { name: 'Cool', nozzle: 0, bed: 0 } : cfg.presets[+b.dataset.preset];
         setTarget(heaters[0], p.nozzle);
         setTarget(heaters[1], p.bed);
-        toast(p.nozzle ? `Preheating for ${p.name}` : 'Heaters off', p.nozzle ? 'accent' : 'muted');
+        toast(p.nozzle ? `Preheating for ${p.name}` : 'Heaters off', p.nozzle ? 'heat' : 'muted');
         return;
       }
       const h = heaters.find((x) => x.key === b.dataset.h);
@@ -102,7 +102,7 @@ export default {
         let badge = 'Off';
         let tone = null;
         if (target > 0) {
-          if (t.actual != null && t.actual < target - 3) { badge = 'Heating'; tone = 'accent'; }
+          if (t.actual != null && t.actual < target - 3) { badge = 'Heating'; tone = 'heat'; }
           else if (t.actual != null && t.actual > target + 5) { badge = 'Cooling'; tone = 'cool'; }
           else { badge = 'At temp'; tone = 'ok'; }
         } else if (t.actual != null && t.actual > 50) {

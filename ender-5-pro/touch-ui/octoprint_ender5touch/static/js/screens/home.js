@@ -11,7 +11,7 @@ import { toast, attempt, confirmDialog, choiceDialog } from '../ui.js';
 import { openTune } from '../sheets/tune.js';
 import { openLiveCamera } from '../sheets/camera.js';
 
-const LAYERS = 36; // the gauge is 216px tall: 36 layers of 4px + 2px gap
+const LAYERS = 35; // the gauge is 210px tall: 35 layers of 4px + 2px gap (see .stack in app.css)
 
 export default {
   id: 'home',
@@ -41,9 +41,9 @@ export default {
             <div class="left"><span data-r="left">—</span><small data-r="leftUnit"></small></div>
             <div class="eta" data-r="eta"></div>
             <div class="rule"></div>
-            <div class="kv"><span>Height</span><b data-r="z">—</b></div>
-            <div class="kv"><span>Elapsed</span><b data-r="elapsed">—</b></div>
-            <div class="kv"><span>Speed</span><b data-r="speed">100%</b></div>
+            <div class="kv">${icon('layers')}<span>Height</span><b data-r="z">—</b></div>
+            <div class="kv">${icon('clock')}<span>Elapsed</span><b data-r="elapsed">—</b></div>
+            <div class="kv">${icon('speed')}<span>Speed</span><b data-r="speed">100%</b></div>
           </div>
           <div class="idle-only">
             <div class="title" data-r="title"></div>
@@ -143,7 +143,7 @@ export default {
       if (!choice) return;
       const p = choice === 'off' ? { name: 'Cool down', nozzle: 0, bed: 0 } : choice;
       await Promise.all([ctx.client.setToolTemp(p.nozzle), ctx.client.setBedTemp(p.bed)]);
-      toast(p.nozzle ? `Preheating for ${p.name}` : 'Heaters off', p.nozzle ? 'accent' : 'muted');
+      toast(p.nozzle ? `Preheating for ${p.name}` : 'Heaters off', p.nozzle ? 'heat' : 'muted');
     }
 
     function actionsFor(s, ph) {
@@ -162,12 +162,12 @@ export default {
           return [
             { label: 'Done', icon: 'check', run: () => store.set({ dismissedJob: jobPath(s) }) },
             { label: 'Files', icon: 'files', run: () => ctx.go('files') },
-            { label: 'Print again', icon: 'refresh', tone: 'primary', run: () => printAgain(file) },
+            { label: 'Print again', icon: 'again', tone: 'primary', run: () => printAgain(file) },
           ];
         case 'ready':
         case 'heating':
           return [
-            { label: 'Preheat', icon: 'heat', run: preheat },
+            { label: 'Preheat', icon: 'flame', run: preheat },
             { label: 'Home axes', icon: 'home', run: async () => { await ctx.client.home(['x', 'y', 'z']); toast('Homing X, Y and Z'); } },
             { label: 'Print', icon: 'play', tone: 'primary', run: () => ctx.go('files') },
           ];

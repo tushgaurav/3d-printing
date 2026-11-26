@@ -208,7 +208,7 @@ async function boot() {
 
   initUI(app);
   const rail = app.querySelector('#rail');
-  rail.innerHTML = `<div class="brand"><span>E5</span></div>${SCREENS.map((s) => `<button data-nav="${s.id}" aria-label="${s.title}">${icon(s.icon)}</button>`).join('')}`;
+  rail.innerHTML = `<div class="brand"><span class="mark">E5</span></div>${SCREENS.map((s) => `<button data-nav="${s.id}" aria-label="${s.title}">${icon(s.icon)}</button>`).join('')}`;
   buildStatusBar(app.querySelector('#status'), ctx);
 
   const screensEl = app.querySelector('#screens');

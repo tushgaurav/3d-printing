@@ -1,6 +1,6 @@
 // Version and the stored OctoPrint application key for this screen.
 
-export const UI_VERSION = '0.1.0';
+export const UI_VERSION = '0.2.0';
 
 const KEY = 'ender5touch.apiKey';
 

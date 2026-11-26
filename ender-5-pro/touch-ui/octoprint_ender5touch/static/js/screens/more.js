@@ -24,7 +24,7 @@ export default {
       { icon: 'touch', title: 'Touch', sub: 'Calibrate screen', open: openCalibration },
     ];
     el.innerHTML = `<div class="more">${tiles.map((t, i) => `
-      <button class="tile" data-i="${i}">${icon(t.icon)}<div><b>${esc(t.title)}</b><span>${esc(t.sub)}</span></div></button>`).join('')}</div>`;
+      <button class="tile" data-i="${i}"><span class="ti">${icon(t.icon)}</span><div><b>${esc(t.title)}</b><span>${esc(t.sub)}</span></div></button>`).join('')}</div>`;
     el.addEventListener('click', (e) => {
       const b = e.target.closest('[data-i]');
       if (b) tiles[+b.dataset.i].open(ctx);

@@ -31,13 +31,13 @@ export default {
           <div class="void"></div>
         </div>
         <div class="zcol">
-          <button class="jog" data-axis="z" data-dir="${zBed ? -1 : 1}">${icon('up')}<small>${zBed ? 'BED UP' : 'Z+'}</small></button>
+          <button class="jog" data-axis="z" data-dir="${zBed ? -1 : 1}">${icon('up')}<small>${zBed ? 'Bed up' : 'Z+'}</small></button>
           <button class="jog home-btn" data-home="z">${icon('home')}<small>Z</small></button>
-          <button class="jog" data-axis="z" data-dir="${zBed ? 1 : -1}">${icon('down')}<small>${zBed ? 'BED DOWN' : 'Z−'}</small></button>
+          <button class="jog" data-axis="z" data-dir="${zBed ? 1 : -1}">${icon('down')}<small>${zBed ? 'Bed down' : 'Z−'}</small></button>
         </div>
         <div class="steps">
-          <div class="label">Step</div>
-          ${cfg.move.steps.map((v) => `<button class="seg" data-step="${v}">${v}<small>mm</small></button>`).join('')}
+          <div class="label">Step · mm</div>
+          ${cfg.move.steps.map((v) => `<button class="seg" data-step="${v}">${v}</button>`).join('')}
         </div>
         <div class="bottom row-actions">
           <button class="btn tall" data-act="homeall">${icon('home')}Home all</button>

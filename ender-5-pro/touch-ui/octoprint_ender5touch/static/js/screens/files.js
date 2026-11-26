@@ -22,13 +22,12 @@ export default {
           <div class="title" data-r="title">Files</div>
           <div class="count" data-r="count"></div>
           <div class="grow"></div>
-          <button class="seg" data-r="sort" style="padding:0 10px;height:34px">${icon('sort')}<span data-r="sortText"></span></button>
+          <button class="chipbtn" data-r="sort">${icon('sort')}<span data-r="sortText"></span></button>
           <button class="icon-btn" data-r="refresh" aria-label="Refresh">${icon('refresh')}</button>
         </div>
         <div class="scrollbox"><div class="scroll" data-r="list"></div></div>
       </div>`;
     const r = refs(el);
-    r.sort.querySelector('svg').style.cssText = 'width:16px;height:16px';
     const scroller = makeScrollable(r.list);
 
     let folder = [];   // folder names from the root

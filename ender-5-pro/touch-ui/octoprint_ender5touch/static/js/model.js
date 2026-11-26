@@ -14,7 +14,7 @@ export const PHASES = {
   resuming: { label: 'Resuming', tone: 'accent' },
   cancelling: { label: 'Stopping', tone: 'danger' },
   finished: { label: 'Finished', tone: 'ok' },
-  heating: { label: 'Heating', tone: 'accent' },
+  heating: { label: 'Heating', tone: 'heat' },
   ready: { label: 'Ready', tone: 'ok' },
 };
 

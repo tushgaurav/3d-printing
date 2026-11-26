@@ -115,7 +115,7 @@ export function openFilament(ctx) {
           if (!op.heatedAt && t.actual != null && t.actual >= op.temp - 3) op.heatedAt = Date.now();
           if (!op.heatedAt) {
             text = `Heating nozzle to ${op.temp}° · now ${fmtTemp(t.actual)}°`;
-            tone = 'accent';
+            tone = 'heat';
           } else {
             const left = Math.ceil(op.seconds - (Date.now() - op.heatedAt) / 1000);
             if (left > 0) { text = `${VERB[op.kind]} filament… ≈ ${left} s`; tone = 'accent'; }

@@ -40,7 +40,7 @@ export function openSystem(ctx) {
         const list = (await ctx.client.systemCommands()) || [];
         commands = list.filter((c) => LABELS[c.action] && c.action !== 'restart_safe');
         r.power.innerHTML = commands.length
-          ? commands.map((c, i) => `<button class="btn ${c.action === 'shutdown' ? 'danger' : ''}" data-cmd="${i}" style="height:52px">${icon(LABELS[c.action].icon)}${esc(LABELS[c.action].label)}</button>`).join('')
+          ? commands.map((c, i) => `<button class="btn tall ${c.action === 'shutdown' ? 'danger' : ''}" data-cmd="${i}" style="height:60px">${icon(LABELS[c.action].icon)}${esc(LABELS[c.action].label)}</button>`).join('')
           : '<div class="note">No power commands are configured in OctoPrint (Settings → Server → Commands).</div>';
       });
 
