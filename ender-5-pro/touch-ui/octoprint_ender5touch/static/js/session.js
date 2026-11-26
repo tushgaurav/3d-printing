@@ -1,4 +1,5 @@
-// Version, plus what this screen remembers: its OctoPrint application key and theme.
+// Version, plus what this screen remembers: its OctoPrint application key, theme,
+// and whether Home shows the camera or the model.
 
 export const UI_VERSION = '0.2.0';
 
@@ -39,4 +40,15 @@ export function currentTheme() {
 export function setTheme(theme) {
   try { localStorage.setItem(THEME_KEY, theme); } catch { /* not remembered, still applied */ }
   applyTheme(theme);
+}
+
+// Home picture: 'cam' (live camera) or 'model' (the slicer thumbnail), toggled by its chip.
+const MEDIA_KEY = 'ender5touch.homeMedia';
+
+export function storedMedia() {
+  try { return localStorage.getItem(MEDIA_KEY) === 'model' ? 'model' : 'cam'; } catch { return 'cam'; }
+}
+
+export function saveMedia(pref) {
+  try { localStorage.setItem(MEDIA_KEY, pref); } catch { /* remembered for this page load only */ }
 }

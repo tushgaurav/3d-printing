@@ -16,15 +16,15 @@ export default {
 
   mount(el, ctx) {
     const tiles = [
-      { icon: 'spool', title: 'Filament', sub: 'Load · unload · purge', open: openFilament },
-      { icon: 'tune', title: 'Tune', sub: 'Speed · flow · fan', open: openTune },
-      { icon: 'camera', title: 'Camera', sub: 'Live view', open: openLiveCamera },
-      { icon: 'plug', title: 'Printer', sub: 'USB connection', open: openPrinter },
-      { icon: 'power', title: 'System', sub: ctx.desktop ? 'Exit to desktop · power' : 'Restart · shut down', open: openSystem },
-      { icon: 'display', title: 'Display', sub: 'Theme · touch', open: openDisplay },
+      { icon: 'spool', title: 'Filament', open: openFilament },
+      { icon: 'tune', title: 'Tune', open: openTune },
+      { icon: 'camera', title: 'Camera', open: openLiveCamera },
+      { icon: 'plug', title: 'Printer', open: openPrinter },
+      { icon: 'power', title: 'System', open: openSystem },
+      { icon: 'display', title: 'Display', open: openDisplay },
     ];
     el.innerHTML = `<div class="more">${tiles.map((t, i) => `
-      <button class="tile" data-i="${i}"><span class="ti">${icon(t.icon)}</span><div><b>${esc(t.title)}</b><span>${esc(t.sub)}</span></div></button>`).join('')}</div>`;
+      <button class="tile" data-i="${i}"><span class="ti">${icon(t.icon)}</span><b>${esc(t.title)}</b></button>`).join('')}</div>`;
     el.addEventListener('click', (e) => {
       const b = e.target.closest('[data-i]');
       if (b) tiles[+b.dataset.i].open(ctx);

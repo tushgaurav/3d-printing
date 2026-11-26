@@ -10,6 +10,7 @@ import { PHASES, ACTIVE, phaseOf, findFile, thumbUrl, lastPrinted, jobPath } fro
 import { toast, attempt, confirmDialog, choiceDialog } from '../ui.js';
 import { openTune } from '../sheets/tune.js';
 import { openLiveCamera } from '../sheets/camera.js';
+import { storedMedia, saveMedia } from '../session.js';
 
 const LAYERS = 35; // the gauge is 210px tall: 35 layers of 4px + 2px gap (see .stack in app.css)
 
@@ -66,7 +67,7 @@ export default {
 
     let visible = false;
     let camOk = null;          // null = not tried yet
-    let mediaPref = 'cam';     // or 'model'
+    let mediaPref = storedMedia(); // 'cam' or 'model'
     let thumb = null;
     const badThumbs = new Set();
     let snapTimer = null;
@@ -105,6 +106,7 @@ export default {
     r.chip.addEventListener('click', (e) => {
       e.stopPropagation();
       mediaPref = mediaPref === 'cam' ? 'model' : 'cam';
+      saveMedia(mediaPref);
       render(store.get());
     });
 
@@ -254,7 +256,9 @@ export default {
 
       const file = s.job && s.job.file && s.job.file.name ? s.job.file : null;
       const entry = showJob && file ? findFile(s.files, file.path) : null;
-      const url = entry ? thumbUrl(entry, ctx.base) : null;
+      // Idle, the model view shows the last print: the file named in the "Last print" box.
+      const last = showJob ? null : lastPrinted(s.files);
+      const url = thumbUrl(entry || (last && last.file), ctx.base);
       thumb = url && !badThumbs.has(url) ? url : null;
 
       const prog = s.progress || {};
@@ -286,9 +290,9 @@ export default {
         const bv = cfg.printer.buildVolume || [];
         setText(r.capT, cfg.printer.name);
         setText(r.capS, bv.length === 3 ? `${bv[0]} × ${bv[1]} × ${bv[2]} mm` : '');
-        const last = (ph === 'ready' || ph === 'heating') && lastPrinted(s.files);
-        show(r.lastBox, !!last);
-        if (last) {
+        const showLast = (ph === 'ready' || ph === 'heating') && !!last;
+        show(r.lastBox, showLast);
+        if (showLast) {
           setText(r.lastName, displayName(last.file));
           const ok = last.last.success;
           const time = last.last.printTime ? ` · ${fmtDuration(last.last.printTime)}` : '';
