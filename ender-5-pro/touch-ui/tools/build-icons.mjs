@@ -73,6 +73,7 @@ const ICONS = {
   wifi: 'wifi',
   ethernet: 'ethernet-port',
   cpu: 'cpu',
+  disk: 'hard-drive',
 };
 
 // Lucide has no hotend or heated bed, so these two are drawn here on Lucide's

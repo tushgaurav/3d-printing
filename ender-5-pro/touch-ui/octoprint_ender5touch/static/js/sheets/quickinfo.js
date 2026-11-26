@@ -1,6 +1,6 @@
 // Quick info: tap the status bar for one page that answers "how is everything?" at a
-// glance. A gauge cluster on top (job ring, nozzle and bed dials), then one plate with
-// fan/speed/flow/Z and the printer, network and Pi underneath. Nothing on it is a
+// glance. Everything sits on one 4-column grid: the job ring (2 columns) and the nozzle and
+// bed dials on top, then one plate with fan/speed/flow/Z over printer/network/Pi/storage. Nothing on it is a
 // control, so a tap anywhere on it (or on the bar again) closes it. It also closes itself
 // after cfg.ui.quickInfoSeconds (0 = stays open).
 
@@ -54,7 +54,7 @@ export function piHealth(temp, bits) {
   let tone = 'ok';
   if (b & UNDERVOLT_NOW) { power = 'Under-voltage!'; tone = 'danger'; }
   else if (b & (THROTTLED_NOW | CAPPED_NOW | SOFT_LIMIT_NOW)) { power = 'Throttled'; tone = 'warn'; }
-  else if (b & UNDERVOLT_SEEN) { power = 'Low voltage earlier'; tone = 'warn'; }
+  else if (b & UNDERVOLT_SEEN) { power = 'Voltage dipped'; tone = 'warn'; }
   if (temp != null) {
     if (temp >= 80) tone = 'danger';
     else if (temp >= 70 && tone === 'ok') tone = 'warn';
@@ -106,9 +106,10 @@ function stat(key, glyph, label) {
   return `<div class="qcell qstat" data-r="${key}Box"><div class="qh">${icon(glyph)}<span>${label}</span></div><b data-r="${key}">—</b></div>`;
 }
 
-function sysCell(key, label) {
+// the label's icon takes the status colour (data-tone on the cell)
+function sysCell(key, glyph, label) {
   return `<div class="qcell qsys" data-r="${key}Cell">
-      <div class="qh"><i></i><span>${label}</span></div>
+      <div class="qh"><span class="ic" data-r="${key}Icon">${icon(glyph)}</span><span>${label}</span></div>
       <b data-r="${key}Main">…</b>
       <span class="qsub" data-r="${key}Sub1"></span>
       <span class="qsub" data-r="${key}Sub2"></span>
@@ -130,9 +131,9 @@ export function openQuickInfo(ctx) {
     <div class="q-top">
       <div class="qcard q-job" data-r="job">
         <div class="qring">
-          <svg viewBox="0 0 88 88" width="88" height="88" aria-hidden="true">
-            <circle class="trk" cx="44" cy="44" r="39.5"/>
-            <circle class="val" cx="44" cy="44" r="39.5" pathLength="100" transform="rotate(-90 44 44)" data-r="ring" stroke-dasharray="0 100"/>
+          <svg viewBox="0 0 80 80" width="80" height="80" aria-hidden="true">
+            <circle class="trk" cx="40" cy="40" r="36"/>
+            <circle class="val" cx="40" cy="40" r="36" pathLength="100" transform="rotate(-90 40 40)" data-r="ring" stroke-dasharray="0 100"/>
           </svg>
           <div class="qring-c">
             <div class="qnum" data-r="pctBox"><b data-r="pct">0</b><i>%</i></div>
@@ -156,9 +157,10 @@ export function openQuickInfo(ctx) {
         ${stat('z', 'layers', 'Z height')}
       </div>
       <div class="q-sys">
-        ${sysCell('pr', 'Printer')}
-        ${sysCell('net', 'Network')}
-        ${sysCell('pi', 'Raspberry Pi')}
+        ${sysCell('pr', 'printer', 'Printer')}
+        ${sysCell('net', 'wifi', 'Network')}
+        ${sysCell('pi', 'cpu', 'Pi')}
+        ${sysCell('st', 'disk', 'Storage')}
       </div>
     </div>`;
   mount(el);
@@ -254,7 +256,9 @@ export function openQuickInfo(ctx) {
         : ph === 'disconnected' ? 'muted'
           : ph === 'linking' || ph === 'paused' || ph === 'pausing' ? 'warn' : 'ok';
     setData(r.prCell, 'tone', tone);
-    setText(r.prMain, online ? (s.printer && s.printer.text) || PHASES[ph].label : '—');
+    // short names that fit a quarter-width cell; OctoPrint's own text ("Offline after error",
+    // "Printing from SD", …) can be long, and the job card already shows the error itself
+    setText(r.prMain, !online ? '—' : ph === 'ready' || ph === 'heating' || ph === 'finished' ? 'Operational' : PHASES[ph].label);
     const port = conn && conn.port;
     setText(r.prSub1, port || (online && ph === 'disconnected' ? 'Not connected' : ''));
     setText(r.prSub2, port && conn.baudrate ? `${conn.baudrate} baud` : '');
@@ -265,6 +269,7 @@ export function openQuickInfo(ctx) {
     const linkTone = s.link === 'online' ? 'ok' : s.link === 'offline' ? 'danger' : 'muted';
     const weak = net && net.wifi && net.signal != null && net.signal < -75;
     setData(r.netCell, 'tone', linkTone === 'ok' && weak ? 'warn' : linkTone);
+    setHTML(r.netIcon, icon(net && !net.wifi && net.iface ? 'ethernet' : 'wifi'));
     setText(r.netMain, ctx.host);
     if (!net) {
       setText(r.netSub1, s.link === 'offline' ? 'OctoPrint unreachable' : '');
@@ -278,17 +283,27 @@ export function openQuickInfo(ctx) {
 
   function renderPi() {
     if (!sys) {
-      setData(r.piCell, 'tone', sysError ? 'muted' : null);
-      setText(r.piMain, sysError ? '—' : '…');
-      setText(r.piSub1, sysError || '');
-      setText(r.piSub2, '');
+      for (const k of ['pi', 'st']) {
+        setData(r[`${k}Cell`], 'tone', sysError ? 'muted' : null);
+        setText(r[`${k}Main`], sysError ? '—' : '…');
+        setText(r[`${k}Sub1`], k === 'pi' ? sysError || '' : '');
+        setText(r[`${k}Sub2`], '');
+      }
       return;
     }
     const { tone, power } = piHealth(sys.cpuTemp, sys.throttled);
     setData(r.piCell, 'tone', tone);
     setHTML(r.piMain, sys.cpuTemp != null ? `${Math.round(sys.cpuTemp)}°C <small>CPU</small>` : '—');
-    setText(r.piSub1, [power, sys.uptime != null ? `up ${fmtDuration(sys.uptime)}` : ''].filter(Boolean).join(' · '));
-    setText(r.piSub2, sys.disk ? `${gb(sys.disk.free)} free` : '');
+    setText(r.piSub1, power);
+    setText(r.piSub2, sys.uptime != null ? `up ${fmtDuration(sys.uptime)}` : '');
+
+    const d = sys.disk;
+    const m = sys.mem;
+    const low = d && d.total && d.free / d.total < 0.1; // under 10% free: uploads start failing soon
+    setData(r.stCell, 'tone', !d ? 'muted' : low ? 'warn' : 'ok');
+    setHTML(r.stMain, d ? `${(d.free / 1073741824).toFixed(1)}<small>GB free</small>` : '—');
+    setText(r.stSub1, d ? `of ${gb(d.total)}` : '');
+    setText(r.stSub2, m && m.available != null ? `RAM ${Math.round((m.available / m.total) * 100)}% free` : '');
   }
 
   function render(s) {
