@@ -70,11 +70,11 @@ export function confirmDialog({ title, body = '', confirm = 'OK', cancel = 'Canc
   });
 }
 
-/** options: [{ label, sub, value, tone }] -> resolves with value, or null */
+/** options: [{ label, sub, value, tone, active }] -> resolves with value, or null. active marks the current choice. */
 export function choiceDialog({ title, options }) {
   return new Promise((resolve) => {
     const s = scrim(`<div class="modal"><h3>${esc(title)}</h3>
-      <div class="choices">${options.map((o, i) => `<button class="btn ${o.tone || ''}" data-i="${i}">${esc(o.label)}${o.sub ? `<small>${esc(o.sub)}</small>` : ''}</button>`).join('')}</div>
+      <div class="choices">${options.map((o, i) => `<button class="btn ${o.tone || ''} ${o.active ? 'current' : ''}" data-i="${i}">${esc(o.label)}${o.sub ? `<small>${esc(o.sub)}</small>` : ''}</button>`).join('')}</div>
       <div class="row-actions"><button class="btn ghost" data-i="-1">Cancel</button></div></div>`);
     s.addEventListener('click', (e) => {
       const b = e.target.closest('[data-i]');

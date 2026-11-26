@@ -54,6 +54,8 @@ const ICONS = {
   clock: 'clock',
   hourglass: 'hourglass',
   sort: 'arrow-down-wide-narrow',
+  grid: 'grid-2x2',
+  list: 'list',
   unlock: 'lock-open',
   extrude: 'arrow-down-to-line',
   retract: 'arrow-up-from-line',

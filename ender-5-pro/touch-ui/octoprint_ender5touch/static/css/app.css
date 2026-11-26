@@ -356,6 +356,20 @@ body.preview #app {
 .frow .end .ok { color: var(--signal-fg); background: var(--signal-dim); }
 .frow .end .bad { color: var(--danger); background: var(--danger-dim); }
 .frow .end .ok svg, .frow .end .bad svg { width: 13px; height: 13px; stroke-width: 2.6; }
+/* grid (gallery) view: three columns of thumbnail cards */
+.scroll.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: max-content; align-content: start; gap: 6px; }
+.gcell { min-width: 0; padding: 5px 5px 8px; background: var(--surface); box-shadow: var(--edge); border-radius: var(--r); }
+.gcell:active { background: var(--surface-2); }
+.gthumb { height: 84px; border-radius: var(--r-sm); overflow: hidden; background: var(--well); display: grid; place-items: center; color: var(--text-3); position: relative; }
+.gthumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.gthumb > svg { width: 26px; height: 26px; stroke-width: 1.6; }
+.gthumb.folder { background: var(--signal-dim); color: var(--signal-fg); }
+.gcell .name { font-size: 12.5px; font-weight: 550; margin: 7px 3px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gcell .meta { font-family: var(--mono); font-feature-settings: "ss09"; font-size: 10.5px; letter-spacing: -0.03em; color: var(--text-3); margin: 3px 3px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gstate { position: absolute; top: 5px; right: 5px; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); }
+.gstate.ok { color: var(--signal-fg); }
+.gstate.bad { color: var(--danger); }
+.gstate svg { width: 12px; height: 12px; stroke-width: 2.8; }
 .empty-state { height: 100%; display: grid; place-items: center; align-content: center; gap: 8px; text-align: center; color: var(--text-2); padding: 20px; background: var(--surface); box-shadow: var(--edge); border-radius: var(--r); font-size: 13px; }
 .empty-state svg { width: 30px; height: 30px; color: var(--text-3); stroke-width: 1.6; }
 .empty-state b { color: var(--text); font-size: 15px; font-weight: 600; }
@@ -437,6 +451,8 @@ body.preview #app {
 .choices { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin: 12px 0 8px; }
 .choices .btn { height: 50px; flex-direction: column; gap: 2px; }
 .choices .btn small { font-family: var(--mono); font-feature-settings: "ss09"; font-size: 11px; letter-spacing: -0.03em; color: var(--text-3); font-weight: 500; }
+.choices .btn.current { background: var(--signal-dim); color: var(--signal-fg); box-shadow: inset 0 0 0 1.5px var(--signal-line); }
+.choices .btn.current small { color: var(--signal-fg); opacity: 0.75; }
 
 .keypad { width: 456px; display: grid; grid-template-columns: 1fr 190px; gap: 14px; }
 .keypad .disp { font-family: var(--mono); font-feature-settings: "ss09"; font-size: 46px; font-weight: 600; letter-spacing: -0.06em; line-height: 1; padding: 12px 14px 10px; background: var(--canvas); border-radius: var(--r); margin: 10px 0 8px; display: flex; align-items: flex-start; }

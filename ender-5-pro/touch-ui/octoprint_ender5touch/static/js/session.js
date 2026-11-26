@@ -1,5 +1,5 @@
 // Version, plus what this screen remembers: its OctoPrint application key, theme,
-// and whether Home shows the camera or the model.
+// whether Home shows the camera or the model, and the Files view (list or grid) and sort.
 
 export const UI_VERSION = '0.2.0';
 
@@ -51,4 +51,26 @@ export function storedMedia() {
 
 export function saveMedia(pref) {
   try { localStorage.setItem(MEDIA_KEY, pref); } catch { /* remembered for this page load only */ }
+}
+
+// Files view: 'list' (rows) or 'grid' (a gallery of thumbnails).
+const FILES_VIEW_KEY = 'ender5touch.filesView';
+
+export function storedFilesView() {
+  try { return localStorage.getItem(FILES_VIEW_KEY) === 'grid' ? 'grid' : 'list'; } catch { return 'list'; }
+}
+
+export function saveFilesView(view) {
+  try { localStorage.setItem(FILES_VIEW_KEY, view); } catch { /* remembered for this page load only */ }
+}
+
+// Files sort: one of the keys of SORTS in screens/files.js (which checks it), or null.
+const FILES_SORT_KEY = 'ender5touch.filesSort';
+
+export function storedFilesSort() {
+  try { return localStorage.getItem(FILES_SORT_KEY); } catch { return null; }
+}
+
+export function saveFilesSort(sort) {
+  try { localStorage.setItem(FILES_SORT_KEY, sort); } catch { /* remembered for this page load only */ }
 }
