@@ -6,7 +6,7 @@
 <p align="center">A Bambu-style touchscreen UI for the Ender 5 Pro</p>
 
 <p align="center">
-  <img src="docs/image.png" alt="Layer1 on the heat screen" width="480">
+  <img src="docs/image.png" alt="Layer1 home screen — printing" width="480">
 </p>
 
 ---
@@ -14,6 +14,15 @@
 Layer1 is a full-screen touch interface that runs on a 3.5" Raspberry Pi screen
 through OctoPrint. It turns a bare Ender 5 Pro into something that feels like a
 modern printer with a built-in display.
+
+<p align="center">
+  <img src="docs/screen-files.jpg" width="235">&nbsp;
+  <img src="docs/screen-heat.jpg" width="235">
+</p>
+<p align="center">
+  <img src="docs/screen-move.jpg" width="235">&nbsp;
+  <img src="docs/screen-more.jpg" width="235">
+</p>
 
 ## Features
 
