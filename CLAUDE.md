@@ -1,0 +1,1 @@
+1. For buttons in UI, always follow Title Case. for example, "Pause Print" instead of "Pause print".
