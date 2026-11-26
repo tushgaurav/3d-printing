@@ -5,6 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <meta name="color-scheme" content="dark">
   <title>Ender 5 Pro</title>
+  <script>
+    // Theme before first paint: the screen's saved choice, else ?theme= / #theme= (app.js
+    // then falls back to the config default). Keep in step with session.js.
+    try {
+      var t = localStorage.getItem('ender5touch.theme')
+        || new URLSearchParams(location.search).get('theme')
+        || new URLSearchParams(location.hash.slice(1)).get('theme');
+      if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+    } catch (e) { /* storage blocked: app.js still applies the default */ }
+  </script>
   <link rel="preload" href="fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/GeistMono-Variable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/app.css">

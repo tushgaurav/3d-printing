@@ -292,7 +292,7 @@ export default {
           setText(r.lastName, displayName(last.file));
           const ok = last.last.success;
           const time = last.last.printTime ? ` · ${fmtDuration(last.last.printTime)}` : '';
-          const html = `<span style="color:var(--${ok ? 'ok' : 'danger'})">${icon(ok ? 'check' : 'cross')}</span>${esc(fmtAgo(last.last.date) + time)}`;
+          const html = `<span style="color:var(--${ok ? 'signal-fg' : 'danger'})">${icon(ok ? 'check' : 'cross')}</span>${esc(fmtAgo(last.last.date) + time)}`;
           if (r.lastMeta._html !== html) { r.lastMeta._html = html; r.lastMeta.innerHTML = html; }
         }
       }

@@ -45,7 +45,8 @@ python -m http.server 8765
 
 Open <http://localhost:8765/index.html?demo=printing>. Other scenarios:
 `?demo`, `?demo=paused`, `?demo=finished`, `?demo=heating`, `?demo=offline`,
-`?demo=error`. Jump to a screen with `&page=files|heat|move|more|calibrate`.
+`?demo=error`. Jump to a screen with `&page=files|heat|move|more|calibrate`, and add
+`&theme=light` for the light theme.
 Make the browser window 480×320 to see it at real size.
 
 ## Install on the Pi
@@ -110,7 +111,7 @@ that starts the UI on the small screen at boot.
 | **Files** | OctoPrint's library with thumbnails, folders, *Recent / A–Z*. Tap a file for details, then **Print**. |
 | **Heat** | Nozzle and bed: ±5° buttons, tap the target for a keypad, presets (PLA, PETG, TPU, ABS, Cool). |
 | **Move** | XY pad, Z (labelled *Bed up / Bed down*, because on the Ender 5 the bed moves), steps 0.1–50 mm, extrude/retract, motors off. Locked while printing. |
-| **More** | Filament load/unload/purge, Tune (speed modes, flow, part fan), Camera, Printer connection, System (restart/reboot/shut down, unpair), Touch calibration. |
+| **More** | Filament load/unload/purge, Tune (speed modes, flow, part fan), Camera, Printer connection, System (restart/reboot/shut down, unpair), Display (dark/light theme, touch calibration). |
 
 Thumbnails come from your slicer via the
 [PrusaSlicer Thumbnails](https://plugins.octoprint.org/plugins/prusaslicerthumbnails/)
@@ -135,6 +136,7 @@ first time the UI loads). Edit, then reload the screen (More → System → Relo
 | `webcam.snapshotSeconds` | 3 | Home screen refresh. The live stream is only used full-screen, to spare the SPI screen |
 | `webcam.flipH` / `flipV` / `rotate90` | false | Camera orientation |
 | `ui.clock24` | false | 24-hour clock |
+| `ui.theme` | dark | `dark` or `light`. Light is easier to read on cheap panels with greyish blacks. A choice made on the screen (More → Display) is remembered and wins |
 
 **Kiosk** — `/etc/ender5-kiosk.conf` (framebuffer, touch matrix, Chromium flags).
 Apply with `sudo ender5-kiosk restart`.

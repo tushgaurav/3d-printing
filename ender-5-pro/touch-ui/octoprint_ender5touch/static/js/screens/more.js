@@ -7,7 +7,7 @@ import { openFilament } from '../sheets/filament.js';
 import { openLiveCamera } from '../sheets/camera.js';
 import { openPrinter } from '../sheets/printer.js';
 import { openSystem } from '../sheets/system.js';
-import { openCalibration } from '../sheets/calibrate.js';
+import { openDisplay } from '../sheets/display.js';
 
 export default {
   id: 'more',
@@ -21,7 +21,7 @@ export default {
       { icon: 'camera', title: 'Camera', sub: 'Live view', open: openLiveCamera },
       { icon: 'plug', title: 'Printer', sub: 'USB connection', open: openPrinter },
       { icon: 'power', title: 'System', sub: 'Restart · shut down', open: openSystem },
-      { icon: 'touch', title: 'Touch', sub: 'Calibrate screen', open: openCalibration },
+      { icon: 'display', title: 'Display', sub: 'Theme · touch', open: openDisplay },
     ];
     el.innerHTML = `<div class="more">${tiles.map((t, i) => `
       <button class="tile" data-i="${i}"><span class="ti">${icon(t.icon)}</span><div><b>${esc(t.title)}</b><span>${esc(t.sub)}</span></div></button>`).join('')}</div>`;

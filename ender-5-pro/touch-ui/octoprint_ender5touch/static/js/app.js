@@ -13,7 +13,7 @@ import { icon } from './icons.js';
 import { refs, setText, toggle, setData, deepMerge, debounce, fmtTemp, fmtClock, fmtDuration, setClock24 } from './util.js';
 import { PHASES, ACTIVE, phaseOf } from './model.js';
 import { initUI, toast, closeSheets, setScale } from './ui.js';
-import { loadKey, saveKey, forgetKey } from './session.js';
+import { loadKey, saveKey, forgetKey, storedTheme, applyTheme } from './session.js';
 import home from './screens/home.js';
 import files from './screens/files.js';
 import heat from './screens/heat.js';
@@ -25,12 +25,13 @@ import { openTune } from './sheets/tune.js';
 import { openFilament } from './sheets/filament.js';
 import { openPrinter } from './sheets/printer.js';
 import { openSystem } from './sheets/system.js';
+import { openDisplay } from './sheets/display.js';
 import { openFileDetail } from './sheets/file.js';
 import { openLiveCamera } from './sheets/camera.js';
 import { numberPad } from './ui.js';
 
 const SCREENS = [home, files, heat, move, more];
-const SHEETS = { tune: openTune, filament: openFilament, printer: openPrinter, system: openSystem };
+const SHEETS = { tune: openTune, filament: openFilament, printer: openPrinter, system: openSystem, display: openDisplay };
 
 let lastError = '';
 function showError(e) {
@@ -173,6 +174,8 @@ async function boot() {
   const cfg = await loadConfig(!!demo);
   if (demo) cfg.webcam = { ...cfg.webcam, enabled: true, snapshot: DEMO_CAMERA, stream: DEMO_CAMERA };
   setClock24(cfg.ui.clock24);
+  // Theme: choice saved on this screen > ?theme= / #theme= > config default.
+  applyTheme(storedTheme() || query.get('theme') || hash.get('theme') || cfg.ui.theme);
 
   const loopback = /^(127\.|localhost$|\[?::1\]?$)/.test(location.hostname);
   const store = createStore({
