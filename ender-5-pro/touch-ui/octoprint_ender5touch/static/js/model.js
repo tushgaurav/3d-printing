@@ -28,6 +28,19 @@ export function isHeating(temps) {
   });
 }
 
+/**
+ * Bytes of `file` printed so far, for the 3D view: Infinity (the whole part)
+ * unless it is the job being printed right now.
+ */
+export function printedBytes(s, file) {
+  const job = s.job && s.job.file;
+  if (!file || !job || job.path !== file.path || !ACTIVE.has(phaseOf(s))) return Infinity;
+  const p = s.progress || {};
+  if (Number.isFinite(p.filepos)) return p.filepos;
+  const size = job.size || file.size;
+  return size && Number.isFinite(p.completion) ? (size * p.completion) / 100 : 0;
+}
+
 export function jobPath(s) {
   return (s.job && s.job.file && s.job.file.path) || null;
 }

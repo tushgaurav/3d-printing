@@ -256,6 +256,20 @@ export class OctoClient extends Emitter {
   // ~~ commands
 
   files() { return this.get('api/files?recursive=true'); }
+
+  /** Raw G-code of a file in OctoPrint's local storage, for the 3D view. */
+  async gcodeBuffer(file) {
+    const origin = file.origin || 'local';
+    if (origin !== 'local') throw new ApiError(400, 'Only files stored in OctoPrint can be shown in 3D');
+    let res;
+    try {
+      res = await fetch(`${this.base}downloads/files/${encodeURIComponent(origin)}/${encPath(file.path)}`, { headers: { 'X-Api-Key': this.apiKey } });
+    } catch (e) {
+      throw new ApiError(0, 'Cannot reach OctoPrint');
+    }
+    if (!res.ok) throw new ApiError(res.status, `G-code download failed (${res.status})`);
+    return res.arrayBuffer();
+  }
   printFile(origin, path) { return this.post(`api/files/${encodeURIComponent(origin)}/${encPath(path)}`, { command: 'select', print: true }); }
   jog(axes) { return this.post('api/printer/printhead', { command: 'jog', ...axes }); }
   home(axes) { return this.post('api/printer/printhead', { command: 'home', axes }); }

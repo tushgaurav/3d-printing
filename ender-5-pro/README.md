@@ -107,7 +107,7 @@ that starts the UI on the small screen at boot.
 
 | Screen | What's there |
 |---|---|
-| **Home** | Camera (tap for full screen; *Live/Model* toggles to the slicer thumbnail: the current job, or the last print when idle; the choice is remembered), the layer-stack progress gauge, time left and finish time, height, speed. Pause / Tune / Stop while printing; Preheat / Home / Print when idle; Print Again after a finish. |
+| **Home** | Camera (tap for full screen; *Live/3D* switches to a 3D view drawn from the G-code: printed layers solid, the layer being printed highlighted, the rest faint (the last print when idle). Tap it for full screen and drag to rotate. Files on the SD card or over 64 MB show the slicer picture instead. The choice is remembered), the layer-stack progress gauge, time left and finish time, height, speed. Pause / Tune / Stop while printing; Preheat / Home / Print when idle; Print Again after a finish. |
 | **Files** | OctoPrint's library with thumbnails, folders, a sort picker (*Recent*, *Name*, or print time *Shortest* / *Longest*), and a list or grid (gallery) view; the button next to Refresh switches, and both choices are remembered. Tap a file for details, then **Print**. |
 | **Heat** | Nozzle and bed: ±5° buttons, tap the target for a keypad, presets (PLA, PETG, TPU, ABS, Cool). |
 | **Move** | XY pad, Z (labelled *Bed up / Bed down*, because on the Ender 5 the bed moves), steps 0.1–50 mm, extrude/retract, motors off. Locked while printing. |

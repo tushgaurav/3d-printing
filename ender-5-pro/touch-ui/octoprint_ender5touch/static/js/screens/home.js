@@ -1,16 +1,19 @@
-// Home: camera (or model thumbnail), the layer-stack progress gauge, job stats
-// and the three actions that matter right now.
+// Home: camera or 3D view of the print (the slicer picture when 3D isn't
+// possible), the layer-stack progress gauge, job stats and the three actions
+// that matter right now.
 
 import { icon } from '../icons.js';
 import {
   refs, setText, toggle, show, setData, setStyle, esc, bust, camTransform,
   fmtDuration, fmtClock, fmtAgo, displayName, filamentUse, fmtFilament,
 } from '../util.js';
-import { PHASES, ACTIVE, phaseOf, findFile, thumbUrl, lastPrinted, jobPath } from '../model.js';
+import { PHASES, ACTIVE, phaseOf, findFile, thumbUrl, lastPrinted, jobPath, printedBytes } from '../model.js';
 import { toast, attempt, confirmDialog, choiceDialog } from '../ui.js';
 import { openTune } from '../sheets/tune.js';
 import { openLiveCamera } from '../sheets/camera.js';
+import { openModel3d } from '../sheets/model3d.js';
 import { storedMedia, saveMedia } from '../session.js';
+import { ModelView, canModel, loadModel, modelKey } from '../model3d.js';
 
 const LAYERS = 35; // the gauge is 210px tall: 35 layers of 4px + 2px gap (see .stack in app.css)
 
@@ -26,7 +29,8 @@ export default {
         <div class="media" data-r="media">
           <img data-r="cam" class="hidden" alt="">
           <img data-r="model" class="model hidden" alt="">
-          <div class="empty" data-r="empty">${icon('camera')}<span data-r="emptyText"></span></div>
+          <canvas data-r="m3d" class="m3d hidden"></canvas>
+          <div class="empty" data-r="empty"><span data-r="emptyIcon">${icon('camera')}</span><span data-r="emptyText"></span></div>
           <button class="chip hidden" data-r="chip"><i></i><span data-r="chipText">Live</span></button>
           <div class="expand hidden" data-r="expand">${icon('expand')}</div>
         </div>
@@ -67,9 +71,13 @@ export default {
 
     let visible = false;
     let camOk = null;          // null = not tried yet
-    let mediaPref = storedMedia(); // 'cam' or 'model'
+    let mediaPref = storedMedia(); // 'cam' or 'model' (the 3D view)
     let thumb = null;
     const badThumbs = new Set();
+    let modelFile = null;          // the file the model side shows: the job, or the last print when idle
+    let m3d = { key: null, status: null }; // 3D model of modelFile: 'loading' | 'ready' | 'failed'
+    const view3d = new ModelView(r.m3d, { fit: 'box' });
+    let emptyIcon = 'camera';
     let snapTimer = null;
     let snapping = false;
     let actions = [];
@@ -110,7 +118,28 @@ export default {
       render(store.get());
     });
 
-    r.media.addEventListener('click', () => { if (camOn) openLiveCamera(ctx); });
+    r.media.addEventListener('click', () => {
+      if (!r.m3d.classList.contains('hidden') && modelFile) {
+        const file = modelFile;
+        view3d.setPaused(true); // one renderer at a time on the Pi
+        openModel3d(ctx, file, { onClose: () => view3d.setPaused(false) });
+      } else if (camOn) {
+        openLiveCamera(ctx);
+      }
+    });
+
+    // download and parse the model once; the picture shows meanwhile (and if it fails)
+    function ensure3d(key) {
+      if (m3d.key === key) return;
+      m3d = { key, status: 'loading' };
+      loadModel(ctx.client, modelFile).then(
+        () => { if (m3d.key === key) { m3d.status = 'ready'; render(store.get()); } },
+        (e) => {
+          console.warn('[ender5] 3D view:', (e && e.message) || e);
+          if (m3d.key === key) { m3d.status = 'failed'; render(store.get()); }
+        },
+      );
+    }
 
     // ~~ actions
 
@@ -213,18 +242,43 @@ export default {
       setData(r.stack, 'tone', tone === 'ok' || tone === 'warn' ? tone : null);
     }
 
-    function renderMedia() {
-      const useModel = !!thumb && (mediaPref === 'model' || !camOn || camOk === false);
-      if (useModel && r.model.getAttribute('src') !== thumb) r.model.src = thumb;
-      show(r.model, useModel);
-      show(r.cam, !useModel && camOn && camOk === true);
-      show(r.empty, !useModel && !(camOn && camOk === true));
-      setText(r.emptyText, !camOn ? 'No camera' : camOk === false ? 'Camera offline' : 'Camera…');
-      show(r.chip, camOn && !!thumb);
-      toggle(r.chip, 'model', useModel);
-      setText(r.chipText, useModel ? 'Model' : 'Live');
-      show(r.expand, camOn);
-      syncSnap(visible && camOn && !useModel);
+    function setEmpty(name, text) {
+      if (emptyIcon !== name) { emptyIcon = name; r.emptyIcon.innerHTML = icon(name); }
+      setText(r.emptyText, text);
+    }
+
+    function renderMedia(s) {
+      const camLive = camOn && camOk === true;
+      const key = canModel(modelFile) ? modelKey(modelFile) : null;
+      const mine = !!key && m3d.key === key;
+      const failed = mine && m3d.status === 'failed';
+      const hasModel = (!!key && !failed) || !!thumb;
+      // the model side: when chosen, or when there is no working camera
+      const modelSide = hasModel && (mediaPref === 'model' || !camOn || camOk === false);
+      if (modelSide && key && visible) ensure3d(key);
+      const show3d = modelSide && mine && m3d.status === 'ready';
+      const loading3d = modelSide && !!key && m3d.status === 'loading';
+      const showThumb = modelSide && !show3d && !!thumb;
+      if (showThumb && r.model.getAttribute('src') !== thumb) r.model.src = thumb;
+
+      const was3d = !r.m3d.classList.contains('hidden');
+      show(r.m3d, show3d);
+      show(r.model, showThumb);
+      show(r.cam, !modelSide && camLive);
+      show(r.empty, !show3d && !showThumb && (modelSide || !camLive));
+      if (modelSide) setEmpty('cube', loading3d ? 'Loading 3D…' : 'No preview');
+      else setEmpty('camera', !camOn ? 'No camera' : camOk === false ? 'Camera offline' : 'Camera…');
+      show(r.chip, camOn && hasModel);
+      toggle(r.chip, 'model', modelSide);
+      setText(r.chipText, !modelSide ? 'Live' : key && !failed ? '3D' : 'Model');
+      show(r.expand, show3d || camOn);
+      syncSnap(visible && camOn && !modelSide);
+
+      if (show3d) {
+        view3d.setModel(key);
+        view3d.setProgress(printedBytes(s, modelFile)); // redraws every few seconds at most
+        if (!was3d) view3d.refresh(); // it had no size while hidden
+      }
     }
 
     function idleCopy(s, ph) {
@@ -260,6 +314,7 @@ export default {
       const last = showJob ? null : lastPrinted(s.files);
       const url = thumbUrl(entry || (last && last.file), ctx.base);
       thumb = url && !badThumbs.has(url) ? url : null;
+      modelFile = entry || (showJob ? file : null) || (last && last.file) || null;
 
       const prog = s.progress || {};
       const pct = ph === 'finished' ? 100 : Math.max(0, Math.min(100, prog.completion || 0));
@@ -302,7 +357,7 @@ export default {
       }
 
       renderStack(showJob ? pct : 0, meta.tone);
-      renderMedia();
+      renderMedia(s);
       renderActions(s, ph);
     }
 
@@ -310,7 +365,7 @@ export default {
     render(store.get());
 
     return {
-      onShow() { visible = true; render(store.get()); },
+      onShow() { visible = true; render(store.get()); view3d.refresh(); },
       onHide() { visible = false; syncSnap(false); },
     };
   },

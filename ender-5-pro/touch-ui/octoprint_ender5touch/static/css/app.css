@@ -49,6 +49,13 @@
   --edge: none;              /* outline on surfaces: none in dark, a hairline in light */
   --preview-bg: #1a1b1e radial-gradient(circle at 50% 40%, #26282c, #0e0f11 70%);
   --scheme: dark;
+  --m3d-body: #c4c9cf;       /* 3D view: printed part, shaded by wall direction (x 0.42 .. 1) */
+  --m3d-shade: 0.42;
+  --m3d-ghost: rgba(255, 255, 255, 0.11);  /* still to print */
+  --m3d-layer: var(--signal);              /* the layer being printed, and the nozzle */
+  --m3d-plate: #23252a;
+  --m3d-grid: rgba(255, 255, 255, 0.06);
+  --m3d-halo: #111215;
   --r-lg: 16px;
   --r: 12px;
   --r-sm: 9px;
@@ -102,6 +109,13 @@
   --edge: inset 0 0 0 1px rgba(20, 22, 26, 0.11);
   --preview-bg: #c4c5be radial-gradient(circle at 50% 40%, #e8e8e3, #b5b6af 70%);
   --scheme: light;
+  --m3d-body: #8b929b;
+  --m3d-shade: 0.5;
+  --m3d-ghost: rgba(20, 22, 26, 0.12);
+  --m3d-layer: var(--stack-fill);
+  --m3d-plate: #ebebe5;
+  --m3d-grid: rgba(20, 22, 26, 0.07);
+  --m3d-halo: #ffffff;
 }
 :root[data-theme="light"] body { font-weight: 500; }  /* thin strokes fade on cheap panels */
 
@@ -473,6 +487,20 @@ body.preview #app {
 .camera-full .close svg { width: 20px; height: 20px; }
 .camera-full .hud { position: absolute; left: 10px; bottom: 10px; padding: 7px 12px; border-radius: 99px; background: rgba(12, 13, 15, 0.82); color: #f4f4f1; font-family: var(--mono); font-feature-settings: "ss09"; font-size: 12.5px; letter-spacing: -0.03em; font-weight: 500; display: flex; gap: 14px; }
 .camera-full .msg { position: absolute; inset: 0; display: grid; place-items: center; color: var(--text-3); }
+
+/* 3D view of the print: in the Home picture box, and full screen */
+.media canvas.m3d { position: absolute; inset: 0; width: 100%; height: 100%; display: block; background: var(--surface); }
+.model-full { position: absolute; inset: 0; z-index: 45; background: var(--canvas); }
+.model-full canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.model-full .name { position: absolute; left: 14px; top: 14px; right: 116px; font-size: 14px; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+.model-full .round { position: absolute; top: 10px; width: 44px; height: 44px; border-radius: 22px; background: var(--surface); box-shadow: var(--edge); color: var(--text); display: grid; place-items: center; }
+.model-full .round svg { width: 20px; height: 20px; }
+.model-full .round:active { background: var(--surface-3); }
+.model-full .close { right: 10px; }
+.model-full .reset { right: 62px; }
+.model-full .hud { position: absolute; left: 10px; bottom: 10px; padding: 7px 12px; border-radius: 99px; background: var(--surface); box-shadow: var(--edge); font-family: var(--mono); font-feature-settings: "ss09"; font-size: 12.5px; letter-spacing: -0.03em; font-weight: 500; pointer-events: none; }
+.model-full .hint { position: absolute; right: 14px; bottom: 16px; display: flex; align-items: center; gap: 6px; color: var(--text-3); font-size: 12px; pointer-events: none; }
+.model-full .hint svg { width: 15px; height: 15px; }
 
 /* full-screen takeovers: pairing, calibration */
 .takeover { position: absolute; inset: 0; z-index: 70; background: var(--frame); padding: 8px; }

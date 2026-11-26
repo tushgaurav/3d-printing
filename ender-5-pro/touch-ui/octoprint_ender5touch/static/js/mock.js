@@ -3,6 +3,7 @@
 // finished, heating, offline, error).
 
 import { Emitter, ApiError } from './api.js';
+import { demoGcode, demoZAt } from './mock-gcode.js';
 
 const AMBIENT = 24;
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -48,6 +49,7 @@ function makeFiles() {
     size: Math.round(len * 220), date: Math.round(now - ago),
     gcodeAnalysis: { estimatedPrintTime: est, filament: { tool0: { length: len, volume: len * 0.002405 } } },
     prints, thumbnail: thumb(kind, hue),
+    demoKind: kind, // which demo G-code to make for the 3D view
   });
   const ok = (daysAgo, t) => ({ success: 1, failure: 0, last: { date: now - daysAgo * 86400, success: true, printTime: t } });
   return [
@@ -81,6 +83,7 @@ export class MockClient extends Emitter {
     this.job = null;
     this.progress = null;
     this.speedup = 1;
+    this.gcodes = new Map(); // path -> generated demo G-code
     const benchy = this.fileList[0];
     if (scenario === 'printing' || scenario === 'paused' || scenario === 'finished') {
       this._startJob(benchy, scenario === 'finished' ? 1 : 0.47);
@@ -97,7 +100,26 @@ export class MockClient extends Emitter {
     this.scenario = scenario;
   }
 
+  _flat() {
+    const flat = [];
+    const walk = (l) => l.forEach((f) => (f.type === 'folder' ? walk(f.children) : flat.push(f)));
+    walk(this.fileList);
+    return flat;
+  }
+
+  /** The demo G-code of a file, made on first use: { bytes, layers, height }. */
+  _demoGcode(path) {
+    if (!this.gcodes.has(path)) {
+      const f = this._flat().find((x) => x.path === path);
+      if (!f) return null;
+      const g = demoGcode(f.demoKind);
+      this.gcodes.set(path, { bytes: new TextEncoder().encode(g.text), layers: g.layers, height: g.height });
+    }
+    return this.gcodes.get(path);
+  }
+
   _startJob(file, completion = 0) {
+    this._demoGcode(file.path); // so progress can report a file position, like OctoPrint
     const est = file.gcodeAnalysis.estimatedPrintTime;
     this.job = { file: { name: file.name, display: file.display, path: file.path, origin: 'local', size: file.size, date: file.date }, estimatedPrintTime: est, filament: file.gcodeAnalysis.filament };
     this.progress = { completion: completion * 100, printTime: est * completion, printTimeLeft: est * (1 - completion), printTimeLeftOrigin: 'estimate' };
@@ -117,11 +139,14 @@ export class MockClient extends Emitter {
 
   _status() {
     const text = { operational: 'Operational', printing: 'Printing', paused: 'Paused', cancelling: 'Cancelling', offline: 'Offline', error: 'Offline after error', linking: 'Connecting' }[this.state];
-    const z = this.progress && this.state !== 'operational' ? 0.2 + (this.progress.completion / 100) * 47.8 : null;
+    // file position and height follow the demo G-code, so the 3D view and the numbers agree
+    const g = this.job && this._demoGcode(this.job.file.path);
+    const filepos = g && this.progress ? Math.round((this.progress.completion / 100) * g.bytes.length) : null;
+    const z = this.progress && this.state !== 'operational' ? (g ? demoZAt(g, filepos) : 0.2 + (this.progress.completion / 100) * 47.8) : null;
     return {
       printer: { text, flags: this.state === 'linking' ? {} : this._flags(), error: this.state === 'error' ? 'Heating failed, system stopped! Heater_ID: 0' : '' },
       temps: JSON.parse(JSON.stringify(this.t)),
-      job: this.job, progress: this.progress ? { ...this.progress } : null, currentZ: z,
+      job: this.job, progress: this.progress ? { ...this.progress, filepos } : null, currentZ: z,
     };
   }
 
@@ -166,12 +191,16 @@ export class MockClient extends Emitter {
 
   files() { return this._ok({ files: this.fileList }); }
 
+  async gcodeBuffer(file) {
+    await wait(150);
+    const g = this._demoGcode(file.path);
+    if (!g) throw new ApiError(404, 'File not found');
+    return g.bytes.slice().buffer; // a copy: the caller hands it to the worker
+  }
+
   async printFile(origin, path) {
     this._busy();
-    const flat = [];
-    const walk = (l) => l.forEach((f) => (f.type === 'folder' ? walk(f.children) : flat.push(f)));
-    walk(this.fileList);
-    const f = flat.find((x) => x.path === path);
+    const f = this._flat().find((x) => x.path === path);
     if (!f) throw new ApiError(404, 'File not found');
     this._startJob(f, 0);
     this.t.tool0.target = 205; this.t.bed.target = 60;
