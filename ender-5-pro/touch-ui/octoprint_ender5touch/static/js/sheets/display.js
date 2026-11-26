@@ -24,7 +24,7 @@ export function openDisplay(ctx) {
           </div>
         </div>
         <div class="section"><div class="label">Touch <em>if taps land in the wrong place</em></div>
-          <button class="btn" data-a="calibrate" style="width:100%">${icon('touch')}Calibrate touch</button>
+          <button class="btn" data-a="calibrate" style="width:100%">${icon('touch')}Calibrate Touch</button>
         </div>`;
       const mark = () => body.querySelectorAll('[data-pick]')
         .forEach((b) => b.classList.toggle('active', b.dataset.pick === currentTheme()));

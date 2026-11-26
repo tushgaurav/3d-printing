@@ -22,7 +22,7 @@ export function showPairing(ctx, { demo = false } = {}) {
             <li><span>This screen connects by itself and remembers the key.</span></li>
           </ol>
           <div class="statusline" data-r="status"><i></i><span data-r="text">Asking OctoPrint…</span></div>
-          <div class="row-actions hidden" data-r="actions"><button class="btn primary" data-r="retry">${icon('refresh')}Ask again</button></div>
+          <div class="row-actions hidden" data-r="actions"><button class="btn primary" data-r="retry">${icon('refresh')}Ask Again</button></div>
         </div>
       </div>`;
     mount(el);

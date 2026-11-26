@@ -107,7 +107,7 @@ that starts the UI on the small screen at boot.
 
 | Screen | What's there |
 |---|---|
-| **Home** | Camera (tap for full screen; *Live/Model* toggles to the slicer thumbnail), the layer-stack progress gauge, time left and finish time, height, speed. Pause / Tune / Stop while printing; Preheat / Home / Print when idle; Print again after a finish. |
+| **Home** | Camera (tap for full screen; *Live/Model* toggles to the slicer thumbnail), the layer-stack progress gauge, time left and finish time, height, speed. Pause / Tune / Stop while printing; Preheat / Home / Print when idle; Print Again after a finish. |
 | **Files** | OctoPrint's library with thumbnails, folders, *Recent / A–Z*. Tap a file for details, then **Print**. |
 | **Heat** | Nozzle and bed: ±5° buttons, tap the target for a keypad, presets (PLA, PETG, TPU, ABS, Cool). |
 | **Move** | XY pad, Z (labelled *Bed up / Bed down*, because on the Ender 5 the bed moves), steps 0.1–50 mm, extrude/retract, motors off. Locked while printing. |
@@ -121,7 +121,7 @@ the UI shows a placeholder.
 ## Settings
 
 **Touch UI** — `~/.octoprint/data/ender5touch/config.json` on the Pi (created the
-first time the UI loads). Edit, then reload the screen (More → System → Reload screen).
+first time the UI loads). Edit, then reload the screen (More → System → Reload Screen).
 
 | Key | Default | Meaning |
 |---|---|---|
@@ -159,10 +159,10 @@ sudo ender5-kiosk reset-touch
   `ender5-kiosk: using /dev/fbN`. If it picked the wrong framebuffer, set `FBDEV=/dev/fb1` in `/etc/ender5-kiosk.conf`.
 * **"No OctoPrint"** — OctoPrint isn't running or still starting: `sudo service octoprint status`.
 * **Stuck on pairing** — the request appears only in a logged-in OctoPrint tab;
-  open/refresh OctoPrint, then tap *Ask again*. Requests expire after a while.
+  open/refresh OctoPrint, then tap *Ask Again*. Requests expire after a while.
 * **Camera offline** — check <http://octopi.local/webcam/?action=snapshot> works; adjust `webcam` URLs in the config.
 * **Fan % shows "not reported yet"** — OctoPrint doesn't report fan speed; the UI learns it from the next `M106` sent.
-* **Updated the plugin but the screen shows the old UI** — More → System → Reload screen.
+* **Updated the plugin but the screen shows the old UI** — More → System → Reload Screen.
 * **Remove the kiosk** — `sudo bash ~/ender5-touch/pi-setup/uninstall-kiosk.sh`. The plugin: OctoPrint → Settings → Plugin Manager.
 
 ## Status

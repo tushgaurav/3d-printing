@@ -114,7 +114,7 @@ export function openCalibration(ctx) {
     mode = 'result';
     if (error) {
       el.innerHTML = `<div class="result"><h3>That didn’t work</h3><div class="note">${esc(error)}</div>
-        <div class="row-actions"><button class="btn" data-a="redo">Try again</button><button class="btn ghost" data-a="close">Close</button></div></div>`;
+        <div class="row-actions"><button class="btn" data-a="redo">Try Again</button><button class="btn ghost" data-a="close">Close</button></div></div>`;
       return;
     }
     const m = mul3([...correction, 0, 0, 1], current);

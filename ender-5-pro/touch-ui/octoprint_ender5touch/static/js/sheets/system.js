@@ -9,9 +9,9 @@ import { UI_VERSION, forgetKey } from '../session.js';
 
 const LABELS = {
   restart: { label: 'Restart OctoPrint', icon: 'refresh', body: 'The screen reconnects by itself in about a minute.' },
-  restart_safe: { label: 'Safe mode', icon: 'refresh', body: 'Restarts OctoPrint with third-party plugins disabled, including this screen’s plugin.' },
+  restart_safe: { label: 'Safe Mode', icon: 'refresh', body: 'Restarts OctoPrint with third-party plugins disabled, including this screen’s plugin.' },
   reboot: { label: 'Reboot Pi', icon: 'refresh', body: 'The whole Raspberry Pi restarts. Back in about two minutes.' },
-  shutdown: { label: 'Shut down', icon: 'power', body: 'Wait until the Pi’s green light stops blinking before you unplug it.' },
+  shutdown: { label: 'Shut Down', icon: 'power', body: 'Wait until the Pi’s green light stops blinking before you unplug it.' },
 };
 
 /** Close the full-screen browser and reveal the Pi's desktop underneath. */
@@ -31,7 +31,7 @@ export function openSystem(ctx) {
     title: 'System',
     render(body, sheet) {
       if (ctx.desktop) {
-        sheet.head.insertAdjacentHTML('beforeend', `<button class="chipbtn" data-a="exit">${icon('exit')}Exit to desktop</button>`);
+        sheet.head.insertAdjacentHTML('beforeend', `<button class="chipbtn" data-a="exit">${icon('exit')}Exit to Desktop</button>`);
         sheet.head.querySelector('[data-a="exit"]').addEventListener('click', exitToDesktop);
       }
       body.innerHTML = `
@@ -42,8 +42,8 @@ export function openSystem(ctx) {
         </div>
         <div class="row-actions" data-r="power" style="margin-bottom:6px"></div>
         <div class="row-actions">
-          <button class="btn ghost" data-a="reload" style="height:42px">Reload screen</button>
-          <button class="btn ghost" data-a="unpair" style="height:42px">Unpair screen</button>
+          <button class="btn ghost" data-a="reload" style="height:42px">Reload Screen</button>
+          <button class="btn ghost" data-a="unpair" style="height:42px">Unpair Screen</button>
         </div>`;
       const r = refs(body);
       let commands = [];

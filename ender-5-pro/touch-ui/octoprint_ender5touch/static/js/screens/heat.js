@@ -29,7 +29,7 @@ export default {
               <button class="btn target" data-act="edit" data-h="${h.key}"><span data-r="${h.key}Target">0°</span><small>Target</small></button>
               <button class="btn" data-act="inc" data-h="${h.key}" aria-label="Raise">${icon('plus')}</button>
             </div>
-            <button class="btn ghost off" data-act="off" data-h="${h.key}">Turn off</button>
+            <button class="btn ghost off" data-act="off" data-h="${h.key}">Turn Off</button>
           </div>`).join('')}
         <div class="presets">
           ${cfg.presets.map((p, i) => `<button class="preset" data-preset="${i}"><b>${esc(p.name)}</b><span>${p.nozzle}°/${p.bed}°</span></button>`).join('')}

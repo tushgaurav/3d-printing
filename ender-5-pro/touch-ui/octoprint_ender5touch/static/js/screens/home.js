@@ -119,7 +119,7 @@ export default {
         const ok = await confirmDialog({
           title: 'Stop this print?',
           body: 'The print is cancelled and can’t be resumed.',
-          confirm: 'Stop print', tone: 'danger',
+          confirm: 'Stop Print', tone: 'danger',
         });
         if (ok) await ctx.client.cancel();
       },
@@ -137,7 +137,7 @@ export default {
         title: 'Preheat',
         options: [
           ...cfg.presets.map((p) => ({ label: p.name, sub: `${p.nozzle}° / ${p.bed}°`, value: p })),
-          { label: 'Cool down', sub: 'Heaters off', value: 'off' },
+          { label: 'Cool Down', sub: 'Heaters off', value: 'off' },
         ],
       });
       if (!choice) return;
@@ -162,25 +162,25 @@ export default {
           return [
             { label: 'Done', icon: 'check', run: () => store.set({ dismissedJob: jobPath(s) }) },
             { label: 'Files', icon: 'files', run: () => ctx.go('files') },
-            { label: 'Print again', icon: 'again', tone: 'primary', run: () => printAgain(file) },
+            { label: 'Print Again', icon: 'again', tone: 'primary', run: () => printAgain(file) },
           ];
         case 'ready':
         case 'heating':
           return [
             { label: 'Preheat', icon: 'flame', run: preheat },
-            { label: 'Home axes', icon: 'home', run: async () => { await ctx.client.home(['x', 'y', 'z']); toast('Homing X, Y and Z'); } },
+            { label: 'Home Axes', icon: 'home', run: async () => { await ctx.client.home(['x', 'y', 'z']); toast('Homing X, Y and Z'); } },
             { label: 'Print', icon: 'play', tone: 'primary', run: () => ctx.go('files') },
           ];
         case 'disconnected':
         case 'error':
           return [
             { label: 'Files', icon: 'files', run: () => ctx.go('files') },
-            { label: 'Connect printer', icon: 'plug', tone: 'primary', run: async () => { await ctx.client.connect(); toast('Connecting to the printer…'); } },
+            { label: 'Connect Printer', icon: 'plug', tone: 'primary', run: async () => { await ctx.client.connect(); toast('Connecting to the printer…'); } },
           ];
         case 'linking':
-          return [{ label: 'Connecting to printer…', icon: 'plug', disabled: true }];
+          return [{ label: 'Connecting to Printer…', icon: 'plug', disabled: true }];
         default:
-          return [{ label: 'Reload screen', icon: 'refresh', run: () => location.reload() }];
+          return [{ label: 'Reload Screen', icon: 'refresh', run: () => location.reload() }];
       }
     }
 

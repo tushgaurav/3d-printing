@@ -44,7 +44,7 @@ export function openFileDetail(ctx, file) {
         const ph = phaseOf(s);
         const ok = IDLE.has(ph);
         btn.disabled = !ok;
-        const text = ok ? 'Print' : ACTIVE.has(ph) ? 'Printer busy' : 'Printer offline';
+        const text = ok ? 'Print' : ACTIVE.has(ph) ? 'Printer Busy' : 'Printer Offline';
         if (label.textContent !== text) label.textContent = text;
       };
       update(store.get());

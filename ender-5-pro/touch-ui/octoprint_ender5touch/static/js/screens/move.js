@@ -31,19 +31,19 @@ export default {
           <div class="void"></div>
         </div>
         <div class="zcol">
-          <button class="jog" data-axis="z" data-dir="${zBed ? -1 : 1}">${icon('up')}<small>${zBed ? 'Bed up' : 'Z+'}</small></button>
+          <button class="jog" data-axis="z" data-dir="${zBed ? -1 : 1}">${icon('up')}<small>${zBed ? 'Bed Up' : 'Z+'}</small></button>
           <button class="jog home-btn" data-home="z">${icon('home')}<small>Z</small></button>
-          <button class="jog" data-axis="z" data-dir="${zBed ? 1 : -1}">${icon('down')}<small>${zBed ? 'Bed down' : 'Z−'}</small></button>
+          <button class="jog" data-axis="z" data-dir="${zBed ? 1 : -1}">${icon('down')}<small>${zBed ? 'Bed Down' : 'Z−'}</small></button>
         </div>
         <div class="steps">
           <div class="label">Step · mm</div>
           ${cfg.move.steps.map((v) => `<button class="seg" data-step="${v}">${v}</button>`).join('')}
         </div>
         <div class="bottom row-actions">
-          <button class="btn tall" data-act="homeall">${icon('home')}Home all</button>
+          <button class="btn tall" data-act="homeall">${icon('home')}Home All</button>
           <button class="btn tall" data-act="extrude">${icon('extrude')}Extrude ${amount}</button>
           <button class="btn tall" data-act="retract">${icon('retract')}Retract ${amount}</button>
-          <button class="btn tall" data-act="motors">${icon('unlock')}Motors off</button>
+          <button class="btn tall" data-act="motors">${icon('unlock')}Motors Off</button>
         </div>
         <div class="lock hidden" data-r="lock">${icon('alert')}<span data-r="lockText"></span></div>
       </div>`;

@@ -4,8 +4,10 @@
 // URL options
 //   ?demo[=printing|paused|finished|heating|offline|error]  simulated printer
 //   ?page=files|heat|move|more|calibrate|pair               open a screen at start
-//   ?sheet=tune|filament|printer|system                     open a sheet at start
+//   ?sheet=tune|filament|printer|system|display             open a sheet at start
+//   ?theme=light|dark  or  #theme=…                         default theme (a choice saved on the screen wins)
 //   #key=…&tm=…&host=…&kiosk=1                              passed in by the kiosk launcher
+//   #desktop=1                                              a desktop is underneath: System offers "Exit to Desktop"
 
 import { OctoClient } from './api.js';
 import { MockClient, DEMO_CAMERA } from './mock.js';
@@ -158,7 +160,7 @@ async function boot() {
   const kiosk = hash.get('kiosk') === '1';
 
   // A key handed over by the kiosk launcher is stored, then removed from the URL,
-  // and so is a one-shot start page (so "Reload screen" doesn't reopen it).
+  // and so is a one-shot start page (so "Reload Screen" doesn't reopen it).
   const page = query.get('page') || hash.get('page');
   if (hash.get('key')) saveKey(hash.get('key'));
   if (hash.has('key') || hash.has('page')) {
@@ -201,7 +203,7 @@ async function boot() {
     demo,
     base: computeBase(),
     host: hash.get('host') || (loopback ? 'octopi.local' : location.host),
-    // The launcher says there is a desktop underneath (#desktop=1), so offer "Exit to desktop".
+    // The launcher says there is a desktop underneath (#desktop=1), so offer "Exit to Desktop".
     desktop: hash.get('desktop') === '1',
     touchMatrix: parseMatrix(hash.get('tm')),
     client: null,
