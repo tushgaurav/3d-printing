@@ -18,8 +18,9 @@ export default {
   mount(el, ctx) {
     const { store, cfg } = ctx;
     const heaters = [
-      { key: 'tool0', name: 'Nozzle', icon: 'nozzle', max: cfg.limits.nozzleMax, preset: 'nozzle', set: (t) => ctx.client.setToolTemp(t) },
-      { key: 'bed', name: 'Bed', icon: 'bed', max: cfg.limits.bedMax, preset: 'bed', set: (t) => ctx.client.setBedTemp(t) },
+      // span: the sparkline's smallest scale (°C top to bottom), so small drifts read as small
+      { key: 'tool0', name: 'Nozzle', icon: 'nozzle', max: cfg.limits.nozzleMax, preset: 'nozzle', span: 30, set: (t) => ctx.client.setToolTemp(t) },
+      { key: 'bed', name: 'Bed', icon: 'bed', max: cfg.limits.bedMax, preset: 'bed', span: 15, set: (t) => ctx.client.setBedTemp(t) },
     ];
 
     el.innerHTML = `
@@ -126,7 +127,7 @@ export default {
     function renderSparks() {
       if (!visible || drawn === ctx.temps.version) return;
       drawn = ctx.temps.version;
-      for (const h of heaters) drawSpark(r[`${h.key}Spark`].firstElementChild, ctx.temps, h.key, SPARK_SECONDS);
+      for (const h of heaters) drawSpark(r[`${h.key}Spark`].firstElementChild, ctx.temps, h.key, SPARK_SECONDS, h.span);
     }
 
     store.subscribe(render);

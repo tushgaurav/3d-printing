@@ -61,6 +61,7 @@
   --m3d-plate: #23252a;
   --m3d-grid: rgba(255, 255, 255, 0.06);
   --m3d-halo: #111215;
+  --chart-grid: var(--surface-3);          /* graph gridlines: one quiet step off the card */
   --r-lg: 16px;
   --r: 12px;
   --r-sm: 9px;
@@ -126,6 +127,7 @@
   --m3d-plate: #ebebe5;
   --m3d-grid: rgba(20, 22, 26, 0.07);
   --m3d-halo: #ffffff;
+  --chart-grid: rgba(20, 22, 26, 0.08);
 }
 :root[data-theme="light"] body { font-weight: 500; }  /* thin strokes fade on cheap panels */
 
@@ -312,30 +314,34 @@ body.preview #app {
 .home:not(.is-job) .info > .label { display: none; }  /* the idle title already names the state */
 
 /* ---------- heat ---------- */
-.heat { height: 100%; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 52px; gap: 8px; }
+.heat { height: 100%; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 48px; gap: 8px; }
 .hcard { position: relative; overflow: hidden; background: var(--surface); box-shadow: var(--edge); border-radius: var(--r-lg); padding: 11px 11px 11px; display: flex; flex-direction: column; }
 .hcard .head { display: flex; align-items: center; gap: 7px; height: 22px; }
 .hcard .head svg { width: 17px; height: 17px; color: var(--text-2); }
 .hcard .head .name { font-size: 13.5px; font-weight: 600; }
 .hcard .badge { margin-left: auto; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 99px; color: var(--text-3); background: var(--surface-2); }
 .hcard .badge[data-tone] { color: var(--tone); background: var(--tone-dim); }
-.hcard .actual { display: flex; align-items: flex-start; margin: 9px 0 0 -2px; font-family: var(--mono); font-feature-settings: "ss09"; }
+.hcard .actual { display: flex; align-items: flex-start; margin: 6px 0 0 -2px; font-family: var(--mono); font-feature-settings: "ss09"; }
 .hcard .actual b { font-size: 50px; font-weight: 600; line-height: 0.82; letter-spacing: -0.07em; }
 .hcard .actual span { font-size: 17px; font-weight: 500; color: var(--text-3); margin-left: 4px; }
-/* the last ten minutes, in the state's colour (it was a plain progress bar); tap for the full graph */
-.hcard .spark { position: relative; display: block; height: 30px; margin-top: 9px; padding: 4px 0; border-radius: var(--r-sm); background: var(--surface-2); }
-.hcard .spark::after { content: ""; position: absolute; inset: -6px -4px; }  /* easier to hit than it looks */
-.hcard .spark:active { background: var(--surface-3); }
-.spark svg { width: 100%; height: 100%; }
-.spark .ln { fill: none; stroke: var(--tone, var(--text-3)); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
-.spark .tgt { fill: none; stroke: var(--text-3); stroke-width: 1; stroke-dasharray: 3 3; vector-effect: non-scaling-stroke; }
+/* the last ten minutes in the state's colour, drawn straight on the card (a box around it
+   merged with the buttons below), ending in a dot at the current reading; tap for the graph */
+.hcard .spark { position: relative; display: block; height: 22px; margin: 8px 6px 0 2px; }
+.hcard .spark::after { content: ""; position: absolute; inset: -8px -8px -4px -4px; border-radius: var(--r-sm); }  /* easier to hit than it looks */
+.hcard .spark:active::after { background: var(--muted-dim); }
+.spark svg { width: 100%; height: 100%; overflow: visible; }
+.spark path { fill: none; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-linejoin: round; }
+.spark .ln { stroke: var(--tone, var(--text-3)); stroke-width: 2; }
+.spark .tgt { stroke: var(--text-3); stroke-width: 1; stroke-dasharray: 3 3; stroke-linecap: butt; opacity: 0.7; }
+.spark .ring { stroke: var(--surface); stroke-width: 11; }
+.spark .now { stroke: var(--tone, var(--text-3)); stroke-width: 7; }
 .hcard .ctl { display: grid; grid-template-columns: 44px 1fr 44px; gap: 6px; margin-top: auto; }
 .hcard .ctl .btn { height: 46px; padding: 0; background: var(--surface-2); box-shadow: none; }
 .hcard .ctl .btn:active { background: var(--surface-3); }
 .hcard .ctl .target { flex-direction: column; gap: 2px; }
 .hcard .ctl .target span { font-family: var(--mono); font-feature-settings: "ss09"; font-size: 17px; font-weight: 600; letter-spacing: -0.04em; line-height: 1; }
 .hcard .ctl .target small { font-size: 10px; color: var(--text-3); font-weight: 550; line-height: 1; }
-.hcard .off { margin-top: 6px; height: 30px; font-size: 12.5px; }
+.hcard .off { margin-top: 6px; height: 28px; font-size: 12.5px; }
 .presets { grid-column: 1 / -1; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; }
 .preset { border-radius: var(--r); background: var(--surface); box-shadow: var(--edge); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; }
 .preset b { font-size: 15px; font-weight: 650; }
@@ -565,18 +571,18 @@ body.preview #app {
 .tph .v b { font-size: 15px; font-weight: 600; }
 .tph .v small { font-size: 12px; font-weight: 500; color: var(--text-3); margin-left: 1px; }
 .tplot { flex: 1; min-height: 0; width: 100%; touch-action: none; }
-.tplot .grid { stroke: var(--surface-3); stroke-width: 1; }
-.tplot .tick { fill: var(--text-3); font-family: var(--mono); font-feature-settings: "ss09"; font-size: 9.5px; letter-spacing: -0.03em; text-anchor: end; dominant-baseline: middle; }
+.tplot .grid { stroke: var(--chart-grid); stroke-width: 1; }
+.tplot .tick { fill: var(--text-3); font-family: var(--mono); font-feature-settings: "ss09"; font-size: 10px; letter-spacing: -0.03em; dominant-baseline: middle; }
 .tplot .ln { fill: none; stroke: var(--heat); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
 .tplot .tgt { fill: none; stroke: var(--text-3); stroke-width: 1; stroke-dasharray: 4 3; }
 .tplot .dot { fill: var(--heat); stroke: var(--surface); stroke-width: 2; }
 .tplot .cross { stroke: var(--text-2); stroke-width: 1; }
 .tempty { position: absolute; inset: 25px 0 0; display: grid; place-items: center; color: var(--text-3); font-size: 12px; pointer-events: none; }
 .taxis > div { position: relative; height: 16px; }
-.taxis span { position: absolute; top: 2px; transform: translateX(-50%); font-family: var(--mono); font-feature-settings: "ss09"; font-size: 10px; letter-spacing: -0.03em; color: var(--text-3); white-space: nowrap; }
+.taxis span { position: absolute; top: 1px; transform: translateX(-50%); font-size: 11px; color: var(--text-3); white-space: nowrap; }
 .taxis span.first { transform: none; }
 .taxis span.last { transform: translateX(-100%); }
-.taxis .at { top: 0; padding: 1px 7px; border-radius: 99px; background: var(--toast-bg); color: var(--toast-fg); font-weight: 600; }
+.taxis .at { top: 0; padding: 1px 7px; border-radius: 99px; background: var(--toast-bg); color: var(--toast-fg); font-family: var(--mono); font-feature-settings: "ss09"; font-size: 10.5px; letter-spacing: -0.03em; font-weight: 600; }
 .taxis .scrubbing span:not(.at) { visibility: hidden; }
 
 /* ---------- history (More > History) ---------- */

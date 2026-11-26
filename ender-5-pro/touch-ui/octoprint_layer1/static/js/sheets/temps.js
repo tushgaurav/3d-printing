@@ -1,6 +1,8 @@
 // Temperature (tap a sparkline on the Heat screen): nozzle and bed over the last
 // 5, 10 or 30 minutes. One panel per heater, each scaled to its own range, since a
-// 60° bed under a 0-250° axis is a flat line. The dashed line is the target.
+// 60° bed under a 0-250° axis is a flat line. The dashed line is the target, the
+// scale sits on the right like a stock chart, so the line runs from the left edge
+// to "now" with the newest reading next to its number.
 // Press and drag across the graph to read both heaters at that moment.
 
 import { icon } from '../icons.js';
@@ -9,14 +11,16 @@ import { openSheet } from '../ui.js';
 import { bucket, valueRange, niceRange, tempPaths, nearest } from '../chart.js';
 
 const RANGES = [5, 10, 30];             // minutes
+// minSpan: the smallest scale (°C), so a heater holding within a degree reads as steady
 const PANELS = [
-  { key: 'tool0', name: 'Nozzle', icon: 'nozzle', minSpan: 10 },
-  { key: 'bed', name: 'Bed', icon: 'bed', minSpan: 6 },
+  { key: 'tool0', name: 'Nozzle', icon: 'nozzle', minSpan: 16 },
+  { key: 'bed', name: 'Bed', icon: 'bed', minSpan: 8 },
 ];
-const GUTTER = 30;                      // left, for the °C labels
-const PAD_R = 8;
-const PAD_Y = 7;
-const PX_PER_POINT = 2.5;
+const PAD_L = 12;
+const GUTTER = 40;                      // right, for the °C labels
+const PAD_TOP = 10;
+const PAD_BOTTOM = 8;
+const PX_PER_POINT = 5;                 // one averaged point every 5px, then a smooth curve
 const SCRUB_HOLD_MS = 3000;             // the readout stays this long after you let go
 
 function agoText(sec) {
@@ -43,7 +47,7 @@ export function openTemps(ctx) {
               <svg class="tplot" data-r="${p.key}Svg" aria-hidden="true"></svg>
               <div class="tempty hidden" data-r="${p.key}Empty">Waiting for readings…</div>
             </div>`).join('')}
-          <div class="taxis" style="padding:0 ${PAD_R}px 0 ${GUTTER}px"><div data-r="axis"></div></div>
+          <div class="taxis" style="padding:0 ${GUTTER}px 0 ${PAD_L}px"><div data-r="axis"></div></div>
         </div>`;
       const r = refs(body);
 
@@ -60,24 +64,24 @@ export function openTemps(ctx) {
           w = svg.clientWidth;
           const h = svg.clientHeight;
           if (!w || !h) continue;
-          const x0 = GUTTER;
-          const x1 = w - PAD_R;
-          const x = (t) => x0 + ((t - win.start) / range) * (x1 - x0);
+          const x0 = PAD_L;
+          const x1 = w - GUTTER;
+          const x = (t) => Math.max(x0, x0 + ((t - win.start) / range) * (x1 - x0));
           geo = { x0, x1, start: win.start, end: win.end, range };
           const points = bucket(win.samples, p.key, win.start, win.end, Math.max(20, Math.floor((x1 - x0) / PX_PER_POINT)));
           const vr = valueRange(points, p.minSpan);
           show(r[`${p.key}Empty`], !vr);
           if (!vr) { svg.innerHTML = ''; setText(r[`${p.key}V`], '—'); setText(r[`${p.key}T`], ''); continue; }
-          const nice = niceRange(vr.lo, vr.hi, 3);
-          const y = (v) => PAD_Y + (1 - (v - nice.lo) / (nice.hi - nice.lo)) * (h - 2 * PAD_Y);
+          const nice = niceRange(vr.lo, vr.hi, 4);
+          const y = (v) => PAD_TOP + (1 - (v - nice.lo) / (nice.hi - nice.lo)) * (h - PAD_TOP - PAD_BOTTOM);
           const d = tempPaths(points, { x, y, gap: Math.max(60, (range / ((x1 - x0) / PX_PER_POINT)) * 3) });
           const grid = nice.ticks.map((v) => `<line class="grid" x1="${x0}" x2="${x1}" y1="${y(v)}" y2="${y(v)}"/>
-            <text class="tick" x="${x0 - 6}" y="${y(v)}">${v}</text>`).join('');
+            <text class="tick" x="${x1 + 9}" y="${y(v)}">${v}°</text>`).join('');
 
           // the reading shown in the header: the scrubbed moment, else the newest
           const at = scrubT != null ? nearest(points, win.end - scrubT) : points[points.length - 1];
           const mark = at ? `<circle class="dot" cx="${x(at.t)}" cy="${y(at.actual)}" r="4"/>` : '';
-          const hair = scrubT != null && at ? `<line class="cross" x1="${x(at.t)}" x2="${x(at.t)}" y1="${PAD_Y - 4}" y2="${h - PAD_Y + 4}"/>` : '';
+          const hair = scrubT != null && at ? `<line class="cross" x1="${x(at.t)}" x2="${x(at.t)}" y1="${PAD_TOP - 6}" y2="${h - PAD_BOTTOM + 4}"/>` : '';
           svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
           svg.innerHTML = `${grid}<path class="tgt" d="${d.target}"/><path class="ln" d="${d.line}"/>${hair}${mark}`;
           setText(r[`${p.key}V`], at ? `${fmtTemp(at.actual)}°` : '—');
@@ -86,15 +90,11 @@ export function openTemps(ctx) {
         drawAxis(win, w);
       }
 
-      // minutes-ago labels under both panels; while scrubbing, the moment being read
+      // the start, middle and end of the range under both panels; while scrubbing, the moment being read
       function drawAxis(win, w) {
-        const step = minutes <= 5 ? 1 : minutes <= 10 ? 2 : 10;
-        const labels = [];
-        for (let m = minutes; m >= 0; m -= step) {
-          const pct = ((minutes - m) / minutes) * 100;
-          const cls = m === minutes ? 'first' : m === 0 ? 'last' : '';
-          labels.push(`<span class="${cls}" style="left:${pct}%">${m ? `−${m} min` : 'Now'}</span>`);
-        }
+        const labels = [`<span class="first" style="left:0">${minutes} min ago</span>`];
+        if (minutes % 2 === 0) labels.push(`<span style="left:50%">${minutes / 2} min ago</span>`);
+        labels.push('<span class="last" style="left:100%">Now</span>');
         if (scrubT != null && geo && w) {
           const pct = Math.max(0, Math.min(100, ((minutes * 60 - scrubT) / (minutes * 60)) * 100));
           labels.push(`<span class="at" style="left:${pct}%">${agoText(scrubT)}</span>`);
