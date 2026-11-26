@@ -621,6 +621,17 @@ body.preview #app {
 .net-hero span { font-size: 12.5px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .net .kvlist { flex: 1; }
 .net .kv b { font-family: var(--mono); font-feature-settings: "ss09"; font-weight: 500; letter-spacing: -0.03em; }
+.net .kv b.sig { display: flex; align-items: center; gap: 8px; font-family: var(--sans); letter-spacing: -0.01em; }
+/* signal strength as four rising bars, phone-style; data-n of them lit */
+.bars { --lit: var(--signal-fg); display: flex; align-items: flex-end; gap: 2px; height: 13px; flex: none; }
+.bars[data-tone] { --lit: var(--tone); }
+.bars i { width: 4px; border-radius: 1px; background: var(--surface-3); }
+.bars i:nth-child(1) { height: 31%; }
+.bars i:nth-child(2) { height: 54%; }
+.bars i:nth-child(3) { height: 77%; }
+.bars i:nth-child(4) { height: 100%; }
+.bars[data-n="1"] i:nth-child(-n+1), .bars[data-n="2"] i:nth-child(-n+2),
+.bars[data-n="3"] i:nth-child(-n+3), .bars[data-n="4"] i { background: var(--lit); }
 .net .tile small { display: block; margin-top: 4px; font-size: 12px; line-height: 1.35; color: var(--text-3); }
 
 /* open on phone: QR codes stay black on white in both themes, since scanners want dark on light */

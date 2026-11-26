@@ -153,19 +153,92 @@ def wifi_link(iface):
     return result
 
 
+SYS_NET = "/sys/class/net"
+SIOCGIFADDR = 0x8915  # Linux ioctl: an interface's IPv4 address
+
+
+def _attr(iface, name):
+    text = _read("%s/%s/%s" % (SYS_NET, iface, name))
+    return text.strip() if text is not None else None
+
+
+def _plugged(iface):
+    # reading carrier fails while the interface is down, which _read turns into None
+    return _attr(iface, "carrier") == "1"
+
+
+def _is_wireless(iface, wireless_text):
+    return os.path.isdir("%s/%s/wireless" % (SYS_NET, iface)) or iface + ":" in (wireless_text or "")
+
+
+def interfaces(wireless_text):
+    """(Wi-Fi names, Ethernet names) of the physical network interfaces, sorted."""
+    try:
+        names = sorted(os.listdir(SYS_NET))
+    except OSError:
+        return [], []
+    wifi, wired = [], []
+    for name in names:
+        if not os.path.exists("%s/%s/device" % (SYS_NET, name)):
+            continue  # loopback, bridges, VPNs, docker: no hardware behind them
+        if _is_wireless(name, wireless_text):
+            wifi.append(name)
+        elif _attr(name, "type") == "1":  # ARPHRD_ETHER
+            wired.append(name)
+    return wifi, wired
+
+
+def iface_ip(iface):
+    """IPv4 address of one interface, or None."""
+    try:
+        import fcntl
+        import struct
+    except ImportError:
+        return None
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        packed = fcntl.ioctl(s.fileno(), SIOCGIFADDR, struct.pack("256s", iface[:15].encode("utf-8")))
+        return socket.inet_ntoa(packed[20:24])
+    except (IOError, OSError):
+        return None
+    finally:
+        s.close()
+
+
+def ethernet(names):
+    """The wired port, preferring one with a cable in: {'iface', 'connected', 'ip', 'speed' (Mb/s)},
+    or None when the machine has no Ethernet port."""
+    if not names:
+        return None
+    up = [n for n in names if _plugged(n)]
+    iface = (up or names)[0]
+    if not up:
+        return {"iface": iface, "connected": False, "ip": None, "speed": None}
+    try:
+        speed = int(_attr(iface, "speed"))
+    except (TypeError, ValueError):
+        speed = None
+    return {"iface": iface, "connected": True, "ip": iface_ip(iface), "speed": speed if speed and speed > 0 else None}
+
+
 def network():
+    """The connection in use (the default route's interface: 'iface', 'ip', 'wifi'), the Wi-Fi
+    link even when Ethernet carries the traffic ('ssid', 'signal', 'freq'), and the wired port."""
     iface = parse_default_iface(_read("/proc/net/route"))
     wireless = _read("/proc/net/wireless")
-    is_wifi = bool(iface) and (os.path.isdir("/sys/class/net/%s/wireless" % iface) or iface + ":" in (wireless or ""))
-    link = wifi_link(iface) if is_wifi else {"ssid": None, "freq": None}
+    is_wifi = bool(iface) and _is_wireless(iface, wireless)
+    wifi_names, wired_names = interfaces(wireless)
+    wlan = iface if is_wifi else next((n for n in wifi_names if _plugged(n)), None)
+    link = wifi_link(wlan) if wlan else {"ssid": None, "freq": None}
     return {
         "hostname": socket.gethostname() or None,
         "ip": local_ip(),
         "iface": iface,
         "wifi": is_wifi,
-        "signal": parse_wifi_signal(wireless, iface) if is_wifi else None,
+        "signal": parse_wifi_signal(wireless, wlan) if wlan else None,
         "ssid": link["ssid"],
         "freq": link["freq"],
+        "ethernet": ethernet(wired_names),
     }
 
 

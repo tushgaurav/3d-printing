@@ -276,7 +276,10 @@ export class MockClient extends Emitter {
       mem: { total: 1945 * 1048576, available: 1310 * 1048576 },
       disk: { total: 29.1 * 1073741824, free: 18.4 * 1073741824 },
       uptime: 3 * 86400 + 4 * 3600 + 17 * 60,
-      net: { hostname: 'octopi', ip: '192.168.1.42', iface: 'wlan0', wifi: true, signal: -58, ssid: 'Workshop', freq: 5180 },
+      net: {
+        hostname: 'octopi', ip: '192.168.1.42', iface: 'wlan0', wifi: true, signal: -58, ssid: 'Workshop', freq: 5180,
+        ethernet: { iface: 'eth0', connected: false, ip: null, speed: null },
+      },
     });
   }
 }
