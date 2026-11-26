@@ -187,7 +187,7 @@ export class MockClient extends Emitter {
   }
 
   async _ok(v) { await wait(120); return v; }
-  _busy() { if (this.state !== 'operational') throw new ApiError(409, 'Printer is busy or not connected'); }
+  _busy() { if (this.state !== 'operational') throw new ApiError(409, 'Printer Busy or Not Connected'); }
 
   files() { return this._ok({ files: this.fileList }); }
 

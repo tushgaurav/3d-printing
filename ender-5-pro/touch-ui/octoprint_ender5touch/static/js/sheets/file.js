@@ -36,7 +36,7 @@ export function openFileDetail(ctx, file) {
       body.querySelector('[data-a=back]').addEventListener('click', () => sheet.close());
       btn.addEventListener('click', () => attempt(async () => {
         await ctx.client.printFile(file.origin || 'local', file.path);
-        toast(`Starting ${displayName(file)}`, 'accent');
+        toast(`Starting ${displayName(file)}`, 'accent', 3500, 'play');
         sheet.close();
         ctx.go('home');
       }));

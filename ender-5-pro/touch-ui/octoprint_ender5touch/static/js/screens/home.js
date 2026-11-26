@@ -160,7 +160,7 @@ export default {
       const ok = await confirmDialog({ title: 'Print again?', body: displayName(file), confirm: 'Print', tone: 'primary' });
       if (!ok) return;
       await ctx.client.printFile(file.origin || 'local', file.path);
-      toast(`Starting ${displayName(file)}`, 'accent');
+      toast(`Starting ${displayName(file)}`, 'accent', 3500, 'play');
     }
 
     async function preheat() {
@@ -174,7 +174,7 @@ export default {
       if (!choice) return;
       const p = choice === 'off' ? { name: 'Cool down', nozzle: 0, bed: 0 } : choice;
       await Promise.all([ctx.client.setToolTemp(p.nozzle), ctx.client.setBedTemp(p.bed)]);
-      toast(p.nozzle ? `Preheating for ${p.name}` : 'Heaters off', p.nozzle ? 'heat' : 'muted');
+      toast(p.nozzle ? `Preheating for ${p.name}` : 'Heaters Off', p.nozzle ? 'heat' : 'muted', 3500, p.nozzle ? 'flame' : 'cool');
     }
 
     function actionsFor(s, ph) {
@@ -199,14 +199,14 @@ export default {
         case 'heating':
           return [
             { label: 'Preheat', icon: 'flame', run: preheat },
-            { label: 'Home Axes', icon: 'home', run: async () => { await ctx.client.home(['x', 'y', 'z']); toast('Homing X, Y and Z'); } },
+            { label: 'Home Axes', icon: 'home', run: async () => { await ctx.client.home(['x', 'y', 'z']); toast('Homing X, Y and Z', 'muted', 3500, 'home'); } },
             { label: 'Print', icon: 'play', tone: 'primary', run: () => ctx.go('files') },
           ];
         case 'disconnected':
         case 'error':
           return [
             { label: 'Files', icon: 'files', run: () => ctx.go('files') },
-            { label: 'Connect Printer', icon: 'plug', tone: 'primary', run: async () => { await ctx.client.connect(); toast('Connecting to the printer…'); } },
+            { label: 'Connect Printer', icon: 'plug', tone: 'primary', run: async () => { await ctx.client.connect(); toast('Connecting to the Printer…', 'muted', 3500, 'plug'); } },
           ];
         case 'linking':
           return [{ label: 'Connecting to Printer…', icon: 'plug', disabled: true }];

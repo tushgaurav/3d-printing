@@ -271,7 +271,7 @@ async function boot() {
       if (link === 'unauthorized' && !demo) {
         client.stop();
         forgetKey();
-        toast('OctoPrint rejected this screen’s key. Pair again.', 'warn', 6000);
+        toast('Screen Key Rejected · Pair Again', 'warn', 6000, 'link');
         pairThenStart();
       }
     });
@@ -287,19 +287,19 @@ async function boot() {
           refreshFilesSoon();
           break;
         case 'PrintDone':
-          toast(`Print finished · ${fmtDuration(payload.time)}`, 'ok', 8000);
+          toast(`Print Finished · ${fmtDuration(payload.time)}`, 'ok', 8000);
           refreshFilesSoon();
           break;
         case 'PrintFailed':
-          toast(`Print failed${payload.reason ? ` (${payload.reason})` : ''}`, 'danger', 8000);
+          toast(`Print Failed${payload.reason ? ` · ${payload.reason}` : ''}`, 'danger', 8000, 'cross');
           refreshFilesSoon();
           break;
-        case 'PrintCancelled': toast('Print cancelled', 'warn'); refreshFilesSoon(); break;
-        case 'PrintPaused': toast('Print paused', 'warn'); break;
-        case 'PrintResumed': toast('Print resumed', 'accent'); break;
-        case 'Connected': toast('Printer connected', 'ok'); break;
-        case 'Disconnected': toast('Printer disconnected', 'warn'); break;
-        case 'Error': toast(payload.error || 'Printer error', 'danger', 10000); break;
+        case 'PrintCancelled': toast('Print Stopped', 'warn', 3500, 'stop'); refreshFilesSoon(); break;
+        case 'PrintPaused': toast('Print Paused', 'warn', 3500, 'pause'); break;
+        case 'PrintResumed': toast('Print Resumed', 'accent', 3500, 'play'); break;
+        case 'Connected': toast('Printer Connected', 'ok', 3500, 'plug'); break;
+        case 'Disconnected': toast('Printer Disconnected', 'warn', 3500, 'unplug'); break;
+        case 'Error': toast(payload.error || 'Printer Error', 'danger', 10000); break;
         case 'UpdatedFiles':
         case 'FileAdded':
         case 'FileRemoved':
@@ -315,7 +315,7 @@ async function boot() {
   function pairThenStart() {
     showPairing(ctx).then((key) => {
       saveKey(key);
-      toast('Paired with OctoPrint', 'ok');
+      toast('Paired with OctoPrint', 'ok', 3500, 'link');
       startClient(key);
     });
   }

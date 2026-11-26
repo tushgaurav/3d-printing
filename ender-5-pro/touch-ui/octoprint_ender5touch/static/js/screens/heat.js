@@ -74,7 +74,7 @@ export default {
         const p = b.dataset.preset === 'off' ? { name: 'Cool', nozzle: 0, bed: 0 } : cfg.presets[+b.dataset.preset];
         setTarget(heaters[0], p.nozzle);
         setTarget(heaters[1], p.bed);
-        toast(p.nozzle ? `Preheating for ${p.name}` : 'Heaters off', p.nozzle ? 'heat' : 'muted');
+        toast(p.nozzle ? `Preheating for ${p.name}` : 'Heaters Off', p.nozzle ? 'heat' : 'muted', 3500, p.nozzle ? 'flame' : 'cool');
         return;
       }
       const h = heaters.find((x) => x.key === b.dataset.h);

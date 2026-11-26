@@ -26,12 +26,24 @@ export function mount(el) {
   return el;
 }
 
-export function toast(text, tone = 'muted', ms = 3500) {
+const TOAST_ICONS = { ok: 'check', accent: 'check', warn: 'alert', danger: 'alert', heat: 'flame', cool: 'cool', muted: 'info' };
+
+/**
+ * A short message under the status bar. tone: ok | accent | warn | danger | heat | cool | muted.
+ * glyph: an icon name, else one that suits the tone. Text after the first " · " is shown dimmer.
+ */
+export function toast(text, tone = 'muted', ms = 3500, glyph = null) {
   if (!toastBox) { console.warn(text); return; }
+  text = String(text);
+  // the same message again restarts it instead of stacking a copy
+  for (const old of toastBox.children) if (old.dataset.text === text) old.remove();
   const el = document.createElement('div');
   el.className = 'toast';
   el.dataset.tone = tone;
-  el.textContent = text;
+  el.dataset.text = text;
+  const cut = text.indexOf(' · ');
+  const body = cut > 0 ? `${esc(text.slice(0, cut))}<span class="sub"> · ${esc(text.slice(cut + 3))}</span>` : esc(text);
+  el.innerHTML = `<span class="ti">${icon(glyph || TOAST_ICONS[tone] || 'info')}</span><span class="tt">${body}</span>`;
   toastBox.appendChild(el);
   while (toastBox.children.length > 2) toastBox.firstChild.remove();
   setTimeout(() => el.remove(), ms);
@@ -43,7 +55,7 @@ export async function attempt(fn) {
     return await fn();
   } catch (e) {
     let msg = (e && e.message) || String(e);
-    if (e && e.status === 409) msg = msg && !/^409/.test(msg) ? msg : 'Printer is busy or not connected';
+    if (e && e.status === 409) msg = msg && !/^409/.test(msg) ? msg : 'Printer Busy or Not Connected';
     toast(msg, 'danger', 5000);
     return undefined;
   }

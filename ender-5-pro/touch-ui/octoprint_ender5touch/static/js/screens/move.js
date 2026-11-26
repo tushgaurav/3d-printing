@@ -55,7 +55,7 @@ export default {
     function hotEnough() {
       const t = store.get().temps.tool0;
       if (t && t.actual != null && t.actual >= cfg.limits.minExtrudeTemp) return true;
-      toast(`Heat the nozzle to at least ${cfg.limits.minExtrudeTemp}° first`, 'warn');
+      toast(`Heat the Nozzle to ${cfg.limits.minExtrudeTemp}° First`, 'warn', 3500, 'nozzle');
       return false;
     }
 
@@ -73,7 +73,7 @@ export default {
         case 'homeall': attempt(() => ctx.client.home(['x', 'y', 'z'])); break;
         case 'extrude': if (hotEnough()) attempt(() => ctx.client.extrude(amount)); break;
         case 'retract': if (hotEnough()) attempt(() => ctx.client.extrude(-amount)); break;
-        case 'motors': attempt(async () => { await ctx.client.gcode('M84'); toast('Motors off — axes can be moved by hand'); }); break;
+        case 'motors': attempt(async () => { await ctx.client.gcode('M84'); toast('Motors Off · Axes Can Be Moved by Hand', 'muted', 3500, 'unlock'); }); break;
         default:
       }
     });

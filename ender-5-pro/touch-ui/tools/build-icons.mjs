@@ -57,6 +57,7 @@ const ICONS = {
   grid: 'grid-2x2',
   list: 'list',
   rotate: 'rotate-3d',
+  info: 'info',
   unlock: 'lock-open',
   extrude: 'arrow-down-to-line',
   retract: 'arrow-up-from-line',

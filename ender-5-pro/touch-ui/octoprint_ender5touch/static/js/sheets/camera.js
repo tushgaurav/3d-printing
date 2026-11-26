@@ -6,7 +6,7 @@ import { openCamera, toast } from '../ui.js';
 
 export function openLiveCamera(ctx) {
   const cam = ctx.cfg.webcam || {};
-  if (!cam.enabled || !cam.stream) { toast('No camera configured', 'warn'); return; }
+  if (!cam.enabled || !cam.stream) { toast('No Camera Configured', 'warn', 3500, 'camera'); return; }
   openCamera(cam, (hud) => {
     const render = (s) => {
       const t = s.temps || {};

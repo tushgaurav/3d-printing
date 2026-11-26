@@ -95,7 +95,7 @@ export function openFilament(ctx) {
           attempt(async () => {
             await ctx.client.gcode(seq.commands);
             op = { kind, temp, heatedAt: null, seconds: seq.seconds };
-            toast(`${VERB[kind]} ${presets[mat].name}`, 'accent');
+            toast(`${VERB[kind]} ${presets[mat].name}`, 'accent', 3500, 'spool');
             render(store.get());
           });
         }

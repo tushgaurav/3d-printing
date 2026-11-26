@@ -44,6 +44,7 @@ const P = {
   "grid": "<path d=\"M12 3v18\"/><path d=\"M3 12h18\"/><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\"/>", // grid-2x2
   "list": "<path d=\"M3 5h.01\"/><path d=\"M3 12h.01\"/><path d=\"M3 19h.01\"/><path d=\"M8 5h13\"/><path d=\"M8 12h13\"/><path d=\"M8 19h13\"/>", // list
   "rotate": "<path d=\"m15.194 13.707 3.814 1.86-1.86 3.814\"/><path d=\"M16.47214 7.52786 A 5 10 0 1 0 13 21.79796\"/><path d=\"M21.79796 11 A 10 5 0 1 0 19 15.57071\"/>", // rotate-3d
+  "info": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 16v-4\"/><path d=\"M12 8h.01\"/>", // info
   "unlock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 9.9-1\"/>", // lock-open
   "extrude": "<path d=\"M12 17V3\"/><path d=\"m6 11 6 6 6-6\"/><path d=\"M19 21H5\"/>", // arrow-down-to-line
   "retract": "<path d=\"m18 9-6-6-6 6\"/><path d=\"M12 3v14\"/><path d=\"M5 21h14\"/>", // arrow-up-from-line

@@ -23,7 +23,7 @@ export async function exitToDesktop() {
   });
   if (!ok) return;
   window.close(); // allowed: the launcher opened this window and it has a single history entry
-  setTimeout(() => toast('The browser wouldn’t close. Run ~/ender5-touch/demo.sh stop over SSH.', 'warn', 6000), 800);
+  setTimeout(() => toast('Browser Didn’t Close · Run ~/ender5-touch/demo.sh stop over SSH', 'warn', 6000), 800);
 }
 
 export function openSystem(ctx) {
@@ -84,7 +84,7 @@ export function openSystem(ctx) {
             confirm: info.label,
             tone: printing || c.action === 'shutdown' ? 'danger' : 'primary',
           });
-          if (ok) attempt(async () => { await ctx.client.system(c.action); toast(`${info.label}…`, 'warn', 8000); });
+          if (ok) attempt(async () => { await ctx.client.system(c.action); toast(`${info.label}…`, 'warn', 8000, info.icon); });
         }
       });
       return null;

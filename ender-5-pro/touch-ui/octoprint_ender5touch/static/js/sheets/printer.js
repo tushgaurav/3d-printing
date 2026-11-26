@@ -45,14 +45,14 @@ export function openPrinter(ctx) {
         attempt(async () => {
           if (b.dataset.a === 'connect') {
             await ctx.client.connect();
-            toast('Connecting to the printer…');
+            toast('Connecting to the Printer…', 'muted', 3500, 'plug');
           } else {
             if (ACTIVE.has(phaseOf(store.get()))) {
               const ok = await confirmDialog({ title: 'Disconnect during a print?', body: 'The print will fail.', confirm: 'Disconnect', tone: 'danger' });
               if (!ok) return;
             }
             await ctx.client.disconnect();
-            toast('Printer disconnected');
+            toast('Printer Disconnected', 'muted', 3500, 'unplug');
           }
           setTimeout(load, 1500);
         });

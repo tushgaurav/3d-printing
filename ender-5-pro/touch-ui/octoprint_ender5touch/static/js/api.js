@@ -74,7 +74,7 @@ export class OctoClient extends Emitter {
     try {
       res = await fetch(this.base + path, init);
     } catch (e) {
-      throw new ApiError(0, 'Cannot reach OctoPrint');
+      throw new ApiError(0, 'Cannot Reach OctoPrint');
     }
     const text = await res.text();
     let data = null;
@@ -265,7 +265,7 @@ export class OctoClient extends Emitter {
     try {
       res = await fetch(`${this.base}downloads/files/${encodeURIComponent(origin)}/${encPath(file.path)}`, { headers: { 'X-Api-Key': this.apiKey } });
     } catch (e) {
-      throw new ApiError(0, 'Cannot reach OctoPrint');
+      throw new ApiError(0, 'Cannot Reach OctoPrint');
     }
     if (!res.ok) throw new ApiError(res.status, `G-code download failed (${res.status})`);
     return res.arrayBuffer();

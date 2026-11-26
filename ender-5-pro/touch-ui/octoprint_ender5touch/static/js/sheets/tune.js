@@ -38,7 +38,7 @@ export function openTune(ctx) {
         const s = store.get();
         if (b.dataset.feed) {
           const f = +b.dataset.feed;
-          attempt(async () => { await ctx.client.feedrate(f); store.set({ feed: f }); toast(`Speed ${f}%`); });
+          attempt(async () => { await ctx.client.feedrate(f); store.set({ feed: f }); toast(`Speed ${f}%`, 'muted', 3500, 'speed'); });
         } else if (b.dataset.flow) {
           const v = b.dataset.flow === 'reset' ? 100 : clamp(s.flow + +b.dataset.flow, 50, 150);
           attempt(async () => { await ctx.client.flowrate(v); store.set({ flow: v }); });

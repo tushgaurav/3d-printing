@@ -41,7 +41,9 @@
   --media-bg: #050506;
   --well: #0b0c0e;           /* behind file thumbnails */
   --modal-bg: #1e1f23;
-  --toast-bg: #2a2c31;
+  --toast-bg: #ecece6;       /* toasts are inverse: light on the dark theme, graphite on the light one */
+  --toast-fg: #141519;
+  --toast-sub: #5d6169;
   --scrim: rgba(0, 0, 0, 0.62);
   --shadow: rgba(0, 0, 0, 0.6);
   --scroll-ind: rgba(255, 255, 255, 0.28);
@@ -101,7 +103,9 @@
   --media-bg: #d9dad3;
   --well: #f0f0eb;
   --modal-bg: #ffffff;
-  --toast-bg: #ffffff;
+  --toast-bg: #1d1e22;
+  --toast-fg: #f4f4f1;
+  --toast-sub: #a4a6ab;
   --scrim: rgba(30, 32, 36, 0.42);
   --shadow: rgba(30, 32, 36, 0.22);
   --scroll-ind: rgba(0, 0, 0, 0.3);
@@ -477,9 +481,20 @@ body.preview #app {
 .keypad .keys { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 50px; gap: 6px; }
 .keypad .keys .btn { height: 100%; font-family: var(--mono); font-feature-settings: "ss09"; font-size: 21px; font-weight: 500; padding: 0; }
 
-.toasts { position: absolute; top: calc(var(--bar) + 8px); left: calc(var(--rail) + 8px); right: 8px; z-index: 60; display: flex; flex-direction: column; align-items: center; gap: 5px; pointer-events: none !important; }
-.toast { max-width: 100%; display: flex; align-items: center; gap: 9px; padding: 9px 16px 9px 13px; border-radius: 99px; background: var(--toast-bg); font-size: 13px; font-weight: 550; box-shadow: 0 10px 28px var(--shadow), inset 0 0 0 1px var(--hair); }
-.toast::before { content: ""; width: 7px; height: 7px; border-radius: 50%; flex: none; background: var(--tone, var(--text-3)); }
+.toasts { position: absolute; top: calc(var(--bar) + 8px); left: calc(var(--rail) + 8px); right: 8px; z-index: 60; display: flex; flex-direction: column; align-items: center; gap: 6px; pointer-events: none !important; }
+/* inverse surface with a tone-coloured icon badge; one line is a pill, two lines a rounded card */
+.toast { max-width: min(100%, 372px); min-height: 40px; display: flex; align-items: center; gap: 10px; padding: 6px 16px 6px 6px; border-radius: 20px; background: var(--toast-bg); color: var(--toast-fg); font-size: 13.5px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.26), 0 1px 3px rgba(0, 0, 0, 0.18); }
+.toast .ti { width: 28px; height: 28px; border-radius: 50%; flex: none; display: grid; place-items: center; background: var(--t-fill); color: var(--t-ink); }
+.toast .ti svg { width: 16px; height: 16px; stroke-width: 2.4; }
+.toast .tt { min-width: 0; padding: 3px 0; }
+.toast .sub { color: var(--toast-sub); font-weight: 500; }
+/* badge colours work on both the light and the graphite toast */
+.toast { --t-fill: #8b8f96; --t-ink: #ffffff; }
+.toast[data-tone="ok"], .toast[data-tone="accent"] { --t-fill: #b9ec2e; --t-ink: #10150a; }
+.toast[data-tone="warn"] { --t-fill: #ffb43a; --t-ink: #1c1200; }
+.toast[data-tone="danger"] { --t-fill: #ff5a50; --t-ink: #ffffff; }
+.toast[data-tone="heat"] { --t-fill: #ff7b3a; --t-ink: #1c0a02; }
+.toast[data-tone="cool"] { --t-fill: #6db8ff; --t-ink: #04121f; }
 
 .camera-full { position: absolute; inset: 0; z-index: 45; background: #000; }
 .camera-full img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }

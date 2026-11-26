@@ -127,7 +127,13 @@ export class ModelView {
   setModel(key) { if (key !== this.key) { this.key = key; this.request(false, true); } }
 
   /** Bytes of the file printed so far (Infinity = the whole part). */
-  setProgress(upTo) { if (upTo !== this.upTo) { this.upTo = upTo; this.request(false, false); } }
+  setProgress(upTo) {
+    if (upTo === this.upTo) return;
+    // a print starting or ending shows at once; progress within a print is throttled
+    const now = upTo === Infinity || this.upTo === Infinity;
+    this.upTo = upTo;
+    this.request(false, now);
+  }
 
   setAngles(yaw, pitch, fast = false) { this.yaw = yaw; this.pitch = pitch; this.request(fast, true); }
 
