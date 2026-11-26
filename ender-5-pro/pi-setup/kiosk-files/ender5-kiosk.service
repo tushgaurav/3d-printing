@@ -1,0 +1,25 @@
+[Unit]
+Description=Ender 5 Pro touchscreen kiosk (X11 + Chromium)
+After=systemd-user-sessions.service network.target octoprint.service
+
+[Service]
+Type=simple
+User=__KIOSK_USER__
+# A login session gives X access to the screen and the touch input device.
+PAMName=login
+TTYPath=/dev/tty7
+TTYReset=yes
+TTYVHangup=yes
+StandardInput=tty
+StandardOutput=journal
+StandardError=journal
+UtmpIdentifier=tty7
+UtmpMode=user
+# "+" runs this as root: it points X at the SPI screen's framebuffer.
+ExecStartPre=+/usr/local/lib/ender5-kiosk/prepare.sh
+ExecStart=/usr/bin/xinit /usr/local/lib/ender5-kiosk/session.sh -- :0 vt7 -nolisten tcp -nocursor -keeptty
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

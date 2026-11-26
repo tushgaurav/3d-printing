@@ -1,0 +1,52 @@
+// Stroke icons on a 24px grid, drawn for this UI. Usage: icon('home')
+
+const P = {
+  home: '<path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9v11.5h13V9"/><path d="M10 20.5v-5.5h4v5.5"/>',
+  files: '<path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-10z"/><path d="M14 3.5v5h5"/><path d="M8.5 13h7M8.5 16.5h4.5"/>',
+  heat: '<path d="M14 14.5V5.5a2 2 0 1 0-4 0v9a4 4 0 1 0 4 0z"/><path d="M12 17.5v-7"/><path d="M17.5 6h2.5M17.5 9.5h2.5"/>',
+  move: '<path d="M12 3.5v17M3.5 12h17"/><path d="m9 6.5 3-3 3 3M9 17.5l3 3 3-3M6.5 9l-3 3 3 3M17.5 9l3 3-3 3"/>',
+  more: '<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>',
+  nozzle: '<rect x="7" y="3" width="10" height="4.5" rx="1"/><rect x="5.5" y="7.5" width="13" height="5.5" rx="1"/><path d="M9.5 13 11 18h2l1.5-5"/><path d="M12 18v2.5"/>',
+  bed: '<rect x="3" y="14" width="18" height="3.5" rx="1"/><path d="M6 17.5V20M18 17.5V20"/><path d="M8 11c-.9-1.1-.9-2.1 0-3.2s.9-2.1 0-3.2M12 11c-.9-1.1-.9-2.1 0-3.2s.9-2.1 0-3.2M16 11c-.9-1.1-.9-2.1 0-3.2s.9-2.1 0-3.2"/>',
+  fan: '<circle cx="12" cy="12" r="1.8"/><path d="M12 10.2c-.6-3.2.2-6.2 2.8-6.7 2.2-.4 3.3 1.8 2 3.6-1.1 1.5-2.7 2.4-4.8 3.1z"/><path d="M13.6 12.9c3.1 1.1 5.3 3.2 4.4 5.7-.8 2.1-3.3 2-4.2-.1-.8-1.7-.8-3.5-.2-5.6z"/><path d="M10.4 12.9c-2.5 2.1-5.4 2.9-7.1.8-1.4-1.7-.1-3.8 2.2-3.8 1.9 0 3.5.9 4.9 3z"/>',
+  speed: '<path d="M4 17.5a8 8 0 1 1 16 0"/><path d="m12 17 4.2-5.2"/><circle cx="12" cy="17.2" r="1.2"/>',
+  pause: '<rect x="6.5" y="5" width="4" height="14" rx="1.2"/><rect x="13.5" y="5" width="4" height="14" rx="1.2"/>',
+  play: '<path d="M8 5.2v13.6a.6.6 0 0 0 .9.5l10.5-6.8a.6.6 0 0 0 0-1L8.9 4.7a.6.6 0 0 0-.9.5z"/>',
+  stop: '<rect x="6" y="6" width="12" height="12" rx="2"/>',
+  tune: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
+  spool: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="5.3" stroke-dasharray="1.6 1.9"/><circle cx="12" cy="12" r="2"/><path d="M20.5 12v8.5h-4"/>',
+  camera: '<path d="M3.5 8.5a2 2 0 0 1 2-2h2l1.8-2.2h5.4l1.8 2.2h2a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3.6"/>',
+  plug: '<path d="M9 3.5V8M15 3.5V8"/><path d="M6.5 8h11v3a5.5 5.5 0 0 1-11 0z"/><path d="M12 16.5v4"/>',
+  power: '<path d="M12 3.5V11"/><path d="M6.6 6.6a7.6 7.6 0 1 0 10.8 0"/>',
+  touch: '<circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="1.5"/><path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4"/>',
+  up: '<path d="m6 14.5 6-6 6 6"/>',
+  down: '<path d="m6 9.5 6 6 6-6"/>',
+  left: '<path d="m14.5 6-6 6 6 6"/>',
+  right: '<path d="m9.5 6 6 6-6 6"/>',
+  back: '<path d="m14.5 5.5-6.5 6.5 6.5 6.5"/>',
+  close: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',
+  check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+  cross: '<path d="M7 7l10 10M17 7 7 17"/>',
+  refresh: '<path d="M19.5 11.5a7.5 7.5 0 1 0-2.2 5.3"/><path d="M19.5 4.5v7h-7"/>',
+  folder: '<path d="M3.5 7a2 2 0 0 1 2-2h4l2 2.2h7a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/>',
+  cube: '<path d="M12 3.2 4.2 7.6v8.8L12 20.8l7.8-4.4V7.6z"/><path d="M4.2 7.6 12 12l7.8-4.4M12 12v8.8"/>',
+  clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  sort: '<path d="M7.5 4.5v15M4 16l3.5 3.5L11 16"/><path d="M14 6.5h6.5M14 12h4.5M14 17.5h2.5"/>',
+  unlock: '<rect x="5" y="11" width="14" height="9.5" rx="2"/><path d="M8 11V7.5a4 4 0 0 1 7.6-1.8"/>',
+  extrude: '<path d="M12 3.5v10M8 10l4 4 4-4"/><path d="M7 20h10"/>',
+  retract: '<path d="M12 14V4M8 7.5l4-4 4 4"/><path d="M7 20h10"/>',
+  alert: '<path d="M12 4 2.8 19.5h18.4z"/><path d="M12 10v4.5M12 17v.3"/>',
+  cool: '<path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9"/><path d="m9.5 4.5 2.5 2 2.5-2M9.5 19.5l2.5-2 2.5 2"/>',
+  expand: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+  layers: '<path d="m12 4 8.5 4.3L12 12.6 3.5 8.3z"/><path d="m3.5 12.3 8.5 4.3 8.5-4.3M3.5 16.2l8.5 4.3 8.5-4.3"/>',
+  flow: '<path d="M12 3.5c3 4 5.5 7 5.5 10a5.5 5.5 0 0 1-11 0c0-3 2.5-6 5.5-10z"/>',
+  link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+  minus: '<path d="M6 12h12"/>',
+  plus: '<path d="M12 6v12M6 12h12"/>',
+  backspace: '<path d="M8.5 5.5h11a1.5 1.5 0 0 1 1.5 1.5v10a1.5 1.5 0 0 1-1.5 1.5h-11L3 12z"/><path d="m11.5 9.5 5 5M16.5 9.5l-5 5"/>',
+};
+
+export function icon(name, cls = '') {
+  const body = P[name] || P.cube;
+  return `<svg class="${cls}" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+}

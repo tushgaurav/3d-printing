@@ -1,0 +1,52 @@
+{
+  "printer": {
+    "name": "Ender 5 Pro",
+    "buildVolume": [220, 220, 300],
+    "zMovesBed": true
+  },
+  "limits": {
+    "nozzleMax": 250,
+    "bedMax": 100,
+    "minExtrudeTemp": 170
+  },
+  "presets": [
+    { "name": "PLA", "nozzle": 200, "bed": 60 },
+    { "name": "PETG", "nozzle": 235, "bed": 75 },
+    { "name": "TPU", "nozzle": 225, "bed": 50 },
+    { "name": "ABS", "nozzle": 245, "bed": 100 }
+  ],
+  "move": {
+    "steps": [0.1, 1, 10, 50],
+    "defaultStep": 10,
+    "extrudeAmount": 10
+  },
+  "filament": {
+    "bowdenLength": 420,
+    "fastFeedStopShort": 50,
+    "fastFeed": 1500,
+    "purgeLength": 60,
+    "purgeFeed": 240,
+    "unloadExtra": 30,
+    "chunk": 50
+  },
+  "speedModes": [
+    { "name": "Quiet", "factor": 50 },
+    { "name": "Normal", "factor": 100 },
+    { "name": "Sport", "factor": 125 },
+    { "name": "Turbo", "factor": 150 }
+  ],
+  "webcam": {
+    "enabled": true,
+    "snapshot": "/webcam/?action=snapshot",
+    "stream": "/webcam/?action=stream",
+    "snapshotSeconds": 3,
+    "flipH": false,
+    "flipV": false,
+    "rotate90": false
+  },
+  "ui": {
+    "clock24": false,
+    "socketThrottle": 2,
+    "filamentDensity": 1.24
+  }
+}

@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "OctoPrint-Ender5Touch"
+version = "0.1.0"
+description = "Full-screen touch UI for an Ender 5 Pro on a 480x320 Raspberry Pi screen"
+readme = "README.md"
+requires-python = ">=3.7,<4"
+# OctoPrint itself is intentionally NOT listed: installing into OctoPrint's own
+# virtualenv must never try to upgrade or reinstall OctoPrint.
+dependencies = []
+
+[project.entry-points."octoprint.plugin"]
+ender5touch = "octoprint_ender5touch"
+
+[tool.setuptools.packages.find]
+include = ["octoprint_ender5touch*"]
+
+# static/ and its sub-folders are found as namespace packages; ship their files.
+[tool.setuptools.package-data]
+"*" = ["*.html", "*.json", "*.css", "*.js", "*.woff2", "*.txt"]

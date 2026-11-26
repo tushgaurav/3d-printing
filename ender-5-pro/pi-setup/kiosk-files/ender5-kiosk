@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+# Control the Ender 5 touchscreen kiosk.
+set -euo pipefail
+CONF=/etc/ender5-kiosk.conf
+SVC=ender5-kiosk.service
+
+usage() {
+  cat <<'EOF'
+Usage: ender5-kiosk <command>
+
+  restart | start | stop     control the kiosk (X + Chromium on the small screen)
+  status                     is it running?
+  logs [lines]               recent log output
+  calibrate                  restart into the touch calibration screen
+  set-touch "<9 numbers>"    save a touch matrix (the calibration screen prints one)
+  rotate-touch <fix>         quick touch fixes: 0 | 90 | 180 | 270 | swap | invert-x | invert-y
+  reset-touch                remove any touch matrix
+EOF
+}
+
+as_root() { [[ $EUID -eq 0 ]] || exec sudo "$0" "$@"; }
+
+set_conf() {
+  local key="$1" value="$2"
+  if grep -qE "^[#[:space:]]*${key}=" "$CONF"; then
+    sed -i -E "s|^[#[:space:]]*${key}=.*|${key}=\"${value}\"|" "$CONF"
+  else
+    printf '%s="%s"\n' "$key" "$value" >> "$CONF"
+  fi
+}
+
+cmd="${1:-help}"
+case "$cmd" in
+  start|stop|restart)
+    as_root "$@"
+    systemctl "$cmd" "$SVC"
+    ;;
+  status)
+    systemctl status --no-pager "$SVC" || true
+    ;;
+  logs)
+    journalctl -u "$SVC" -n "${2:-80}" --no-pager
+    ;;
+  calibrate)
+    as_root "$@"
+    touch /var/lib/ender5-kiosk/calibrate
+    systemctl restart "$SVC"
+    echo "The calibration screen opens in a few seconds. Tap each crosshair."
+    ;;
+  set-touch)
+    as_root "$@"
+    m="${2:-}"
+    if [[ ! "$m" =~ ^[[:space:]]*(-?[0-9.]+[[:space:]]+){8}-?[0-9.]+[[:space:]]*$ ]]; then
+      echo "Expected 9 numbers, e.g.: ender5-kiosk set-touch \"1 0 0 0 1 0 0 0 1\"" >&2
+      exit 1
+    fi
+    set_conf TOUCH_MATRIX "$(echo "$m" | xargs)"
+    systemctl restart "$SVC"
+    echo "Saved. The kiosk is restarting."
+    ;;
+  rotate-touch)
+    as_root "$@"
+    case "${2:-}" in
+      0) m="1 0 0 0 1 0 0 0 1" ;;
+      90) m="0 -1 1 1 0 0 0 0 1" ;;
+      180) m="-1 0 1 0 -1 1 0 0 1" ;;
+      270) m="0 1 0 -1 0 1 0 0 1" ;;
+      swap) m="0 1 0 1 0 0 0 0 1" ;;
+      invert-x) m="-1 0 1 0 1 0 0 0 1" ;;
+      invert-y) m="1 0 0 0 -1 1 0 0 1" ;;
+      *) echo "Use one of: 0 90 180 270 swap invert-x invert-y" >&2; exit 1 ;;
+    esac
+    set_conf TOUCH_MATRIX "$m"
+    systemctl restart "$SVC"
+    echo "Touch matrix set to \"$m\". If it's still wrong, try another, or run: sudo ender5-kiosk calibrate"
+    ;;
+  reset-touch)
+    as_root "$@"
+    set_conf TOUCH_MATRIX ""
+    systemctl restart "$SVC"
+    ;;
+  help|-h|--help)
+    usage
+    ;;
+  *)
+    usage
+    exit 1
+    ;;
+esac
