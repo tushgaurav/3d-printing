@@ -77,4 +77,7 @@ ender-5-pro/
 
 ## License
 
+Layer1 is licensed under the [GNU Affero General Public License v3.0](LICENSE) or later,
+the same license as OctoPrint.
+
 Geist fonts: [SIL OFL 1.1](ender-5-pro/touch-ui/octoprint_layer1/static/fonts/LICENSE-geist.txt) · Lucide icons: [ISC](ender-5-pro/touch-ui/octoprint_layer1/static/js/icons.LICENSE.txt)
