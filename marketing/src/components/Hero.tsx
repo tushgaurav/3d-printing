@@ -1,7 +1,7 @@
 import Image from "next/image";
 import printer from "@/assets/printer.png";
 import home from "@/assets/screens/home.png";
-import { ArrowUpRight } from "./icons";
+import { ArrowUpRight, GitHubMark, OctoPrintMark } from "./icons";
 import { REPO, SETUP_GUIDE } from "@/lib/links";
 
 /**
@@ -37,16 +37,9 @@ export function Hero() {
         <a className="nav__logo" href="#top" aria-label="Layer1 home">
           <Image src="/layer1-logo.svg" alt="" width={74} height={39} preload />
         </a>
-        <ul className="nav__links">
-          <li>
-            <a href="#screens">Screens</a>
-          </li>
-          <li>
-            <a href="#demo">Demo</a>
-          </li>
-        </ul>
         <a className="pill pill--paper" href={REPO}>
-          View on GitHub
+          <GitHubMark size={20} />
+          <span>View on GitHub</span>
         </a>
       </nav>
 
@@ -93,14 +86,17 @@ export function Hero() {
 
         <div className="hero__foot">
           <a className="cta" href={SETUP_GUIDE}>
-            <span>Install guide</span>
+            <span>Install Guide</span>
             <span className="cta__icon">
               <ArrowUpRight size={20} />
             </span>
           </a>
           <p className="hero__meta">
             <span>Runs on</span>
-            <span className="chip chip--paper">OctoPrint</span>
+            <span className="chip chip--paper chip--brand">
+              <OctoPrintMark size={16} className="chip__octoprint" />
+              <span>OctoPrint</span>
+            </span>
           </p>
         </div>
       </div>

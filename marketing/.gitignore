@@ -20,6 +20,9 @@
 # production
 /build
 
+# the touch UI, copied in by scripts/copy-demo.mjs
+/public/demo/
+
 # misc
 .DS_Store
 *.pem

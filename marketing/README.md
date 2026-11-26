@@ -20,6 +20,19 @@ src/lib/links.ts         GitHub and setup-guide links
 src/lib/credits.ts       photo credit shown in the footer
 ```
 
+## The live demo
+
+On screens wider than 760px, the Screens section runs the real touch UI in an iframe
+against its simulated printer (`/demo/index.html?demo=printing`). `npm run dev` and
+`npm run build` first run `scripts/copy-demo.mjs`, which copies
+`ender-5-pro/touch-ui/octoprint_layer1/static/` into `public/demo/` (gitignored), so
+build from the full repo, not just this folder.
+
+The iframe is always exactly 480x320 (at any other size the UI switches to its own
+desktop preview) and is scaled up with a CSS transform. The tabs beside it click the
+UI's own rail buttons, and watch them, so both stay in step. Phones get the
+screenshots below instead.
+
 ## Refreshing the screenshots
 
 The screenshots come from the touch UI's own demo mode

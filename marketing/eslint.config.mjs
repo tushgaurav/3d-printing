@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // The touch UI, copied in from ender-5-pro/ (linted there, not here).
+    "public/demo/**",
   ]),
 ]);
 

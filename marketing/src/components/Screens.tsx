@@ -1,147 +1,158 @@
 "use client";
 
-import Image, { type StaticImageData } from "next/image";
-import { useId, useState, type KeyboardEvent, type ReactNode } from "react";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import home from "@/assets/screens/home.png";
-import files from "@/assets/screens/files.png";
-import heat from "@/assets/screens/heat.png";
-import move from "@/assets/screens/move.png";
-import more from "@/assets/screens/more.png";
-import { Folder, Grid, Home, Move, Thermometer } from "./icons";
 
-type Screen = {
-  key: string;
-  name: string;
-  icon: ReactNode;
-  text: string;
-  image: StaticImageData;
-  alt: string;
-};
-
-// Same order and icons as the rail on the left of the Layer1 screen.
-const SCREENS: Screen[] = [
-  {
-    key: "home",
-    name: "Home",
-    icon: <Home size={22} />,
-    text: "Live camera or a 3D view of the G-code, the layer gauge, time left and when it’ll finish. Pause, Tune and Stop sit right underneath.",
-    image: home,
-    alt: "Home screen while printing a Benchy: live camera, 47%, 47 minutes left, Pause, Tune and Stop buttons",
-  },
-  {
-    key: "files",
-    name: "Files",
-    icon: <Folder size={22} />,
-    text: "Everything uploaded to OctoPrint, with slicer thumbnails and folders. Sort by recent, name or print time, then tap Print.",
-    image: files,
-    alt: "Files screen listing print files with thumbnails, print times and filament weights",
-  },
-  {
-    key: "heat",
-    name: "Heat",
-    icon: <Thermometer size={22} />,
-    text: "Nozzle and bed side by side. Nudge by 5°, type an exact target, or tap a preset for PLA, PETG, TPU or ABS.",
-    image: heat,
-    alt: "Heat screen with nozzle and bed temperatures and material presets",
-  },
-  {
-    key: "move",
-    name: "Move",
-    icon: <Move size={22} />,
-    text: "Jog X and Y, raise or lower the bed, and extrude or retract in steps from 0.1 to 50 mm. It locks itself while a print runs.",
-    image: move,
-    alt: "Move screen with an XY pad, bed up and down controls and step sizes",
-  },
-  {
-    key: "more",
-    name: "More",
-    icon: <Grid size={22} />,
-    text: "Load, unload and purge filament, tune speed, flow and fan, check the camera and connection, and switch to the light theme.",
-    image: more,
-    alt: "More screen with Filament, Tune, Camera, Printer, System and Display tiles",
-  },
-];
+// The touch UI, copied into public/demo by scripts/copy-demo.mjs, running its simulated printer.
+const DEMO_SRC = "/demo/index.html?demo=printing";
+// Phones keep the screenshot: the 480x320 UI would be too small to use there.
+const LIVE_QUERY = "(min-width: 761px)";
+// The UI's native size. At exactly this size it renders 1:1 (any other size and it
+// switches to its own desktop preview, with a fake bezel), so the frame stays this
+// size and is scaled up with a transform instead.
+const UI_WIDTH = 480;
 
 export function Screens() {
-  const [active, setActive] = useState(0);
-  const id = useId();
+  const [live, setLive] = useState(false); // iframe mounted
+  const [ready, setReady] = useState(false); // the UI inside it has booted
+  const [run, setRun] = useState(0); // bumped to restart the demo
+  const sectionRef = useRef<HTMLElement>(null);
+  const glassRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<HTMLIFrameElement>(null);
 
-  function onKey(e: KeyboardEvent<HTMLButtonElement>, i: number) {
-    const last = SCREENS.length - 1;
-    const next =
-      e.key === "ArrowDown" || e.key === "ArrowRight"
-        ? i === last ? 0 : i + 1
-        : e.key === "ArrowUp" || e.key === "ArrowLeft"
-          ? i === 0 ? last : i - 1
-          : e.key === "Home"
-            ? 0
-            : e.key === "End"
-              ? last
-              : null;
-    if (next === null) return;
-    e.preventDefault();
-    setActive(next);
-    document.getElementById(`${id}-tab-${next}`)?.focus();
+  // Mount the live UI once the section comes near the viewport, on wide enough screens.
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+    const mq = window.matchMedia(LIVE_QUERY);
+    let io: IntersectionObserver | null = null;
+
+    const start = () => {
+      if (!mq.matches) return;
+      io = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((e) => e.isIntersecting)) {
+            setLive(true);
+            io?.disconnect();
+          }
+        },
+        { rootMargin: "200px 0px" },
+      );
+      io.observe(section);
+    };
+    const onChange = () => {
+      io?.disconnect();
+      io = null;
+      if (mq.matches) start();
+      else {
+        setLive(false);
+        setReady(false);
+      }
+    };
+
+    start();
+    mq.addEventListener("change", onChange);
+    return () => {
+      io?.disconnect();
+      mq.removeEventListener("change", onChange);
+    };
+  }, []);
+
+  // Scale the 480x320 frame to fill the device glass.
+  useEffect(() => {
+    const glass = glassRef.current;
+    if (!live || !glass) return;
+    const ro = new ResizeObserver(([entry]) => {
+      glass.style.setProperty("--k", String(entry.contentRect.width / UI_WIDTH));
+    });
+    ro.observe(glass);
+    return () => ro.disconnect();
+  }, [live]);
+
+  // Reveal the UI once it has booted (its #app drops the "booting" class).
+  useEffect(() => {
+    const frame = frameRef.current;
+    if (!live || !frame) return;
+    let observer: MutationObserver | null = null;
+
+    const attach = () => {
+      const app = frame.contentDocument?.getElementById("app");
+      if (!app) return;
+      const sync = () => {
+        if (!app.classList.contains("booting")) setReady(true);
+      };
+      observer = new MutationObserver(sync);
+      observer.observe(app, { attributes: true, attributeFilter: ["class"] });
+      sync();
+    };
+
+    // It may already have loaded (from cache) before this effect ran.
+    if (frame.contentWindow?.location.pathname.startsWith("/demo/") && frame.contentDocument?.readyState === "complete") {
+      attach();
+    }
+    frame.addEventListener("load", attach);
+    return () => {
+      frame.removeEventListener("load", attach);
+      observer?.disconnect();
+    };
+  }, [live, run]);
+
+  function restart() {
+    setReady(false);
+    setRun((r) => r + 1);
   }
 
   return (
-    <section className="screens" id="screens" aria-labelledby={`${id}-title`}>
-      <div className="screens__intro">
-        <h2 className="section-title" id={`${id}-title`}>
-          No more digging through the knob menu
-        </h2>
-        <p className="section-lede">
-          Five screens, each one tap from the rail, readable from across the room.
-        </p>
-      </div>
-
+    <section className="screens" id="screens" ref={sectionRef} aria-labelledby="screens-title">
       <div className="screens__body">
-        <div className="rail" role="tablist" aria-orientation="vertical" aria-label="Layer1 screens">
-          {SCREENS.map((s, i) => {
-            const selected = i === active;
-            return (
-              <button
-                key={s.key}
-                id={`${id}-tab-${i}`}
-                type="button"
-                role="tab"
-                aria-selected={selected}
-                aria-controls={`${id}-panel`}
-                tabIndex={selected ? 0 : -1}
-                className="rail__item"
-                onClick={() => setActive(i)}
-                onKeyDown={(e) => onKey(e, i)}
-              >
-                <span className="rail__icon">{s.icon}</span>
-                <span className="rail__text">
-                  <span className="rail__name">{s.name}</span>
-                  <span className="rail__desc">{s.text}</span>
-                </span>
-              </button>
-            );
-          })}
+        <div className="screens__intro">
+          <h2 className="section-title" id="screens-title">
+            No more digging through the knob menu
+          </h2>
+          <p className="section-lede">
+            Five screens, each one tap from the rail, readable from across the room.
+          </p>
         </div>
 
-        <div
-          className="device"
-          id={`${id}-panel`}
-          role="tabpanel"
-          aria-labelledby={`${id}-tab-${active}`}
-        >
-          <div className="device__glass">
-            {SCREENS.map((s, i) => (
+        <div className="screens__stage">
+          <div className="device">
+            <div className="device__glass" ref={glassRef}>
               <Image
-                key={s.key}
-                src={s.image}
-                alt={i === active ? s.alt : ""}
-                aria-hidden={i !== active}
+                src={home}
+                alt={ready ? "" : "The Layer1 home screen mid-print: live camera, 47%, 47 minutes left, Pause, Tune and Stop"}
+                aria-hidden={ready}
                 className="device__shot"
-                data-active={i === active}
                 sizes="(max-width: 900px) 92vw, 58vw"
                 quality={90}
               />
-            ))}
+              {live && (
+                <iframe
+                  key={run}
+                  ref={frameRef}
+                  src={DEMO_SRC}
+                  title="Layer1 live demo, running a simulated print"
+                  className="device__live"
+                  data-ready={ready}
+                  width={480}
+                  height={320}
+                  tabIndex={ready ? 0 : -1}
+                />
+              )}
+            </div>
           </div>
+
+          {live && (
+            <div className="device__caption">
+              <p>
+                <span className="device__dot" aria-hidden="true" />
+                {ready ? "Live demo with a simulated printer. Tap around." : "Starting the live demo…"}
+              </p>
+              <button type="button" className="device__restart" onClick={restart} disabled={!ready}>
+                Restart Demo
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </section>
