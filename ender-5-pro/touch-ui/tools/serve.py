@@ -10,6 +10,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *a, **kw):
         super().__init__(*a, directory=os.path.abspath(STATIC), **kw)
 
+    def end_headers(self):
+        # Revalidate every file on load (a cheap 304 when unchanged). Without this the
+        # browser may reuse a cached JS module or stylesheet after an edit, and a plain
+        # reload shows a mix of old and new code.
+        self.send_header('Cache-Control', 'no-cache')
+        super().end_headers()
+
     def send_error(self, code, message=None, explain=None):
         if code == 404:
             page = os.path.join(self.directory, '404.html')

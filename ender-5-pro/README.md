@@ -112,6 +112,7 @@ that starts the UI on the small screen at boot.
 | **Heat** | Nozzle and bed: ±5° buttons, tap the target for a keypad, presets (PLA, PETG, TPU, ABS, Cool). |
 | **Move** | XY pad, Z (labelled *Bed up / Bed down*, because on the Ender 5 the bed moves), steps 0.1–50 mm, extrude/retract, motors off. Locked while printing. |
 | **More** | Filament load/unload/purge, Tune (speed modes, flow, part fan), Camera, Printer connection, System (restart/reboot/shut down, unpair), Display (dark/light theme, touch calibration). |
+| **Status bar** | Tap it anywhere for **Quick info**: nozzle and bed (state, temperature, target), the job (percent, time left, finish time; the last print when idle), fan / speed / flow / Z, the printer connection (port, baud), the network (address, IP, Wi-Fi signal) and the Pi (CPU temperature, under-voltage or throttling, free disk, uptime). Read-only: tap anywhere to close; it also closes by itself after `ui.quickInfoSeconds`. |
 
 Thumbnails come from your slicer via the
 [PrusaSlicer Thumbnails](https://plugins.octoprint.org/plugins/prusaslicerthumbnails/)
@@ -136,6 +137,7 @@ first time the UI loads). Edit, then reload the screen (More → System → Relo
 | `webcam.snapshotSeconds` | 3 | Home screen refresh. The live stream is only used full-screen, to spare the SPI screen |
 | `webcam.flipH` / `flipV` / `rotate90` | false | Camera orientation |
 | `ui.clock24` | false | 24-hour clock |
+| `ui.quickInfoSeconds` | 15 | Quick info (tap the status bar) closes itself after this many seconds. `0` keeps it open until tapped |
 | `ui.theme` | dark | `dark` or `light`. Light is easier to read on cheap panels with greyish blacks. A choice made on the screen (More → Display) is remembered and wins |
 
 **Kiosk** — `/etc/layer1-kiosk.conf` (framebuffer, touch matrix, Chromium flags).

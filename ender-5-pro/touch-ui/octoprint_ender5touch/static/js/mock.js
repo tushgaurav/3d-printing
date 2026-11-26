@@ -264,4 +264,19 @@ export class MockClient extends Emitter {
 
   system() { return this._ok(null); }
   version() { return this._ok({ server: '1.11.3', text: 'OctoPrint 1.11.3 (demo)' }); }
+
+  sysinfo() {
+    const busy = this.state === 'printing';
+    return this._ok({
+      model: 'Raspberry Pi 4 Model B Rev 1.4',
+      cpuTemp: (busy ? 54 : 47) + Math.round(Math.random() * 20) / 10,
+      throttled: 0,
+      load: [busy ? 0.62 : 0.18, 0.4, 0.31],
+      cores: 4,
+      mem: { total: 1945 * 1048576, available: 1310 * 1048576 },
+      disk: { total: 29.1 * 1073741824, free: 18.4 * 1073741824 },
+      uptime: 3 * 86400 + 4 * 3600 + 17 * 60,
+      net: { hostname: 'octopi', ip: '192.168.1.42', iface: 'wlan0', wifi: true, signal: -58 },
+    });
+  }
 }

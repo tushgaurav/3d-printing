@@ -463,6 +463,77 @@ body.preview #app {
 .sw.light i { background: #ffffff; }
 .sw.light .card::after { background: #6aa800; }
 
+/* ---------- quick info: tap the status bar ----------
+   A canvas-coloured page hangs from the bar, so bar and page read as one panel.
+   Top: a gauge cluster (job ring, nozzle and bed dials) for the numbers you look for
+   first. Below: one plate split by hairlines, label over value all the way through.
+   Static on purpose, like the rest: no transitions on an SPI screen. */
+#status:active { background: var(--surface-2); }
+#app.quick-open #status { background: var(--canvas); }
+.quick { position: absolute; top: var(--bar); left: 0; right: 0; bottom: 0; z-index: 40; background: var(--canvas); padding: 4px 8px 8px; display: grid; grid-template-rows: 128px minmax(0, 1fr); gap: 6px; }
+.qh { display: flex; align-items: center; gap: 6px; height: 14px; flex: none; font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); white-space: nowrap; min-width: 0; }
+.qh svg { width: 13px; height: 13px; flex: none; }
+.qh span { overflow: hidden; text-overflow: ellipsis; }
+.qh i { width: 6px; height: 6px; border-radius: 50%; flex: none; background: var(--tone, var(--text-3)); }
+.qnum { display: flex; align-items: baseline; font-family: var(--mono); font-feature-settings: "ss09"; white-space: nowrap; }
+.qnum b { font-weight: 600; letter-spacing: -0.06em; line-height: 1; }
+.qnum i { font-style: normal; font-weight: 500; color: var(--text-3); margin-left: 1px; }
+.q-top { display: grid; grid-template-columns: minmax(0, 1fr) 100px 100px; gap: 6px; min-height: 0; }
+.qcard { background: var(--surface); box-shadow: var(--edge); border-radius: var(--r-lg); min-width: 0; }
+.qring > svg, .qarc { position: absolute; inset: 0; }
+.qring circle, .qarc circle { fill: none; stroke-linecap: round; }
+.qring .trk, .qarc .trk { stroke: var(--surface-3); }
+.qring .val, .qarc .val { stroke: var(--tone, var(--text-3)); }
+
+/* job: progress ring, then what / how long */
+.q-job { display: grid; grid-template-columns: 88px minmax(0, 1fr); align-items: center; gap: 13px; padding: 0 12px 0 10px; }
+.qring { position: relative; width: 88px; height: 88px; }
+.qring circle { stroke-width: 8; }
+.q-job.idle .qring .trk { stroke: var(--tone-dim, var(--surface-3)); }  /* no job: a soft ring in the phase colour */
+.qring-c { position: absolute; inset: 0; display: grid; place-items: center; }
+.qring-c .qnum b { font-size: 27px; }
+.qring-c .qnum i { font-size: 13px; }
+.qglyph { color: var(--tone, var(--text-3)); }
+.qglyph svg { width: 28px; height: 28px; stroke-width: 1.75; }
+.qjob-text { min-width: 0; display: flex; flex-direction: column; }
+.q-job .qh span { color: var(--tone, var(--text-3)); }
+.qname { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; line-height: 1.2; margin-top: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.q-job.problem .qname { -webkit-line-clamp: 4; font-size: 13px; font-weight: 550; line-height: 1.3; }
+.q-job.problem .qeta { display: none; }
+.qeta { display: flex; flex-direction: column; gap: 2px; margin-top: 9px; font-size: 12px; line-height: 1.2; white-space: nowrap; }
+.qeta b { font-size: 15px; font-weight: 650; letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; }
+.q-job.idle .qeta b { font-size: 13px; }
+.qeta span { color: var(--text-2); overflow: hidden; text-overflow: ellipsis; }
+
+/* heaters: 270° dials, the name set into the gap at the bottom like a gauge face */
+.q-dial { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding-top: 4px; }
+.qface { position: relative; width: 84px; height: 84px; }
+.qarc circle { stroke-width: 7; }
+.qread { position: absolute; inset: 0 0 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; }
+.qread .qnum b { font-size: 24px; }
+.qread .qnum i { font-size: 15px; }
+.qread small { height: 12px; font-family: var(--mono); font-feature-settings: "ss09"; font-size: 10.5px; letter-spacing: -0.03em; color: var(--text-3); }
+.q-dial[data-tone="heat"] .qread b { color: var(--heat); }
+.qface-label { position: absolute; left: 0; right: 0; bottom: 2px; text-align: center; font-size: 9.5px; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); }
+.qstate { font-size: 12.5px; font-weight: 600; color: var(--text-3); white-space: nowrap; }
+.qstate[data-tone] { color: var(--tone); }
+
+/* the plate: tuning numbers, then printer / network / Pi */
+.q-plate { background: var(--surface); box-shadow: var(--edge); border-radius: var(--r-lg); display: grid; grid-template-rows: 46px minmax(0, 1fr); min-height: 0; overflow: hidden; }
+.q-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.q-sys { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.q-sys::before { content: ""; position: absolute; left: 12px; right: 12px; top: 0; height: 1px; background: var(--hair); }
+.qcell { position: relative; min-width: 0; display: flex; flex-direction: column; padding: 0 12px; }
+.qcell + .qcell::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 1px; background: var(--hair); }
+.qstat { justify-content: center; gap: 5px; }
+.qstat b { font-family: var(--mono); font-feature-settings: "ss09"; font-size: 18px; font-weight: 600; letter-spacing: -0.05em; line-height: 1; white-space: nowrap; overflow: hidden; }
+.qstat b small, .qsys b small { font-size: 11px; font-weight: 500; letter-spacing: -0.02em; color: var(--text-3); margin-left: 2px; }
+.qstat.changed b, .qstat.changed .qh { color: var(--signal-fg); }  /* tuned away from 100% */
+.qsys { padding-top: 10px; }
+.qsys b { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; margin: 5px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qsys[data-tone="warn"] b, .qsys[data-tone="danger"] b { color: var(--tone); }
+.qsub { font-size: 11.5px; line-height: 1.35; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
 /* ---------- overlays ---------- */
 #layer { position: absolute; inset: 0; z-index: 30; pointer-events: none; }
 #layer > * { pointer-events: auto; }

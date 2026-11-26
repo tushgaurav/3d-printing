@@ -288,6 +288,8 @@ export class OctoClient extends Emitter {
   systemCommands() { return this.get('api/system/commands/core'); }
   system(action) { return this.post(`api/system/commands/core/${encodeURIComponent(action)}`); }
   version() { return this.get('api/version'); }
+  /** Pi health from this plugin (CPU temperature, power, network, disk): see sysinfo.py. */
+  sysinfo() { return this.get('plugin/layer1/sysinfo'); }
 }
 
 // ~~ pairing via OctoPrint's Application Keys workflow

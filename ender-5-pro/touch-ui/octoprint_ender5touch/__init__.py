@@ -1,10 +1,10 @@
 # coding=utf-8
 """Layer1: a full-screen touch UI for OctoPrint, sized for a 480x320 screen.
 
-The plugin only serves a static single-page app and a small JSON config. All
-printer control happens in the browser through OctoPrint's normal REST and push
-APIs, authenticated with an application key, so nothing here bypasses
-OctoPrint's own permission checks.
+The plugin serves a static single-page app, a small JSON config and a read-only
+Pi health summary for the quick-info panel. All printer control happens in the
+browser through OctoPrint's normal REST and push APIs, authenticated with an
+application key, so nothing here bypasses OctoPrint's own permission checks.
 """
 from __future__ import absolute_import, unicode_literals
 
@@ -15,6 +15,9 @@ import os
 
 import flask
 import octoprint.plugin
+from octoprint.access.permissions import Permissions
+
+from . import sysinfo
 
 
 def _deep_merge(base, override):
@@ -80,6 +83,17 @@ class Layer1Plugin(octoprint.plugin.BlueprintPlugin):
         defaults = self._load_defaults()
         merged = _deep_merge(defaults, self._load_user_config(defaults))
         response = flask.make_response(json.dumps(merged))
+        response.headers["Content-Type"] = "application/json"
+        response.headers["Cache-Control"] = "no-store"
+        return response
+
+    @octoprint.plugin.BlueprintPlugin.route("/sysinfo", methods=["GET"])
+    @Permissions.STATUS.require(403)
+    def system_info(self):
+        # The blueprint is public (see above), so this route checks for itself: it needs
+        # the screen's application key, like every OctoPrint API call the page makes.
+        info = sysinfo.collect(self._settings.global_get_basefolder("uploads"))
+        response = flask.make_response(json.dumps(info))
         response.headers["Content-Type"] = "application/json"
         response.headers["Cache-Control"] = "no-store"
         return response

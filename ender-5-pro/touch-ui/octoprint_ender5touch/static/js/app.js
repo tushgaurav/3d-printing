@@ -4,7 +4,7 @@
 // URL options
 //   ?demo[=printing|paused|finished|heating|offline|error]  simulated printer
 //   ?page=files|heat|move|more|calibrate|pair               open a screen at start
-//   ?sheet=tune|filament|printer|system|display             open a sheet at start
+//   ?sheet=tune|filament|printer|system|display|quick       open a sheet at start (quick = the status bar's quick info)
 //   ?theme=light|dark  or  #theme=…                         default theme (a choice saved on the screen wins)
 //   #key=…&tm=…&host=…&kiosk=1                              passed in by the kiosk launcher
 //   #desktop=1                                              a desktop is underneath: System offers "Exit to Desktop"
@@ -30,11 +30,12 @@ import { openPrinter } from './sheets/printer.js';
 import { openSystem } from './sheets/system.js';
 import { openDisplay } from './sheets/display.js';
 import { openFileDetail } from './sheets/file.js';
+import { openQuickInfo, toggleQuickInfo, closeQuickInfo } from './sheets/quickinfo.js';
 import { openLiveCamera } from './sheets/camera.js';
 import { numberPad } from './ui.js';
 
 const SCREENS = [home, files, heat, move, more];
-const SHEETS = { tune: openTune, filament: openFilament, printer: openPrinter, system: openSystem, display: openDisplay };
+const SHEETS = { tune: openTune, filament: openFilament, printer: openPrinter, system: openSystem, display: openDisplay, quick: openQuickInfo };
 
 let lastError = '';
 function showError(e) {
@@ -130,6 +131,10 @@ function buildStatusBar(el, ctx) {
     <div class="tchip" data-r="noz">${icon('nozzle')}<span class="t" data-r="nozA">—</span><span class="tg" data-r="nozT"></span></div>
     <div class="tchip" data-r="bed">${icon('bed')}<span class="t" data-r="bedA">—</span><span class="tg" data-r="bedT"></span></div>
     <div id="clock" data-r="clock"></div>`;
+  // the whole bar is one big button: tap it for quick info, tap again to close
+  el.setAttribute('role', 'button');
+  el.setAttribute('aria-label', 'Quick info');
+  el.addEventListener('click', () => toggleQuickInfo(ctx));
   const r = refs(el);
   const chip = (key, box, a, t, s) => {
     const v = (s.temps && s.temps[key]) || {};
@@ -245,6 +250,7 @@ async function boot() {
   let current = null;
   ctx.go = (id) => {
     closeSheets();
+    closeQuickInfo();
     if (id === current || !mounted[id]) return;
     if (current) {
       mounted[current].el.classList.remove('active');
