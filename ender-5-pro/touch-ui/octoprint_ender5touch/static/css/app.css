@@ -22,6 +22,9 @@
   --signal: #c8f251;         /* progress, primary, active */
   --signal-ink: #10150a;
   --signal-dim: rgba(200, 242, 81, 0.13);
+  --rail-active-fill: var(--signal);   /* rail: the current screen, as a solid block */
+  --rail-active-fg: var(--signal-ink);
+  --rail-active-press: var(--signal-press);
   --signal-line: rgba(200, 242, 81, 0.45);
   --signal-fg: #c8f251;      /* lime as text/icons; the light theme needs a darker green */
   --signal-press: #dcff7a;
@@ -84,6 +87,9 @@
   --signal: #b6ec30;
   --signal-ink: #10150a;
   --signal-dim: rgba(122, 190, 0, 0.17);
+  --rail-active-fill: #17181c;         /* lime on the grey frame is too faint: go graphite, lime icon */
+  --rail-active-fg: var(--signal);
+  --rail-active-press: #34363c;
   --signal-line: rgba(58, 107, 0, 0.6);
   --signal-fg: #386a00;
   --signal-press: #a2d91f;
@@ -176,10 +182,13 @@ body.preview #app {
 #rail .brand .mark { width: 30px; height: 20px; border-radius: 6px; font-size: 11.5px; }
 #rail button { flex: 1; position: relative; display: grid; place-items: center; color: var(--text-3); }
 #rail button svg { position: relative; width: 22px; height: 22px; }
-#rail button::before { content: ""; position: absolute; inset: 7px 7px; border-radius: var(--r); }
-#rail button.active { color: var(--signal-fg); }
-#rail button.active::before { background: var(--signal-dim); }
+/* active: a solid, max-contrast block with a heavier icon, readable at arm's length on a 3.5" panel */
+#rail button::before { content: ""; position: absolute; inset: 5px; border-radius: var(--r); }
+#rail button.active { color: var(--rail-active-fg); }
+#rail button.active svg { stroke-width: 2.5; }
+#rail button.active::before { background: var(--rail-active-fill); }
 #rail button:active::before { background: var(--surface-2); }
+#rail button.active:active::before { background: var(--rail-active-press); }
 
 /* ---------- status bar ---------- */
 #status { display: flex; align-items: center; gap: 14px; padding: 0 12px 0 6px; font-size: 13px; white-space: nowrap; }
