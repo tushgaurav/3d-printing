@@ -144,7 +144,7 @@ export function demoGcode(kind) {
   };
   const loop = (poly) => { travel(poly[0][0], poly[0][1]); for (let i = 1; i <= poly.length; i++) extrude(...poly[i % poly.length]); };
 
-  out(`; Ender 5 touch UI demo part: ${kind}`);
+  out(`; Layer1 demo part: ${kind}`);
   out(';FLAVOR:Marlin');
   out('M140 S60');
   out('M104 S205');

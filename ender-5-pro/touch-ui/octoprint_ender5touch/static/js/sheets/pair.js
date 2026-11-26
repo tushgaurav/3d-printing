@@ -13,7 +13,7 @@ export function showPairing(ctx, { demo = false } = {}) {
     el.className = 'takeover';
     el.innerHTML = `
       <div class="pair">
-        <div class="mark"><div class="boot-mark">E5</div><span>${esc(ctx.cfg.printer.name)}<br>touchscreen</span></div>
+        <div class="mark"><div class="boot-mark">L1</div><span>Layer1<br>${esc(ctx.cfg.printer.name)}</span></div>
         <div class="body">
           <h1>Pair this screen with OctoPrint</h1>
           <ol>
@@ -41,7 +41,7 @@ export function showPairing(ctx, { demo = false } = {}) {
         const probe = await probeAppKeys(ctx.base);
         if (probe === 'ok') break;
         if (probe === 'missing') {
-          status('OctoPrint’s Application Keys plugin is off. Enable it, or put an API key in /etc/ender5-kiosk.conf.', 'danger', true);
+          status('OctoPrint’s Application Keys plugin is off. Enable it, or put an API key in /etc/layer1-kiosk.conf.', 'danger', true);
           return;
         }
         status('Waiting for OctoPrint to start…', 'muted');

@@ -23,9 +23,9 @@ CFG=$BOOT/config.txt
 
 MODE="${1:-}"
 ROT="${2:-90}"
-BEGIN="# >>> ender5-touch screen >>>"
-END="# <<< ender5-touch screen <<<"
-MARK="#ender5-disabled# "
+BEGIN="# >>> layer1 screen >>>"
+END="# <<< layer1 screen <<<"
+MARK="#layer1-disabled# "
 
 case "$MODE" in piscreen|waveshare35a|remove) ;; *)
   sed -n '2,12p' "$0"; exit 1 ;;
@@ -38,7 +38,7 @@ if [[ "$MODE" == waveshare35a && ! -f "$BOOT/overlays/waveshare35a.dtbo" ]]; the
   exit 1
 fi
 
-BACKUP="$CFG.ender5-$(date +%Y%m%d-%H%M%S).bak"
+BACKUP="$CFG.layer1-$(date +%Y%m%d-%H%M%S).bak"
 cp "$CFG" "$BACKUP"
 echo "Backup: $BACKUP"
 
@@ -57,7 +57,7 @@ cat "$tmp" > "$CFG"
 rm -f "$tmp"
 
 if [[ "$MODE" == remove ]]; then
-  echo "Removed the ender5-touch screen settings. Reboot to apply:  sudo reboot"
+  echo "Removed the Layer1 screen settings. Reboot to apply:  sudo reboot"
   exit 0
 fi
 

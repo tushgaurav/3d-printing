@@ -119,11 +119,11 @@ export function openCalibration(ctx) {
     }
     const m = mul3([...correction, 0, 0, 1], current);
     // Also to the browser log, so the result can be read over SSH (kiosk/demo logs).
-    console.info(`[ender5] touch matrix: ${fmt(m)} | taps: ${JSON.stringify(observed.map((p) => p.map((v) => +v.toFixed(4))))}`);
+    console.info(`[layer1] touch matrix: ${fmt(m)} | taps: ${JSON.stringify(observed.map((p) => p.map((v) => +v.toFixed(4))))}`);
     el.innerHTML = `<div class="result">
       <h3>Touch calibrated</h3>
       <div class="note">To keep it, run this on the Pi over SSH. The screen restarts with the new setting:</div>
-      <code>sudo ender5-kiosk set-touch "${fmt(m)}"</code>
+      <code>sudo layer1-kiosk set-touch "${fmt(m)}"</code>
       <div class="note">${ctx.touchMatrix ? '' : 'The kiosk didn’t report its current matrix, so this assumes none was set. '}Use “Test” to check: grey dot is where touches land now, green is where they will land.</div>
       <div class="row-actions"><button class="btn ghost" data-a="redo">Redo</button><button class="btn" data-a="test">Test</button><button class="btn primary" data-a="close">Close</button></div>
     </div>`;
@@ -139,7 +139,7 @@ export function openCalibration(ctx) {
     correction = fitAffine(observed, TARGETS);
     const problem = checkFit(observed, TARGETS, correction);
     if (problem) {
-      console.info(`[ender5] touch calibration rejected: ${problem} | taps: ${JSON.stringify(observed.map((p) => p.map((v) => +v.toFixed(4))))}`);
+      console.info(`[layer1] touch calibration rejected: ${problem} | taps: ${JSON.stringify(observed.map((p) => p.map((v) => +v.toFixed(4))))}`);
       drawResult(problem);
       return;
     }

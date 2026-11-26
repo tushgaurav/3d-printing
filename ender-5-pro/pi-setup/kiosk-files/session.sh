@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # The X session: runs as the kiosk user inside xinit. Sets up the screen and
 # touch, waits for OctoPrint, then keeps Chromium running full-screen.
-CONF=/etc/ender5-kiosk.conf
+CONF=/etc/layer1-kiosk.conf
 # shellcheck source=/dev/null
 [[ -r $CONF ]] && . "$CONF"
-URL="${URL:-http://127.0.0.1/plugin/ender5touch/static/index.html}"
-STATE_DIR=/var/lib/ender5-kiosk
+URL="${URL:-http://127.0.0.1/plugin/layer1/static/index.html}"
+STATE_DIR=/var/lib/layer1-kiosk
 
 # never blank the screen
 xset s off -dpms s noblank 2>/dev/null || true
@@ -17,7 +17,7 @@ if [[ -n "${TOUCH_MATRIX:-}" ]]; then
     [[ "$name" =~ ${TOUCH_DEVICE:-ADS7846|[Tt]ouch} ]] || continue
     # shellcheck disable=SC2086  # the 9 numbers must split into 9 arguments
     if xinput set-prop "$id" "Coordinate Transformation Matrix" $TOUCH_MATRIX 2>/dev/null; then
-      echo "ender5-kiosk: touch matrix applied to '$name'"
+      echo "layer1-kiosk: touch matrix applied to '$name'"
     fi
   done < <(xinput list --id-only 2>/dev/null)
 fi
@@ -44,8 +44,8 @@ if [[ -f "$STATE_DIR/calibrate" ]]; then
 fi
 
 BROWSER="$(command -v chromium || command -v chromium-browser)"
-PROFILE="$HOME/.config/ender5-kiosk"
-CACHE="${XDG_RUNTIME_DIR:-/tmp}/ender5-kiosk-cache"
+PROFILE="$HOME/.config/layer1-kiosk"
+CACHE="${XDG_RUNTIME_DIR:-/tmp}/layer1-kiosk-cache"
 mkdir -p "$PROFILE"
 
 while true; do

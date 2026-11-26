@@ -3,7 +3,7 @@
 
 export const UI_VERSION = '0.2.0';
 
-const KEY = 'ender5touch.apiKey';
+const KEY = 'layer1.apiKey';
 
 export function loadKey() {
   try { return localStorage.getItem(KEY) || ''; } catch { return ''; }
@@ -19,7 +19,7 @@ export function forgetKey() {
 
 // Theme: 'dark' or 'light'. The choice made on the screen is remembered per device and
 // wins over the config default. index.html applies it before first paint (no flash).
-const THEME_KEY = 'ender5touch.theme';
+const THEME_KEY = 'layer1.theme';
 const THEMES = ['dark', 'light'];
 
 export function storedTheme() {
@@ -43,7 +43,7 @@ export function setTheme(theme) {
 }
 
 // Home picture: 'cam' (live camera) or 'model' (the slicer thumbnail), toggled by its chip.
-const MEDIA_KEY = 'ender5touch.homeMedia';
+const MEDIA_KEY = 'layer1.homeMedia';
 
 export function storedMedia() {
   try { return localStorage.getItem(MEDIA_KEY) === 'model' ? 'model' : 'cam'; } catch { return 'cam'; }
@@ -54,7 +54,7 @@ export function saveMedia(pref) {
 }
 
 // Files view: 'list' (rows) or 'grid' (a gallery of thumbnails).
-const FILES_VIEW_KEY = 'ender5touch.filesView';
+const FILES_VIEW_KEY = 'layer1.filesView';
 
 export function storedFilesView() {
   try { return localStorage.getItem(FILES_VIEW_KEY) === 'grid' ? 'grid' : 'list'; } catch { return 'list'; }
@@ -65,7 +65,7 @@ export function saveFilesView(view) {
 }
 
 // Files sort: one of the keys of SORTS in screens/files.js (which checks it), or null.
-const FILES_SORT_KEY = 'ender5touch.filesSort';
+const FILES_SORT_KEY = 'layer1.filesSort';
 
 export function storedFilesSort() {
   try { return localStorage.getItem(FILES_SORT_KEY); } catch { return null; }

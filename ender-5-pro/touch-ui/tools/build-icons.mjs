@@ -10,8 +10,8 @@ import { writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 const VERSION = '1.81.0';
-const OUT = fileURLToPath(new URL('../octoprint_ender5touch/static/js/icons.js', import.meta.url));
-const LICENSE_OUT = fileURLToPath(new URL('../octoprint_ender5touch/static/js/icons.LICENSE.txt', import.meta.url));
+const OUT = fileURLToPath(new URL('../octoprint_layer1/static/js/icons.js', import.meta.url));
+const LICENSE_OUT = fileURLToPath(new URL('../octoprint_layer1/static/js/icons.LICENSE.txt', import.meta.url));
 const CDN = `https://cdn.jsdelivr.net/npm/lucide-static@${VERSION}`;
 
 // our name -> Lucide name

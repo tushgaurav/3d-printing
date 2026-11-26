@@ -3,7 +3,7 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "OctoPrint-Ender5Touch"
+name = "OctoPrint-Layer1"
 version = "0.2.0"
 description = "Full-screen touch UI for an Ender 5 Pro on a 480x320 Raspberry Pi screen"
 readme = "README.md"
@@ -13,10 +13,10 @@ requires-python = ">=3.7,<4"
 dependencies = []
 
 [project.entry-points."octoprint.plugin"]
-ender5touch = "octoprint_ender5touch"
+layer1 = "octoprint_layer1"
 
 [tool.setuptools.packages.find]
-include = ["octoprint_ender5touch*"]
+include = ["octoprint_layer1*"]
 
 # static/ and its sub-folders are found as namespace packages; ship their files.
 [tool.setuptools.package-data]

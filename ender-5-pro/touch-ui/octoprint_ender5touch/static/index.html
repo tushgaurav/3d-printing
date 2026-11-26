@@ -4,12 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <meta name="color-scheme" content="dark">
-  <title>Ender 5 Pro</title>
+  <title>Layer1</title>
   <script>
     // Theme before first paint: the screen's saved choice, else ?theme= / #theme= (app.js
     // then falls back to the config default). Keep in step with session.js.
     try {
-      var t = localStorage.getItem('ender5touch.theme')
+      var t = localStorage.getItem('layer1.theme')
         || new URLSearchParams(location.search).get('theme')
         || new URLSearchParams(location.hash.slice(1)).get('theme');
       if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
@@ -28,7 +28,7 @@
       <main id="screens"></main>
       <div id="layer"></div>
       <div id="boot">
-        <div class="boot-mark">E5</div>
+        <div class="boot-mark">L1</div>
         <div class="boot-text">Starting…</div>
       </div>
     </div>

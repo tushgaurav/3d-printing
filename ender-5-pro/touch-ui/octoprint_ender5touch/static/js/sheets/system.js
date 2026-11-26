@@ -23,7 +23,7 @@ export async function exitToDesktop() {
   });
   if (!ok) return;
   window.close(); // allowed: the launcher opened this window and it has a single history entry
-  setTimeout(() => toast('Browser Didn’t Close · Run ~/ender5-touch/demo.sh stop over SSH', 'warn', 6000), 800);
+  setTimeout(() => toast('Browser Didn’t Close · Run ~/layer1/demo.sh stop over SSH', 'warn', 6000), 800);
 }
 
 export function openSystem(ctx) {
@@ -37,7 +37,7 @@ export function openSystem(ctx) {
       body.innerHTML = `
         <div class="kvlist" style="margin-bottom:10px">
           <div class="kv"><span>OctoPrint</span><b data-r="ver">…</b></div>
-          <div class="kv"><span>Touch UI</span><b>${esc(UI_VERSION)}</b></div>
+          <div class="kv"><span>Layer1</span><b>${esc(UI_VERSION)}</b></div>
           <div class="kv"><span>Web address</span><b>${esc(ctx.host)}</b></div>
         </div>
         <div class="row-actions" data-r="power" style="margin-bottom:6px"></div>

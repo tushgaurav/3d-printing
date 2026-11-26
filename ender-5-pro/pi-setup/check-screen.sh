@@ -15,7 +15,7 @@ tr -d '\0' < /proc/device-tree/model 2>/dev/null; echo
 
 echo
 echo "== Display lines in $BOOT/config.txt"
-grep -nE '^[[:space:]]*(#ender5-disabled# )?(dtoverlay|dtparam=spi|max_framebuffers|disable_fw_kms_setup|hdmi_|display_)' "$BOOT/config.txt" 2>/dev/null || echo "(none)"
+grep -nE '^[[:space:]]*(#layer1-disabled# )?(dtoverlay|dtparam=spi|max_framebuffers|disable_fw_kms_setup|hdmi_|display_)' "$BOOT/config.txt" 2>/dev/null || echo "(none)"
 
 echo
 echo "== Framebuffers"
@@ -50,8 +50,8 @@ fi
 
 echo
 echo "== Kiosk"
-if systemctl list-unit-files ender5-kiosk.service >/dev/null 2>&1; then
-  echo "ender5-kiosk.service: $(systemctl is-active ender5-kiosk.service)"
+if systemctl list-unit-files layer1-kiosk.service >/dev/null 2>&1; then
+  echo "layer1-kiosk.service: $(systemctl is-active layer1-kiosk.service)"
 else
   echo "not installed"
 fi

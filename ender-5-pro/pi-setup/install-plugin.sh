@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Install (or update) the Ender 5 Touch plugin into OctoPrint's virtualenv,
+# Install (or update) the Layer1 plugin into OctoPrint's virtualenv,
 # then restart OctoPrint. Run as your normal user (pi), NOT with sudo:
 #
-#   bash ~/ender5-touch/pi-setup/install-plugin.sh
+#   bash ~/layer1/pi-setup/install-plugin.sh
 #
 # Override the pip it uses with:  PIP=/path/to/venv/bin/pip bash install-plugin.sh
 set -euo pipefail
@@ -45,5 +45,5 @@ else
 fi
 
 echo
-echo "Done. The touch UI is at:  http://$(hostname).local/plugin/ender5touch/"
-echo "Its settings file appears after the first visit:  ~/.octoprint/data/ender5touch/config.json"
+echo "Done. Layer1 is at:       http://$(hostname).local/plugin/layer1/"
+echo "Its settings file appears after the first visit:  ~/.octoprint/data/layer1/config.json"

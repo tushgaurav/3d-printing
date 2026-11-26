@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Copy the Ender 5 Pro touch UI to the OctoPi and install it (from Windows).
+  Copy Layer1 to the OctoPi and install it (from Windows).
 
 .DESCRIPTION
   Uses the ssh/scp that ship with Windows. You'll be asked for the Pi's password
@@ -22,7 +22,7 @@ param(
 $ErrorActionPreference = "Stop"
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $target = "$User@$PiHost"
-$remote = "ender5-touch"
+$remote = "layer1"
 
 function Invoke-Remote([string]$command, [switch]$Tty) {
   if ($Tty) { ssh -t $target $command } else { ssh $target $command }
@@ -45,5 +45,5 @@ if ($Kiosk) {
 }
 
 Write-Host ""
-Write-Host "Done. Open http://$PiHost/plugin/ender5touch/ to see the UI in a browser." -ForegroundColor Green
+Write-Host "Done. Open http://$PiHost/plugin/layer1/ to see the UI in a browser." -ForegroundColor Green
 if (-not $Kiosk) { Write-Host "Run again with -Kiosk to put it on the Pi's own screen." }

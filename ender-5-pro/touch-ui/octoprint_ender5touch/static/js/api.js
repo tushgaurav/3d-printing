@@ -7,7 +7,7 @@
 
 import { sleep } from './util.js';
 
-export const APP_NAME = 'Ender 5 Pro touchscreen';
+export const APP_NAME = 'Layer1';
 
 export class Emitter {
   constructor() { this._handlers = {}; }

@@ -181,7 +181,7 @@ export class ModelView {
         if (this.onStats) this.onStats(res.stats);
       }
     } catch (e) {
-      console.warn('[ender5] 3D view:', e.message || e);
+      console.warn('[layer1] 3D view:', e.message || e);
     } finally {
       this.busy = false;
       this.lastDraw = Date.now();

@@ -1,6 +1,6 @@
-# Ender 5 Pro — Raspberry Pi Based Touchscreen Controller
+# Layer1 — Touchscreen Controller for the Ender 5 Pro
 
-A full-screen touch interface for the Ender 5 Pro, running on the 3.5" (480×320)
+Layer1 is a full-screen touch interface for the Ender 5 Pro, running on the 3.5" (480×320)
 SPI screen attached to the OctoPi Raspberry Pi. Think Bambu-style printer screen:
 live camera, a progress gauge, temperatures, file browser with thumbnails, jog
 controls, filament load/unload, speed/flow/fan tuning — all driven through OctoPrint.
@@ -13,9 +13,9 @@ controls, filament load/unload, speed/flow/fan tuning — all driven through Oct
 ┌──────────── Raspberry Pi (OctoPi) ──────────────────────────────────────┐
 │                                                                          │
 │  3.5" SPI screen ◄── X11 (no desktop) ◄── Chromium kiosk                 │
-│                                              │  http://127.0.0.1/plugin/ender5touch/
+│                                              │  http://127.0.0.1/plugin/layer1/
 │                                              ▼                           │
-│  OctoPrint ──► plugin "Ender 5 Touch": serves the touch app (static)     │
+│  OctoPrint ──► plugin "Layer1": serves the touch app (static)            │
 │      ▲  REST API + push socket, authenticated with an app key            │
 │      └──────────── USB ──────────► Ender 5 Pro                           │
 └──────────────────────────────────────────────────────────────────────────┘
@@ -39,7 +39,7 @@ and screen-driver scripts could not be tested here (no Pi), see *Status* below.
 ## Try it on your PC first (no printer needed)
 
 ```powershell
-cd ender-5-pro\touch-ui\octoprint_ender5touch\static
+cd ender-5-pro\touch-ui\octoprint_layer1\static
 python -m http.server 8765
 ```
 
@@ -59,16 +59,16 @@ Copy the project over and set up the screen driver. The built-in `piscreen` driv
 works for most ILI9486 + XPT2046 3.5" screens (Waveshare (A) and its clones):
 
 ```powershell
-.\deploy.ps1                      # copies files to ~/ender5-touch and installs the plugin
+.\deploy.ps1                      # copies files to ~/layer1 and installs the plugin
 ssh pi@octopi.local
-sudo bash ~/ender5-touch/pi-setup/setup-screen.sh piscreen
+sudo bash ~/layer1/pi-setup/setup-screen.sh piscreen
 sudo reboot
 ```
 
 After the reboot, check it:
 
 ```bash
-sudo bash ~/ender5-touch/pi-setup/check-screen.sh test
+sudo bash ~/layer1/pi-setup/check-screen.sh test
 ```
 
 You should see coloured static on the small screen for 2 seconds. If not, see
@@ -79,10 +79,10 @@ You should see coloured static on the small screen for 2 seconds. If not, see
 `deploy.ps1` already did this. To do it by hand on the Pi:
 
 ```bash
-bash ~/ender5-touch/pi-setup/install-plugin.sh
+bash ~/layer1/pi-setup/install-plugin.sh
 ```
 
-Check it in any browser: <http://octopi.local/plugin/ender5touch/>.
+Check it in any browser: <http://octopi.local/plugin/layer1/>.
 
 ### 3. Install the kiosk
 
@@ -90,18 +90,18 @@ Check it in any browser: <http://octopi.local/plugin/ender5touch/>.
 .\deploy.ps1 -Kiosk
 ```
 
-or on the Pi: `sudo bash ~/ender5-touch/pi-setup/install-kiosk.sh`.
+or on the Pi: `sudo bash ~/layer1/pi-setup/install-kiosk.sh`.
 This installs a minimal X server and Chromium (no desktop) and a systemd service
 that starts the UI on the small screen at boot.
 
 ### 4. Pair and calibrate
 
 1. The screen shows **Pair this screen with OctoPrint**. Open OctoPrint on your
-   PC or phone, log in, and click **Allow** on the *Ender 5 Pro touchscreen* request.
-2. If taps land in the wrong place: `sudo ender5-kiosk calibrate`, tap the four
-   crosshairs, then run the `sudo ender5-kiosk set-touch "…"` command the screen
+   PC or phone, log in, and click **Allow** on the *Layer1* request.
+2. If taps land in the wrong place: `sudo layer1-kiosk calibrate`, tap the four
+   crosshairs, then run the `sudo layer1-kiosk set-touch "…"` command the screen
    shows. Quick fixes for swapped/mirrored axes:
-   `sudo ender5-kiosk rotate-touch 90|180|270|swap|invert-x|invert-y`.
+   `sudo layer1-kiosk rotate-touch 90|180|270|swap|invert-x|invert-y`.
 
 ## Using it
 
@@ -120,7 +120,7 @@ the UI shows a placeholder.
 
 ## Settings
 
-**Touch UI** — `~/.octoprint/data/ender5touch/config.json` on the Pi (created the
+**Layer1** — `~/.octoprint/data/layer1/config.json` on the Pi (created the
 first time the UI loads). Edit, then reload the screen (More → System → Reload Screen).
 
 | Key | Default | Meaning |
@@ -138,38 +138,38 @@ first time the UI loads). Edit, then reload the screen (More → System → Relo
 | `ui.clock24` | false | 24-hour clock |
 | `ui.theme` | dark | `dark` or `light`. Light is easier to read on cheap panels with greyish blacks. A choice made on the screen (More → Display) is remembered and wins |
 
-**Kiosk** — `/etc/ender5-kiosk.conf` (framebuffer, touch matrix, Chromium flags).
-Apply with `sudo ender5-kiosk restart`.
+**Kiosk** — `/etc/layer1-kiosk.conf` (framebuffer, touch matrix, Chromium flags).
+Apply with `sudo layer1-kiosk restart`.
 
 ## Kiosk commands
 
 ```
-ender5-kiosk status | logs
-sudo ender5-kiosk restart | stop | start
-sudo ender5-kiosk calibrate
-sudo ender5-kiosk set-touch "<9 numbers>"
-sudo ender5-kiosk rotate-touch 0|90|180|270|swap|invert-x|invert-y
-sudo ender5-kiosk reset-touch
+layer1-kiosk status | logs
+sudo layer1-kiosk restart | stop | start
+sudo layer1-kiosk calibrate
+sudo layer1-kiosk set-touch "<9 numbers>"
+sudo layer1-kiosk rotate-touch 0|90|180|270|swap|invert-x|invert-y
+sudo layer1-kiosk reset-touch
 ```
 
 ## Troubleshooting
 
 * **Screen white or blank** — the driver isn't loaded: `sudo bash check-screen.sh`, then [docs/screen-setup.md](docs/screen-setup.md).
-* **Screen shows the console, not the UI** — `ender5-kiosk logs`. Look for the line
-  `ender5-kiosk: using /dev/fbN`. If it picked the wrong framebuffer, set `FBDEV=/dev/fb1` in `/etc/ender5-kiosk.conf`.
+* **Screen shows the console, not the UI** — `layer1-kiosk logs`. Look for the line
+  `layer1-kiosk: using /dev/fbN`. If it picked the wrong framebuffer, set `FBDEV=/dev/fb1` in `/etc/layer1-kiosk.conf`.
 * **"No OctoPrint"** — OctoPrint isn't running or still starting: `sudo service octoprint status`.
 * **Stuck on pairing** — the request appears only in a logged-in OctoPrint tab;
   open/refresh OctoPrint, then tap *Ask Again*. Requests expire after a while.
 * **Camera offline** — check <http://octopi.local/webcam/?action=snapshot> works; adjust `webcam` URLs in the config.
 * **Fan % shows "not reported yet"** — OctoPrint doesn't report fan speed; the UI learns it from the next `M106` sent.
 * **Updated the plugin but the screen shows the old UI** — More → System → Reload Screen.
-* **Remove the kiosk** — `sudo bash ~/ender5-touch/pi-setup/uninstall-kiosk.sh`. The plugin: OctoPrint → Settings → Plugin Manager.
+* **Remove the kiosk** — `sudo bash ~/layer1/pi-setup/uninstall-kiosk.sh`. The plugin: OctoPrint → Settings → Plugin Manager.
 
 ## Status
 
 | Part | Tested |
 |---|---|
-| Touch UI in a browser (every screen, demo mode) | ✅ Chrome at 480×320 |
+| Layer1 in a browser (every screen, demo mode) | ✅ Chrome at 480×320 |
 | Plugin + UI against real OctoPrint 2.0.2 (virtual printer): pairing, socket, commands, bad-key → re-pair | ✅ |
 | UI on a real 3.5" panel (Pi 4, Raspberry Pi OS trixie, LCD-show `tft35a`, Chromium kiosk, demo mode) | ✅ Renders 1:1 on the ILI9486 panel. Touch not checked yet |
 | Kiosk service, X11 on the SPI framebuffer, touch matrix | ⚠️ Written for Raspberry Pi OS (Bullseye/Bookworm), not yet run on a Pi |

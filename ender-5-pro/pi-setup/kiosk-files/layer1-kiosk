@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Control the Ender 5 touchscreen kiosk.
+# Control the Layer1 touchscreen kiosk.
 set -euo pipefail
-CONF=/etc/ender5-kiosk.conf
-SVC=ender5-kiosk.service
+CONF=/etc/layer1-kiosk.conf
+SVC=layer1-kiosk.service
 
 usage() {
   cat <<'EOF'
-Usage: ender5-kiosk <command>
+Usage: layer1-kiosk <command>
 
   restart | start | stop     control the kiosk (X + Chromium on the small screen)
   status                     is it running?
@@ -43,7 +43,7 @@ case "$cmd" in
     ;;
   calibrate)
     as_root "$@"
-    touch /var/lib/ender5-kiosk/calibrate
+    touch /var/lib/layer1-kiosk/calibrate
     systemctl restart "$SVC"
     echo "The calibration screen opens in a few seconds. Tap each crosshair."
     ;;
@@ -51,7 +51,7 @@ case "$cmd" in
     as_root "$@"
     m="${2:-}"
     if [[ ! "$m" =~ ^[[:space:]]*(-?[0-9.]+[[:space:]]+){8}-?[0-9.]+[[:space:]]*$ ]]; then
-      echo "Expected 9 numbers, e.g.: ender5-kiosk set-touch \"1 0 0 0 1 0 0 0 1\"" >&2
+      echo "Expected 9 numbers, e.g.: layer1-kiosk set-touch \"1 0 0 0 1 0 0 0 1\"" >&2
       exit 1
     fi
     set_conf TOUCH_MATRIX "$(echo "$m" | xargs)"
@@ -72,7 +72,7 @@ case "$cmd" in
     esac
     set_conf TOUCH_MATRIX "$m"
     systemctl restart "$SVC"
-    echo "Touch matrix set to \"$m\". If it's still wrong, try another, or run: sudo ender5-kiosk calibrate"
+    echo "Touch matrix set to \"$m\". If it's still wrong, try another, or run: sudo layer1-kiosk calibrate"
     ;;
   reset-touch)
     as_root "$@"

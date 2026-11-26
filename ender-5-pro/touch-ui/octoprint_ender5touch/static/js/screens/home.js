@@ -135,7 +135,7 @@ export default {
       loadModel(ctx.client, modelFile).then(
         () => { if (m3d.key === key) { m3d.status = 'ready'; render(store.get()); } },
         (e) => {
-          console.warn('[ender5] 3D view:', (e && e.message) || e);
+          console.warn('[layer1] 3D view:', (e && e.message) || e);
           if (m3d.key === key) { m3d.status = 'failed'; render(store.get()); }
         },
       );

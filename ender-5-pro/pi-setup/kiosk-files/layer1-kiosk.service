@@ -1,5 +1,5 @@
 [Unit]
-Description=Ender 5 Pro touchscreen kiosk (X11 + Chromium)
+Description=Layer1 touchscreen kiosk (X11 + Chromium)
 After=systemd-user-sessions.service network.target octoprint.service
 
 [Service]
@@ -16,8 +16,8 @@ StandardError=journal
 UtmpIdentifier=tty7
 UtmpMode=user
 # "+" runs this as root: it points X at the SPI screen's framebuffer.
-ExecStartPre=+/usr/local/lib/ender5-kiosk/prepare.sh
-ExecStart=/usr/bin/xinit /usr/local/lib/ender5-kiosk/session.sh -- :0 vt7 -nolisten tcp -nocursor -keeptty
+ExecStartPre=+/usr/local/lib/layer1-kiosk/prepare.sh
+ExecStart=/usr/bin/xinit /usr/local/lib/layer1-kiosk/session.sh -- :0 vt7 -nolisten tcp -nocursor -keeptty
 Restart=always
 RestartSec=5
 

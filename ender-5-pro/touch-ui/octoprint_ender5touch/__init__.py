@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Ender 5 Touch: a full-screen touch UI for OctoPrint, sized for a 480x320 screen.
+"""Layer1: a full-screen touch UI for OctoPrint, sized for a 480x320 screen.
 
 The plugin only serves a static single-page app and a small JSON config. All
 printer control happens in the browser through OctoPrint's normal REST and push
@@ -28,7 +28,7 @@ def _deep_merge(base, override):
     return result
 
 
-class Ender5TouchPlugin(octoprint.plugin.BlueprintPlugin):
+class Layer1Plugin(octoprint.plugin.BlueprintPlugin):
     def _static_dir(self):
         return os.path.join(self._basefolder, "static")
 
@@ -85,7 +85,7 @@ class Ender5TouchPlugin(octoprint.plugin.BlueprintPlugin):
         return response
 
 
-__plugin_name__ = "Ender 5 Touch"
+__plugin_name__ = "Layer1"
 __plugin_description__ = "Full-screen touch UI for an Ender 5 Pro on a small Raspberry Pi screen"
 __plugin_pythoncompat__ = ">=3.7,<4"
-__plugin_implementation__ = Ender5TouchPlugin()
+__plugin_implementation__ = Layer1Plugin()

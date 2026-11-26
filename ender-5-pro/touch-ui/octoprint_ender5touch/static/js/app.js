@@ -59,7 +59,7 @@ function createStore(initial) {
 }
 
 function computeBase() {
-  const i = location.pathname.indexOf('/plugin/ender5touch/');
+  const i = location.pathname.indexOf('/plugin/layer1/');
   return i >= 0 ? location.pathname.slice(0, i + 1) : '/';
 }
 
@@ -221,13 +221,13 @@ async function boot() {
     filesAge: () => Date.now() - filesAt,
   };
   const refreshFilesSoon = debounce(() => ctx.refreshFiles(), 800);
-  document.title = cfg.printer.name;
+  document.title = `Layer1 · ${cfg.printer.name}`;
 
   // ~~ shell
 
   initUI(app);
   const rail = app.querySelector('#rail');
-  rail.innerHTML = `<div class="brand"><span class="mark">E5</span></div>${SCREENS.map((s) => `<button data-nav="${s.id}" aria-label="${s.title}">${icon(s.icon)}</button>`).join('')}`;
+  rail.innerHTML = `<div class="brand"><span class="mark">L1</span></div>${SCREENS.map((s) => `<button data-nav="${s.id}" aria-label="${s.title}">${icon(s.icon)}</button>`).join('')}`;
   buildStatusBar(app.querySelector('#status'), ctx);
 
   const screensEl = app.querySelector('#screens');
