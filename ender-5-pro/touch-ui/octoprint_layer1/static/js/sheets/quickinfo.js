@@ -8,6 +8,7 @@ import { icon } from '../icons.js';
 import { refs, setText, setHTML, setData, toggle, clamp, fmtTemp, fmtDuration, fmtClock, fmtAgo, displayName } from '../util.js';
 import { PHASES, ACTIVE, phaseOf, lastPrinted } from '../model.js';
 import { mount } from '../ui.js';
+import { wifiWord } from './network.js';
 
 const SYS_POLL_MS = 5000;
 const WARM = 40; // °C: a heater that is off but still above this shows "Cooling"
@@ -38,14 +39,6 @@ export function toggleQuickInfo(ctx) {
 }
 
 const gb = (n) => `${(n / 1073741824).toFixed(1)} GB`;
-
-function wifiWord(dbm) {
-  if (dbm == null) return '';
-  if (dbm >= -55) return 'Excellent';
-  if (dbm >= -67) return 'Good';
-  if (dbm >= -75) return 'Fair';
-  return 'Weak';
-}
 
 /** CPU temperature + throttle bits -> { tone, power } for the Pi cell. */
 export function piHealth(temp, bits) {

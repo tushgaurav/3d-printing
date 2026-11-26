@@ -1,7 +1,7 @@
-// Phone: QR codes that open OctoPrint and Layer1 on a phone, so nobody has to type the Pi's
-// address. Phones often can't resolve "octopi.local" (Android especially), so the codes use
-// the Pi's network address from /sysinfo when there is one. Tap a code to show it full
-// screen, which scans from further away.
+// Open on Phone (from the Network page): QR codes that open OctoPrint and Layer1 on a phone,
+// so nobody has to type the Pi's address. Phones often can't resolve "octopi.local" (Android
+// especially), so the codes use the Pi's network address from /sysinfo when there is one.
+// Tap a code to show it full screen, which scans from further away.
 
 import { esc, sleep } from '../util.js';
 import { openSheet, mount } from '../ui.js';
@@ -22,8 +22,9 @@ export function lanOrigin(ctx, ip) {
 const shortUrl = (url) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
 async function lanIP(ctx) {
-  if (!ctx.client || !ctx.client.sysinfo) return null;
-  const ip = ctx.client.sysinfo().then((s) => (s && s.net && s.net.ip) || null, () => null);
+  const known = ctx.store.get().net; // the Network page keeps this fresh
+  if (known && known.ip) return known.ip;
+  const ip = ctx.refreshNet().then(() => (ctx.store.get().net || {}).ip || null);
   return Promise.race([ip, sleep(IP_WAIT_MS).then(() => null)]);
 }
 
@@ -42,7 +43,7 @@ function showFull(link) {
 }
 
 export function openPhone(ctx) {
-  openSheet({
+  return openSheet({
     title: 'Open on Phone',
     render(body, sheet) {
       sheet.head.insertAdjacentHTML('beforeend', '<span class="note">Phone must be on the same network</span>');

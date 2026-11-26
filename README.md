@@ -33,7 +33,7 @@ modern printer with a built-in display.
 - **Jog controls** for XY, Z (bed), and extruder with configurable steps
 - **Filament management** — load, unload, and purge with Bowden-length support
 - **Tune while printing** — speed modes, flow rate, and part fan
-- **Open on your phone** — QR codes for the OctoPrint dashboard and Layer1, using the Pi's IP so they work on Android too
+- **Network page** — tap the Wi-Fi icon for the network name, signal, and IP, plus QR codes that open OctoPrint and Layer1 on your phone
 - **Dark and light themes** optimized for small SPI panels
 - **Fully offline** — fonts, icons, and assets are all bundled
 

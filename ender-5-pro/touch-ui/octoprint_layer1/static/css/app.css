@@ -210,6 +210,12 @@ body.preview #app {
 .tchip .tg { color: var(--text-3); margin-left: -6px; }
 .tchip.heating svg, .tchip.heating .t { color: var(--heat); }
 .tchip.hot svg { color: var(--signal-fg); }
+/* network: its own button at the end of the bar, so tapping it doesn't open quick info */
+.netbtn { height: 32px; padding: 0 12px; margin: 0 -12px 0 -8px; display: grid; place-items: center; color: var(--text-2); border-radius: var(--r-sm); }
+.netbtn svg { width: 17px; height: 17px; }
+.netbtn[data-tone] { color: var(--tone); }
+.netbtn:active { background: var(--surface-3); }
+#status:has(.netbtn:active) { background: none; }
 #clock { color: var(--text-2); font-family: var(--mono); font-feature-settings: "ss09"; font-size: 12.5px; letter-spacing: -0.03em; min-width: 4.3em; text-align: right; }
 
 /* ---------- screens: a rounded canvas inside the frame ---------- */
@@ -412,8 +418,7 @@ body.preview #app {
 .fdetail .row-actions .btn { height: 52px; }
 
 /* ---------- more ---------- */
-.more { height: 100%; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(2, 1fr); gap: 8px; }
-.more .wide { grid-column: span 2; }
+.more { height: 100%; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: 8px; }
 .tile { border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--edge); display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; padding: 12px; text-align: left; }
 .tile .ti { width: 38px; height: 38px; border-radius: var(--r); background: var(--surface-2); display: grid; place-items: center; color: var(--signal-fg); }
 .tile .ti svg { width: 20px; height: 20px; }
@@ -603,6 +608,20 @@ body.preview #app {
 .model-full .hud { position: absolute; left: 10px; bottom: 10px; padding: 7px 12px; border-radius: 99px; background: var(--surface); box-shadow: var(--edge); font-family: var(--mono); font-feature-settings: "ss09"; font-size: 12.5px; letter-spacing: -0.03em; font-weight: 500; pointer-events: none; }
 .model-full .hint { position: absolute; right: 14px; bottom: 16px; display: flex; align-items: center; gap: 6px; color: var(--text-3); font-size: 12px; pointer-events: none; }
 .model-full .hint svg { width: 15px; height: 15px; }
+
+/* network page: the connection, its addresses, and the way to Open on Phone */
+.net { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) 136px; gap: 8px; }
+.net-info { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.net-hero { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--edge); }
+.net-hero .ti { width: 44px; height: 44px; flex: none; border-radius: var(--r); background: var(--signal-dim); color: var(--signal-fg); display: grid; place-items: center; }
+.net-hero[data-tone] .ti { background: var(--tone-dim); color: var(--tone); }
+.net-hero .ti svg { width: 22px; height: 22px; }
+.net-hero div { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.net-hero b { font-size: 17px; font-weight: 650; letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.net-hero span { font-size: 12.5px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.net .kvlist { flex: 1; }
+.net .kv b { font-family: var(--mono); font-feature-settings: "ss09"; font-weight: 500; letter-spacing: -0.03em; }
+.net .tile small { display: block; margin-top: 4px; font-size: 12px; line-height: 1.35; color: var(--text-3); }
 
 /* open on phone: QR codes stay black on white in both themes, since scanners want dark on light */
 .qr-pair { height: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }

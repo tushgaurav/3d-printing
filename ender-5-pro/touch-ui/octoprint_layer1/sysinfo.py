@@ -1,10 +1,11 @@
 # coding=utf-8
-"""Raspberry Pi health for the quick-info panel: CPU temperature, power/throttling,
-network, memory, disk and uptime.
+"""Raspberry Pi health for the quick-info panel and the network page: CPU temperature,
+power/throttling, network (with the Wi-Fi name), memory, disk and uptime.
 
-Everything is read from /proc and /sys (no extra packages). Each reading is
-independent and comes back as None when it isn't available, e.g. on a machine
-that isn't a Pi, so one missing file never hides the rest.
+Everything is read from /proc and /sys (no extra packages), except the Wi-Fi name,
+which comes from `iw` (or `iwgetid`) when installed. Each reading is independent
+and comes back as None when it isn't available, e.g. on a machine that isn't a
+Pi, so one missing file never hides the rest.
 """
 from __future__ import absolute_import, unicode_literals
 
@@ -13,6 +14,7 @@ import os
 import shutil
 import socket
 import subprocess
+import time
 
 THROTTLE_SYSFS = "/sys/devices/platform/soc/soc:firmware/get_throttled"
 
@@ -106,16 +108,64 @@ def local_ip():
         s.close()
 
 
+def parse_iw_link(text):
+    """(ssid, freq MHz) from the text of `iw dev <iface> link`; Nones when not connected."""
+    ssid = freq = None
+    for line in (text or "").splitlines():
+        key, _, value = line.strip().partition(": ")
+        if key == "SSID":
+            ssid = value or None
+        elif key == "freq":
+            try:
+                freq = int(float(value.split()[0]))
+            except (IndexError, ValueError):
+                pass
+    return ssid, freq
+
+
+# iw and iwgetid live in /usr/sbin, which a non-root PATH often leaves out
+_TOOL_PATH = os.pathsep.join(p for p in (os.environ.get("PATH"), "/usr/sbin", "/sbin") if p)
+_SSID_TTL = 30  # seconds; the quick-info panel polls every few, the network rarely changes
+_ssid_cache = {}
+
+
+def _run(args):
+    exe = shutil.which(args[0], path=_TOOL_PATH)
+    if not exe:
+        return None
+    try:
+        out = subprocess.check_output([exe] + args[1:], stderr=subprocess.DEVNULL, timeout=2)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return out.decode("utf-8", "replace")
+
+
+def wifi_link(iface):
+    """{'ssid': name, 'freq': MHz} of the Wi-Fi network iface is on, or Nones."""
+    cached = _ssid_cache.get(iface)
+    if cached and time.time() - cached[0] < _SSID_TTL:
+        return cached[1]
+    ssid, freq = parse_iw_link(_run(["iw", "dev", iface, "link"]))
+    if ssid is None:
+        ssid = (_run(["iwgetid", iface, "--raw"]) or "").strip() or None
+    result = {"ssid": ssid, "freq": freq}
+    _ssid_cache[iface] = (time.time(), result)
+    return result
+
+
 def network():
     iface = parse_default_iface(_read("/proc/net/route"))
     wireless = _read("/proc/net/wireless")
     is_wifi = bool(iface) and (os.path.isdir("/sys/class/net/%s/wireless" % iface) or iface + ":" in (wireless or ""))
+    link = wifi_link(iface) if is_wifi else {"ssid": None, "freq": None}
     return {
         "hostname": socket.gethostname() or None,
         "ip": local_ip(),
         "iface": iface,
         "wifi": is_wifi,
         "signal": parse_wifi_signal(wireless, iface) if is_wifi else None,
+        "ssid": link["ssid"],
+        "freq": link["freq"],
     }
 
 

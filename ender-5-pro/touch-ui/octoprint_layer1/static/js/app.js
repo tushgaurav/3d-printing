@@ -4,7 +4,8 @@
 // URL options
 //   ?demo[=printing|paused|finished|heating|offline|error]  simulated printer
 //   ?page=files|heat|move|more|calibrate|pair               open a screen at start
-//   ?sheet=tune|filament|printer|system|display|phone|quick open a sheet at start (quick = the status bar's quick info)
+//   ?sheet=tune|filament|printer|system|display|network|phone|quick
+//                                                           open a sheet at start (quick = the status bar's quick info)
 //   ?theme=light|dark  or  #theme=…                         default theme (a choice saved on the screen wins)
 //   #key=…&tm=…&host=…&kiosk=1                              passed in by the kiosk launcher
 //   #desktop=1                                              a desktop is underneath: System offers "Exit to Desktop"
@@ -13,9 +14,11 @@ import { OctoClient } from './api.js';
 import { MockClient, DEMO_CAMERA } from './mock.js';
 import { icon } from './icons.js';
 import { logo } from './logo.js';
-import { refs, setText, toggle, setData, deepMerge, debounce, fmtTemp, fmtClock, fmtDuration, setClock24 } from './util.js';
+import { refs, setText, setHTML, toggle, setData, deepMerge, debounce, fmtTemp, fmtClock, fmtDuration, setClock24 } from './util.js';
 import { PHASES, ACTIVE, phaseOf } from './model.js';
 import { initUI, toast, closeSheets, setScale } from './ui.js';
+
+const NET_POLL_MS = 30000; // the status bar's Wi-Fi icon; the Network page polls faster while open
 import { loadKey, saveKey, forgetKey, storedTheme, applyTheme } from './session.js';
 import home from './screens/home.js';
 import files from './screens/files.js';
@@ -30,13 +33,14 @@ import { openPrinter } from './sheets/printer.js';
 import { openSystem } from './sheets/system.js';
 import { openDisplay } from './sheets/display.js';
 import { openPhone } from './sheets/phone.js';
+import { openNetwork, toggleNetwork, netGlyph } from './sheets/network.js';
 import { openFileDetail } from './sheets/file.js';
 import { openQuickInfo, toggleQuickInfo, closeQuickInfo } from './sheets/quickinfo.js';
 import { openLiveCamera } from './sheets/camera.js';
 import { numberPad } from './ui.js';
 
 const SCREENS = [home, files, heat, move, more];
-const SHEETS = { tune: openTune, filament: openFilament, printer: openPrinter, system: openSystem, display: openDisplay, phone: openPhone, quick: openQuickInfo };
+const SHEETS = { tune: openTune, filament: openFilament, printer: openPrinter, system: openSystem, display: openDisplay, network: openNetwork, phone: openPhone, quick: openQuickInfo };
 
 let lastError = '';
 function showError(e) {
@@ -131,12 +135,19 @@ function buildStatusBar(el, ctx) {
     <div class="grow"></div>
     <div class="tchip" data-r="noz">${icon('nozzle')}<span class="t" data-r="nozA">—</span><span class="tg" data-r="nozT"></span></div>
     <div class="tchip" data-r="bed">${icon('bed')}<span class="t" data-r="bedA">—</span><span class="tg" data-r="bedT"></span></div>
-    <div id="clock" data-r="clock"></div>`;
-  // the whole bar is one big button: tap it for quick info, tap again to close
+    <div id="clock" data-r="clock"></div>
+    <button class="netbtn" data-r="net" aria-label="Network"></button>`;
+  // the whole bar is one big button: tap it for quick info, tap again to close.
+  // The Wi-Fi icon at the end is its own button and opens the Network page instead.
   el.setAttribute('role', 'button');
   el.setAttribute('aria-label', 'Quick info');
   el.addEventListener('click', () => toggleQuickInfo(ctx));
   const r = refs(el);
+  r.net.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeQuickInfo();
+    toggleNetwork(ctx);
+  });
   const chip = (key, box, a, t, s) => {
     const v = (s.temps && s.temps[key]) || {};
     setText(a, `${fmtTemp(v.actual)}°`);
@@ -152,6 +163,9 @@ function buildStatusBar(el, ctx) {
     setData(r.pill, 'tone', meta.tone);
     chip('tool0', r.noz, r.nozA, r.nozT, s);
     chip('bed', r.bed, r.bedA, r.bedT, s);
+    const net = netGlyph(s.net);
+    setHTML(r.net, icon(net.glyph));
+    setData(r.net, 'tone', net.tone);
   };
   const tick = () => setText(r.clock, fmtClock(new Date()));
   tick();
@@ -200,11 +214,14 @@ async function boot() {
     flow: 100,
     files: null,
     filesError: null,
+    net: null,      // /sysinfo's "net": Wi-Fi or Ethernet, IP, signal (see ctx.refreshNet)
+    netError: null,
     dismissedJob: null,
   });
 
   let filesAt = 0;
   let filesLoading = null;
+  let netLoading = null;
   const ctx = {
     store,
     cfg,
@@ -228,6 +245,17 @@ async function boot() {
       return filesLoading;
     },
     filesAge: () => Date.now() - filesAt,
+    /** Fetch the Pi's network state into the store (net / netError). */
+    refreshNet() {
+      if (!ctx.client || !ctx.client.sysinfo) return Promise.resolve();
+      if (!netLoading) {
+        netLoading = ctx.client.sysinfo()
+          .then((info) => { store.set({ net: (info && info.net) || null, netError: null }); })
+          .catch((e) => { store.set({ net: null, netError: e && e.status === 403 ? 'No permission' : 'Not available' }); })
+          .finally(() => { netLoading = null; });
+      }
+      return netLoading;
+    },
   };
   const refreshFilesSoon = debounce(() => ctx.refreshFiles(), 800);
   document.title = `Layer1 · ${cfg.printer.name}`;
@@ -278,6 +306,7 @@ async function boot() {
     client.on('link', (link) => {
       store.set({ link });
       if (link === 'online' && !filesAt) ctx.refreshFiles();
+      if (link === 'online') ctx.refreshNet();
       if (link === 'unauthorized' && !demo) {
         client.stop();
         forgetKey();
@@ -329,6 +358,8 @@ async function boot() {
       startClient(key);
     });
   }
+
+  setInterval(() => { if (store.get().link === 'online') ctx.refreshNet(); }, NET_POLL_MS);
 
   if (demo) {
     startClient('demo');
