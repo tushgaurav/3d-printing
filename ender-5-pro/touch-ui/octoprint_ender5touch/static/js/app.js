@@ -12,6 +12,7 @@
 import { OctoClient } from './api.js';
 import { MockClient, DEMO_CAMERA } from './mock.js';
 import { icon } from './icons.js';
+import { logo } from './logo.js';
 import { refs, setText, toggle, setData, deepMerge, debounce, fmtTemp, fmtClock, fmtDuration, setClock24 } from './util.js';
 import { PHASES, ACTIVE, phaseOf } from './model.js';
 import { initUI, toast, closeSheets, setScale } from './ui.js';
@@ -123,6 +124,7 @@ function logPatch(lines) {
 
 function buildStatusBar(el, ctx) {
   el.innerHTML = `
+    ${logo()}
     <div class="pill" data-r="pill"><i></i><span data-r="pillText"></span></div>
     <div class="grow"></div>
     <div class="tchip" data-r="noz">${icon('nozzle')}<span class="t" data-r="nozA">—</span><span class="tg" data-r="nozT"></span></div>
@@ -227,7 +229,7 @@ async function boot() {
 
   initUI(app);
   const rail = app.querySelector('#rail');
-  rail.innerHTML = `<div class="brand"><span class="mark">L1</span></div>${SCREENS.map((s) => `<button data-nav="${s.id}" aria-label="${s.title}">${icon(s.icon)}</button>`).join('')}`;
+  rail.innerHTML = `${SCREENS.map((s) => `<button data-nav="${s.id}" aria-label="${s.title}">${icon(s.icon)}</button>`).join('')}`;
   buildStatusBar(app.querySelector('#status'), ctx);
 
   const screensEl = app.querySelector('#screens');
