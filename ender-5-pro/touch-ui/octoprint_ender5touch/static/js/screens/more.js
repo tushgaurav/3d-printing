@@ -20,7 +20,7 @@ export default {
       { icon: 'tune', title: 'Tune', sub: 'Speed · flow · fan', open: openTune },
       { icon: 'camera', title: 'Camera', sub: 'Live view', open: openLiveCamera },
       { icon: 'plug', title: 'Printer', sub: 'USB connection', open: openPrinter },
-      { icon: 'power', title: 'System', sub: 'Restart · shut down', open: openSystem },
+      { icon: 'power', title: 'System', sub: ctx.desktop ? 'Exit to desktop · power' : 'Restart · shut down', open: openSystem },
       { icon: 'display', title: 'Display', sub: 'Theme · touch', open: openDisplay },
     ];
     el.innerHTML = `<div class="more">${tiles.map((t, i) => `

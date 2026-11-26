@@ -201,6 +201,8 @@ async function boot() {
     demo,
     base: computeBase(),
     host: hash.get('host') || (loopback ? 'octopi.local' : location.host),
+    // The launcher says there is a desktop underneath (#desktop=1), so offer "Exit to desktop".
+    desktop: hash.get('desktop') === '1',
     touchMatrix: parseMatrix(hash.get('tm')),
     client: null,
     go: null,

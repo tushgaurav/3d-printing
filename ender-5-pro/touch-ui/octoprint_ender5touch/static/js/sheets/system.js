@@ -1,4 +1,5 @@
-// System: OctoPrint/Pi power commands, screen reload, unpair.
+// System: OctoPrint/Pi power commands, screen reload, unpair, and exit to the desktop
+// when the launcher said there is one.
 
 import { icon } from '../icons.js';
 import { refs, setText, esc } from '../util.js';
@@ -13,10 +14,26 @@ const LABELS = {
   shutdown: { label: 'Shut down', icon: 'power', body: 'Wait until the Pi’s green light stops blinking before you unplug it.' },
 };
 
+/** Close the full-screen browser and reveal the Pi's desktop underneath. */
+export async function exitToDesktop() {
+  const ok = await confirmDialog({
+    title: 'Exit to desktop?',
+    body: 'The printer screen closes and the Pi’s desktop comes back. To open it again, double-tap “Printer screen” on the desktop.',
+    confirm: 'Exit',
+  });
+  if (!ok) return;
+  window.close(); // allowed: the launcher opened this window and it has a single history entry
+  setTimeout(() => toast('The browser wouldn’t close. Run ~/ender5-touch/demo.sh stop over SSH.', 'warn', 6000), 800);
+}
+
 export function openSystem(ctx) {
   openSheet({
     title: 'System',
-    render(body) {
+    render(body, sheet) {
+      if (ctx.desktop) {
+        sheet.head.insertAdjacentHTML('beforeend', `<button class="chipbtn" data-a="exit">${icon('exit')}Exit to desktop</button>`);
+        sheet.head.querySelector('[data-a="exit"]').addEventListener('click', exitToDesktop);
+      }
       body.innerHTML = `
         <div class="kvlist" style="margin-bottom:10px">
           <div class="kv"><span>OctoPrint</span><b data-r="ver">…</b></div>

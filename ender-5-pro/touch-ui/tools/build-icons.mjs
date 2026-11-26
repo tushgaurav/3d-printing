@@ -33,6 +33,7 @@ const ICONS = {
   plug: 'plug',
   unplug: 'unplug',
   power: 'power',
+  exit: 'log-out',
   touch: 'crosshair',
   display: 'sun-moon',
   sun: 'sun',
