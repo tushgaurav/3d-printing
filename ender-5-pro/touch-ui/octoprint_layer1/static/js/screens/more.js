@@ -8,6 +8,7 @@ import { openLiveCamera } from '../sheets/camera.js';
 import { openPrinter } from '../sheets/printer.js';
 import { openSystem } from '../sheets/system.js';
 import { openDisplay } from '../sheets/display.js';
+import { openPhone } from '../sheets/phone.js';
 
 export default {
   id: 'more',
@@ -22,9 +23,10 @@ export default {
       { icon: 'plug', title: 'Printer', open: openPrinter },
       { icon: 'power', title: 'System', open: openSystem },
       { icon: 'display', title: 'Display', open: openDisplay },
+      { icon: 'qr', title: 'Open on Phone', open: openPhone, wide: true },
     ];
     el.innerHTML = `<div class="more">${tiles.map((t, i) => `
-      <button class="tile" data-i="${i}"><span class="ti">${icon(t.icon)}</span><b>${esc(t.title)}</b></button>`).join('')}</div>`;
+      <button class="tile${t.wide ? ' wide' : ''}" data-i="${i}"><span class="ti">${icon(t.icon)}</span><b>${esc(t.title)}</b></button>`).join('')}</div>`;
     el.addEventListener('click', (e) => {
       const b = e.target.closest('[data-i]');
       if (b) tiles[+b.dataset.i].open(ctx);

@@ -4,7 +4,7 @@
 // URL options
 //   ?demo[=printing|paused|finished|heating|offline|error]  simulated printer
 //   ?page=files|heat|move|more|calibrate|pair               open a screen at start
-//   ?sheet=tune|filament|printer|system|display|quick       open a sheet at start (quick = the status bar's quick info)
+//   ?sheet=tune|filament|printer|system|display|phone|quick open a sheet at start (quick = the status bar's quick info)
 //   ?theme=light|dark  or  #theme=…                         default theme (a choice saved on the screen wins)
 //   #key=…&tm=…&host=…&kiosk=1                              passed in by the kiosk launcher
 //   #desktop=1                                              a desktop is underneath: System offers "Exit to Desktop"
@@ -29,13 +29,14 @@ import { openFilament } from './sheets/filament.js';
 import { openPrinter } from './sheets/printer.js';
 import { openSystem } from './sheets/system.js';
 import { openDisplay } from './sheets/display.js';
+import { openPhone } from './sheets/phone.js';
 import { openFileDetail } from './sheets/file.js';
 import { openQuickInfo, toggleQuickInfo, closeQuickInfo } from './sheets/quickinfo.js';
 import { openLiveCamera } from './sheets/camera.js';
 import { numberPad } from './ui.js';
 
 const SCREENS = [home, files, heat, move, more];
-const SHEETS = { tune: openTune, filament: openFilament, printer: openPrinter, system: openSystem, display: openDisplay, quick: openQuickInfo };
+const SHEETS = { tune: openTune, filament: openFilament, printer: openPrinter, system: openSystem, display: openDisplay, phone: openPhone, quick: openQuickInfo };
 
 let lastError = '';
 function showError(e) {
@@ -210,6 +211,7 @@ async function boot() {
     demo,
     base: computeBase(),
     host: hash.get('host') || (loopback ? 'octopi.local' : location.host),
+    loopback, // the page came from 127.0.0.1: other devices need ctx.host or the Pi's IP
     // The launcher says there is a desktop underneath (#desktop=1), so offer "Exit to Desktop".
     desktop: hash.get('desktop') === '1',
     touchMatrix: parseMatrix(hash.get('tm')),
