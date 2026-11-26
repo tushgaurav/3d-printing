@@ -5,6 +5,8 @@ on the Raspberry Pi. See `../README.md` for setup.
 
 UI:      http://<octopi>/plugin/layer1/
 Config:  ~/.octoprint/data/layer1/config.json  (created on first load)
+History: ~/.octoprint/data/layer1/history.json (prints that ended; seeded once from OctoPrint's
+         per-file print logs, served at /plugin/layer1/history)
 Demo:    serve `octoprint_layer1/static/` with any web server and open `index.html?demo`
 
 Look:    Geist + Geist Mono fonts and Lucide icons, all bundled (the Pi needs no internet).

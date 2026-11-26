@@ -78,6 +78,8 @@ const ICONS = {
   cpu: 'cpu',
   disk: 'hard-drive',
   qr: 'qr-code',
+  lock: 'lock',
+  history: 'history',
 };
 
 // Lucide has no hotend or heated bed, so these two are drawn here on Lucide's

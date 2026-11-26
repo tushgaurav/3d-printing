@@ -86,6 +86,7 @@
     "clock24": false,
     "socketThrottle": 2,
     "quickInfoSeconds": 15,
-    "filamentDensity": 1.24
+    "filamentDensity": 1.24,
+    "autoLockMinutes": 0
   }
 }

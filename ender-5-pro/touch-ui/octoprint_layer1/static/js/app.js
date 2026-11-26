@@ -4,8 +4,9 @@
 // URL options
 //   ?demo[=printing|paused|finished|heating|offline|error]  simulated printer
 //   ?page=files|heat|move|more|calibrate|pair               open a screen at start
-//   ?sheet=tune|filament|printer|system|display|network|phone|quick
-//                                                           open a sheet at start (quick = the status bar's quick info)
+//   ?sheet=tune|filament|printer|system|display|network|phone|quick|temps|history|lock|locked
+//                                                           open a sheet at start (quick = the status bar's quick info,
+//                                                           lock = the Lock Screen settings, locked = lock the screen)
 //   ?theme=light|dark  or  #theme=…                         default theme (a choice saved on the screen wins)
 //   #key=…&tm=…&host=…&kiosk=1                              passed in by the kiosk launcher
 //   #desktop=1                                              a desktop is underneath: System offers "Exit to Desktop"
@@ -37,10 +38,19 @@ import { openNetwork, toggleNetwork, netGlyph } from './sheets/network.js';
 import { openFileDetail } from './sheets/file.js';
 import { openQuickInfo, toggleQuickInfo, closeQuickInfo } from './sheets/quickinfo.js';
 import { openLiveCamera } from './sheets/camera.js';
+import { openTemps } from './sheets/temps.js';
+import { openHistory } from './sheets/history.js';
+import { openLockSettings } from './sheets/lock.js';
+import { initLock, lockScreen } from './lock.js';
+import { TempHistory } from './temps.js';
 import { numberPad } from './ui.js';
 
 const SCREENS = [home, files, heat, move, more];
-const SHEETS = { tune: openTune, filament: openFilament, printer: openPrinter, system: openSystem, display: openDisplay, network: openNetwork, phone: openPhone, quick: openQuickInfo };
+const SHEETS = {
+  tune: openTune, filament: openFilament, printer: openPrinter, system: openSystem, display: openDisplay,
+  network: openNetwork, phone: openPhone, quick: openQuickInfo, temps: openTemps, history: openHistory,
+  lock: openLockSettings, locked: lockScreen,
+};
 
 let lastError = '';
 function showError(e) {
@@ -217,6 +227,7 @@ async function boot() {
     net: null,      // /sysinfo's "net": Wi-Fi or Ethernet, IP, signal (see ctx.refreshNet)
     netError: null,
     dismissedJob: null,
+    historyRev: 0,  // bumps when a print ends, so an open History page reloads
   });
 
   let filesAt = 0;
@@ -226,6 +237,7 @@ async function boot() {
     store,
     cfg,
     demo,
+    temps: new TempHistory(), // the last half hour of nozzle and bed readings, for the graphs
     base: computeBase(),
     host: hash.get('host') || (loopback ? 'octopi.local' : location.host),
     loopback, // the page came from 127.0.0.1: other devices need ctx.host or the Pi's IP
@@ -297,6 +309,7 @@ async function boot() {
   });
   ctx.go('home');
   app.classList.remove('booting');
+  initLock(ctx); // stays locked across a reload, and starts the auto-lock timer
 
   // ~~ client
 
@@ -315,11 +328,15 @@ async function boot() {
       }
     });
     client.on('status', (st) => store.set(st));
+    client.on('temps', (list, replace) => ctx.temps.push(list, replace));
     client.on('logs', (lines) => {
       const patch = logPatch(lines);
       if (Object.keys(patch).length) store.set(patch);
     });
     client.on('event', (type, payload) => {
+      if (type === 'PrintDone' || type === 'PrintFailed' || type === 'PrintCancelled') {
+        store.set({ historyRev: store.get().historyRev + 1 });
+      }
       switch (type) {
         case 'PrintStarted':
           store.set({ feed: 100, flow: 100, dismissedJob: null });

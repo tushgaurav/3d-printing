@@ -1,5 +1,6 @@
 [build-system]
-requires = ["setuptools>=61"]
+# 77+ for the SPDX `license` string below (PEP 639). It needs Python 3.9 to build.
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,10 +8,25 @@ name = "OctoPrint-Layer1"
 version = "0.2.0"
 description = "Full-screen touch UI for an Ender 5 Pro on a 480x320 Raspberry Pi screen"
 readme = "README.md"
-requires-python = ">=3.7,<4"
+license = "AGPL-3.0-or-later"
+license-files = ["LICENSE"]
+authors = [{ name = "Tushar Gaurav" }]
+requires-python = ">=3.9,<4"
 # OctoPrint itself is intentionally NOT listed: installing into OctoPrint's own
 # virtualenv must never try to upgrade or reinstall OctoPrint.
 dependencies = []
+keywords = ["octoprint", "plugin", "touchscreen", "kiosk", "ender 5 pro", "raspberry pi"]
+classifiers = [
+  "Framework :: OctoPrint",
+  "Programming Language :: Python :: 3",
+  "Operating System :: POSIX :: Linux",
+]
+
+[project.urls]
+Homepage = "https://layer1.nodebench.com"
+Source = "https://github.com/tushgaurav/layer1"
+Issues = "https://github.com/tushgaurav/layer1/issues"
+Author = "https://tushgaurav.com"
 
 [project.entry-points."octoprint.plugin"]
 layer1 = "octoprint_layer1"

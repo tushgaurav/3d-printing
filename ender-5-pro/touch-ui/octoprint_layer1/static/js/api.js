@@ -55,6 +55,7 @@ export class OctoClient extends Emitter {
     this.lastSocketData = 0;
     this.retry = 0;
     this.stopped = true;
+    this.clockOffset = 0; // OctoPrint's clock minus ours, from the socket's readings (for polled ones)
   }
 
   setLink(v) {
@@ -206,6 +207,11 @@ export class OctoClient extends Emitter {
         this.setLink('online');
         this.emit('status', normalizeCurrent(payload || {}));
         if (payload && Array.isArray(payload.logs) && payload.logs.length) this.emit('logs', payload.logs);
+        // `history` (sent on connect) carries OctoPrint's recent temperatures; `current`, the new ones
+        const temps = payload && Array.isArray(payload.temps) ? payload.temps : [];
+        const newest = temps.length && +temps[temps.length - 1].time;
+        if (newest) this.clockOffset = newest - Date.now() / 1000;
+        if (temps.length || type === 'history') this.emit('temps', temps, type === 'history');
       } else if (type === 'event' && payload) {
         this.emit('event', payload.type, payload.payload || {});
       } else if (type === 'connected') {
@@ -242,6 +248,7 @@ export class OctoClient extends Emitter {
       out.printer = { text: st.text || (job && job.state) || '', flags: st.flags || {}, error: st.error || '' };
       const t = printer.temperature || {};
       out.temps = { tool0: pickTemp(t.tool0), bed: pickTemp(t.bed) };
+      this.emit('temps', [{ time: Date.now() / 1000 + this.clockOffset, ...out.temps }]);
     } else {
       // 409 = printer not operational; /api/job still carries the state text
       const text = (job && job.state) || 'Offline';
@@ -290,6 +297,8 @@ export class OctoClient extends Emitter {
   version() { return this.get('api/version'); }
   /** Pi health from this plugin (CPU temperature, power, network, disk): see sysinfo.py. */
   sysinfo() { return this.get('plugin/layer1/sysinfo'); }
+  /** Prints that ended, newest first, from this plugin: { entries, total, stats } (see history.py). */
+  history(limit = 100) { return this.get(`plugin/layer1/history?limit=${limit}`); }
 }
 
 // ~~ pairing via OctoPrint's Application Keys workflow

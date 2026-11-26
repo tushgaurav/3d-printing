@@ -1,9 +1,14 @@
 // Heat: nozzle and bed targets with +/- steps, a keypad, and material presets.
 // Taps are batched (debounced) so hammering "+" sends one command, not ten.
+// Each card shows its last ten minutes as a sparkline; tap it for the full graph.
 
 import { icon } from '../icons.js';
-import { refs, setText, setData, setStyle, esc, clamp, debounce, fmtTemp } from '../util.js';
+import { refs, setText, setData, esc, clamp, debounce, fmtTemp } from '../util.js';
 import { toast, attempt, numberPad } from '../ui.js';
+import { sparkSVG, drawSpark } from '../chart.js';
+import { openTemps } from '../sheets/temps.js';
+
+const SPARK_SECONDS = 10 * 60;
 
 export default {
   id: 'heat',
@@ -23,7 +28,7 @@ export default {
           <div class="hcard">
             <div class="head">${icon(h.icon)}<span class="name">${h.name}</span><span class="badge" data-r="${h.key}Badge">Off</span></div>
             <div class="actual"><b data-r="${h.key}Actual">—</b><span>°C</span></div>
-            <div class="track"><div class="bar" data-r="${h.key}Bar"></div></div>
+            <button class="spark" data-r="${h.key}Spark" data-graph="${h.key}" aria-label="${h.name} temperature graph">${sparkSVG()}</button>
             <div class="ctl">
               <button class="btn" data-act="dec" data-h="${h.key}" aria-label="Lower">${icon('minus')}</button>
               <button class="btn target" data-act="edit" data-h="${h.key}"><span data-r="${h.key}Target">0°</span><small>Target</small></button>
@@ -69,6 +74,7 @@ export default {
     el.addEventListener('click', async (e) => {
       const b = e.target.closest('button');
       if (!b) return;
+      if (b.dataset.graph) { openTemps(ctx); return; }
       const s = store.get();
       if (b.dataset.preset != null) {
         const p = b.dataset.preset === 'off' ? { name: 'Cool', nozzle: 0, bed: 0 } : cfg.presets[+b.dataset.preset];
@@ -110,14 +116,25 @@ export default {
         }
         setText(r[`${h.key}Badge`], badge);
         setData(r[`${h.key}Badge`], 'tone', tone);
-        const ratio = clamp((t.actual || 0) / (target > 0 ? target : h.max), 0, 1);
-        setStyle(r[`${h.key}Bar`], 'width', `${Math.round(ratio * 50) * 2}%`);
-        setData(r[`${h.key}Bar`], 'tone', tone);
+        setData(r[`${h.key}Spark`], 'tone', tone);
       }
     }
 
+    // sparklines: redrawn when readings arrive, and only while this screen is showing
+    let visible = false;
+    let drawn = -1;
+    function renderSparks() {
+      if (!visible || drawn === ctx.temps.version) return;
+      drawn = ctx.temps.version;
+      for (const h of heaters) drawSpark(r[`${h.key}Spark`].firstElementChild, ctx.temps, h.key, SPARK_SECONDS);
+    }
+
     store.subscribe(render);
+    ctx.temps.subscribe(renderSparks);
     render(store.get());
-    return {};
+    return {
+      onShow() { visible = true; renderSparks(); },
+      onHide() { visible = false; },
+    };
   },
 };

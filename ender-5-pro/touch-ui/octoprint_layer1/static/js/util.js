@@ -73,6 +73,20 @@ export function fmtClock(date) {
   return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: !clock24 });
 }
 
+/** A moment in the past: "Today, 9:14 PM", "Yesterday, 9:14 PM", "Mon, 9:14 PM" in the last week, else "12 Nov". */
+export function fmtWhen(unixSec) {
+  if (!unixSec) return '';
+  const d = new Date(unixSec * 1000);
+  const now = new Date();
+  const midnight = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const days = Math.round((midnight(now) - midnight(d)) / 86400000);
+  if (days <= 0) return `Today, ${fmtClock(d)}`;
+  if (days === 1) return `Yesterday, ${fmtClock(d)}`;
+  if (days < 7) return `${d.toLocaleDateString([], { weekday: 'short' })}, ${fmtClock(d)}`;
+  const year = d.getFullYear() === now.getFullYear() ? undefined : 'numeric';
+  return d.toLocaleDateString([], { day: 'numeric', month: 'short', year });
+}
+
 export function fmtAgo(unixSec) {
   if (!unixSec) return '';
   const s = Date.now() / 1000 - unixSec;

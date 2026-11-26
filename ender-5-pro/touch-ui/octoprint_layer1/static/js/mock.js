@@ -7,6 +7,88 @@ import { demoGcode, demoZAt } from './mock-gcode.js';
 
 const AMBIENT = 24;
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// ~~ heaters: a hotend heats in about a minute, the bed in a few; both cool slowly
+
+const HEATER = {
+  tool0: { rise: 3, cool: 0.006 },  // °C/s at most while heating; share of the gap lost per second
+  bed: { rise: 0.3, cool: 0.003 },
+};
+
+/** One second of a heater moving toward `goal` (0 = off). */
+function stepHeater(key, t, goal, noise = 0.3) {
+  const h = HEATER[key];
+  const on = goal > 0;
+  if (on && t.actual < goal - 0.5) t.actual += Math.min(h.rise, (goal - t.actual) * 0.15); // heating
+  else if (on && t.actual < goal + 1) t.actual += (goal - t.actual) * 0.3;               // holding
+  else t.actual = Math.max(on ? goal : AMBIENT, t.actual + (AMBIENT - t.actual) * h.cool); // cooling
+  t.actual += (Math.random() - 0.5) * noise;
+}
+
+// What the demo printer's heaters did in the last half hour, per scenario:
+// [seconds ago, nozzle target, bed target, optional nozzle kick]. The kick is a part-fan
+// blast that briefly pulls the nozzle down, as happens on bridges.
+const TEMP_STORIES = {
+  idle: [[1800, 0, 0], [1440, 200, 60], [960, 0, 0]],      // someone preheated, then switched off
+  heating: [[1800, 0, 0], [48, 200, 60]],
+  printing: [[1800, 205, 60], [1020, 205, 60, -3.5], [380, 205, 60, -2]],
+  paused: [[1800, 205, 60], [1020, 205, 60, -3.5], [380, 205, 60, -2]],
+  finished: [[1800, 205, 60], [260, 0, 0]],
+  error: [[1800, 0, 0], [200, 200, 0], [70, 0, 0]],
+  offline: [[1800, 0, 0]],
+};
+
+/** Half an hour of readings every 2 s, ending now; the last one is where the live demo carries on. */
+function tempStory(scenario) {
+  const story = TEMP_STORIES[scenario] || TEMP_STORIES.idle;
+  const now = Date.now() / 1000;
+  const [, noz0, bed0] = story[0];
+  const t = {
+    tool0: { actual: noz0 > 0 ? noz0 : AMBIENT, target: noz0 },
+    bed: { actual: bed0 > 0 ? bed0 : AMBIENT, target: bed0 },
+  };
+  const out = [];
+  let step = 0;
+  for (let ago = 1800; ago >= 0; ago--) {
+    while (step < story.length && story[step][0] >= ago) {
+      const [, noz, bed, kick] = story[step++];
+      t.tool0.target = noz;
+      t.bed.target = bed;
+      if (kick) t.tool0.actual += kick;
+    }
+    stepHeater('tool0', t.tool0, t.tool0.target);
+    stepHeater('bed', t.bed, t.bed.target, 0.1);
+    if (ago % 2 === 0) out.push({ time: now - ago, tool0: { ...t.tool0 }, bed: { ...t.bed } });
+  }
+  return out;
+}
+
+// ~~ print history: what History shows in the demo (newest last)
+
+function makeHistory(files) {
+  const now = Date.now() / 1000;
+  const flat = [];
+  const walk = (l) => l.forEach((f) => (f.type === 'folder' ? walk(f.children) : flat.push(f)));
+  walk(files);
+  const file = (name) => flat.find((f) => f.name === name) || { name, path: name };
+  const runs = [
+    ['Z_endstop_spacer.gcode', 'done', 30, 610],
+    ['Fan_duct_v2.gcode', 'done', 24, 4380],  // since deleted: History can't print it again
+    ['Spool_holder_Ender5.gcode', 'done', 13, 7710],
+    ['Cable_chain_link_x12.gcode', 'cancelled', 12, 380],
+    ['Raspberry_Pi_4_case_base.gcode', 'done', 8, 11530],
+    ['Calibration_cube_20mm.gcode', 'done', 7, 2390],
+    ['Calibration_cube_20mm.gcode', 'failed', 6, 840, 'Heating failed, system stopped! Heater_ID: 0'],
+    ['Benchy_0.2mm_PLA_E5P.gcode', 'cancelled', 1.1, 260],
+    ['Benchy_0.2mm_PLA_E5P.gcode', 'done', 1, 5232],
+  ];
+  return runs.map(([name, result, daysAgo, duration, error], i) => {
+    const f = file(name);
+    const entry = { id: i + 1, path: f.path, name: f.name, origin: 'local', end: now - daysAgo * 86400, duration, result };
+    if (error) entry.error = error;
+    return entry;
+  });
+}
 const svgUri = (svg) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 
 // ~~ fake slicer thumbnails: tiny isometric models
@@ -78,7 +160,11 @@ export class MockClient extends Emitter {
     this.cfg = cfg;
     this.base = './';
     this.fileList = makeFiles();
-    this.t = { tool0: { actual: 24.6, target: 0 }, bed: { actual: 23.9, target: 0 } };
+    this.historyList = makeHistory(this.fileList);
+    // the heaters carry on from the last half hour's story (see TEMP_STORIES)
+    this.tempLog = tempStory(scenario);
+    const last = this.tempLog[this.tempLog.length - 1];
+    this.t = { tool0: { ...last.tool0 }, bed: { ...last.bed } };
     this.state = 'operational';
     this.job = null;
     this.progress = null;
@@ -87,11 +173,8 @@ export class MockClient extends Emitter {
     const benchy = this.fileList[0];
     if (scenario === 'printing' || scenario === 'paused' || scenario === 'finished') {
       this._startJob(benchy, scenario === 'finished' ? 1 : 0.47);
-      this.t = { tool0: { actual: 204.6, target: 205 }, bed: { actual: 60.1, target: 60 } };
       if (scenario === 'paused') this.state = 'paused';
-      if (scenario === 'finished') { this.state = 'operational'; this.t.tool0.target = 0; this.t.bed.target = 0; this.t.tool0.actual = 61; this.t.bed.actual = 41; }
-    } else if (scenario === 'heating') {
-      this.t = { tool0: { actual: 118, target: 200 }, bed: { actual: 44, target: 60 } };
+      if (scenario === 'finished') this.state = 'operational';
     } else if (scenario === 'offline') {
       this.state = 'offline';
     } else if (scenario === 'error') {
@@ -154,6 +237,7 @@ export class MockClient extends Emitter {
     this.emit('link', 'connecting');
     setTimeout(() => {
       this.emit('link', 'online');
+      this.emit('temps', this.tempLog, true); // like OctoPrint's `history` message on connect
       if (this.state === 'printing' || this.state === 'paused') this.emit('logs', ['Send: N2041 M106 S178*86', 'Recv: ok']);
       this._tick();
       this.timer = setInterval(() => this._tick(), 1000);
@@ -164,12 +248,8 @@ export class MockClient extends Emitter {
 
   _tick() {
     const online = this.state !== 'offline' && this.state !== 'error';
-    for (const [k, t] of Object.entries(this.t)) {
-      const goal = online && t.target > 0 ? t.target : AMBIENT;
-      const rate = goal > t.actual ? (k === 'bed' ? 0.06 : 0.12) : 0.03;
-      t.actual += (goal - t.actual) * rate + (Math.random() - 0.5) * 0.3;
-      if (Math.abs(goal - t.actual) < 0.4) t.actual = goal + (Math.random() - 0.5) * 0.4;
-    }
+    for (const [k, t] of Object.entries(this.t)) stepHeater(k, t, online ? t.target : 0, k === 'bed' ? 0.1 : 0.3);
+    this.emit('temps', [{ time: Date.now() / 1000, tool0: { ...this.t.tool0 }, bed: { ...this.t.bed } }]);
     if (this.state === 'printing' && this.progress) {
       const est = this.job.estimatedPrintTime;
       const pct = Math.min(100, this.progress.completion + 0.02 * this.speedup);
@@ -180,6 +260,7 @@ export class MockClient extends Emitter {
         this.state = 'operational';
         this.progress.printTimeLeft = 0;
         this.t.tool0.target = 0; this.t.bed.target = 0;
+        this._logPrint('done');
         this.emit('event', 'PrintDone', { name: this.job.file.name, time: this.progress.printTime });
       }
     }
@@ -234,9 +315,27 @@ export class MockClient extends Emitter {
     setTimeout(() => {
       this.state = 'operational';
       this.t.tool0.target = 0; this.t.bed.target = 0;
+      this._logPrint('cancelled');
       this.emit('event', 'PrintCancelled', {});
     }, 1500);
     return this._ok(null);
+  }
+
+  /** The print that just ended, into the demo's History (like the plugin's history.py). */
+  _logPrint(result) {
+    if (!this.job) return;
+    const f = this.job.file;
+    const id = this.historyList.reduce((m, e) => Math.max(m, e.id), 0) + 1;
+    // a demo print runs sped up: log the time it would have taken
+    this.historyList.push({ id, path: f.path, name: f.name, origin: 'local', end: Date.now() / 1000, duration: this.progress ? this.progress.printTime : null, result });
+  }
+
+  history(limit = 100) {
+    const all = this.historyList.slice().reverse();
+    const results = { done: 0, failed: 0, cancelled: 0, unfinished: 0 };
+    let seconds = 0;
+    for (const e of all) { results[e.result]++; seconds += e.duration || 0; }
+    return this._ok({ entries: all.slice(0, limit), total: all.length, stats: { prints: all.length, seconds: Math.round(seconds), results } });
   }
 
   connection() {

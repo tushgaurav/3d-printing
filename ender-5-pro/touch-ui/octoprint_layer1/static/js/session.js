@@ -1,4 +1,4 @@
-// Version, plus what this screen remembers: its OctoPrint application key, theme,
+// Version, plus what this screen remembers: its OctoPrint application key, theme, lock,
 // whether Home shows the camera or the model, and the Files view (list or grid) and sort.
 
 export const UI_VERSION = '0.2.0';
@@ -73,4 +73,32 @@ export function storedFilesSort() {
 
 export function saveFilesSort(sort) {
   try { localStorage.setItem(FILES_SORT_KEY, sort); } catch { /* remembered for this page load only */ }
+}
+
+// Lock screen: whether this screen is locked (so a reload stays locked), and the
+// auto-lock delay in minutes (0 = never), chosen on the screen. null = not chosen yet,
+// so the config default (ui.autoLockMinutes) applies.
+const LOCKED_KEY = 'layer1.locked';
+const AUTOLOCK_KEY = 'layer1.autoLock';
+
+export function storedLocked() {
+  try { return localStorage.getItem(LOCKED_KEY) === '1'; } catch { return false; }
+}
+
+export function saveLocked(on) {
+  try {
+    if (on) localStorage.setItem(LOCKED_KEY, '1');
+    else localStorage.removeItem(LOCKED_KEY);
+  } catch { /* a reload unlocks */ }
+}
+
+export function storedAutoLock() {
+  try {
+    const v = localStorage.getItem(AUTOLOCK_KEY);
+    return v != null && Number.isFinite(+v) ? +v : null;
+  } catch { return null; }
+}
+
+export function saveAutoLock(minutes) {
+  try { localStorage.setItem(AUTOLOCK_KEY, String(minutes)); } catch { /* remembered for this page load only */ }
 }

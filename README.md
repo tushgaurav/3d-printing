@@ -29,10 +29,13 @@ modern printer with a built-in display.
 - **Live camera** with tap-to-fullscreen and a 3D G-code viewer
 - **Print progress** with layer gauge, time remaining, and ETA
 - **Temperature control** with quick presets (PLA, PETG, TPU, ABS) and a keypad
+- **Temperature graphs** — a 10-minute sparkline on each heater; tap it for nozzle and bed over 5, 10 or 30 minutes, and drag to read any moment
 - **File browser** with slicer thumbnails, folders, sort options, and grid/list view
 - **Jog controls** for XY, Z (bed), and extruder with configurable steps
 - **Filament management** — load, unload, and purge with Bowden-length support
 - **Tune while printing** — speed modes, flow rate, and part fan
+- **Print history** — every print that finished, failed, or was stopped, with totals and Print Again (earlier prints are imported from OctoPrint)
+- **Lock screen** — shows the print big from across the room; hold to unlock, with optional auto-lock after 1, 5, or 15 minutes
 - **Network page** — tap the Wi-Fi icon for Wi-Fi (name, signal bars) or Ethernet (link speed) details and the IP, plus QR codes that open OctoPrint and Layer1 on your phone
 - **Dark and light themes** optimized for small SPI panels
 - **Fully offline** — fonts, icons, and assets are all bundled
