@@ -1,0 +1,1152 @@
+/* Layer1 marketing site.
+   A printer standing in an empty, overcast workshop: steel-blue sky, warm plaster floor.
+   The Layer1 palette comes in only where the product does: graphite for the screen,
+   lime for "live" and "go". Archivo at its widest for display, Geist for everything else. */
+
+:root {
+  /* sky, top to horizon. --sky-1 keeps small white text at 4.5:1, --sky-2 keeps the
+     headline at 3:1 */
+  --sky-1: #66778a;
+  --sky-2: #8796a6;
+  --sky-3: #b4bdc1;
+  /* floor */
+  --plaster: #d5cbbe;
+  --plaster-2: #cdc1b1;
+  --clay: #e3d7c9;
+  --paper: #f7f7f3;
+  --mist: #d3e2e8;
+  /* Layer1 */
+  --graphite: #15171a;
+  --graphite-2: #1f2226;
+  --graphite-3: #2b2f34;
+  --signal: #c8f251;
+  --signal-ink: #10150a;
+  /* text */
+  --ink: #17191c;
+  --ink-2: #4f555b;
+  --on-dark: #f4f4f1;
+  --on-dark-2: #a4a8ae;
+  --hair-dark: rgba(255, 255, 255, 0.09);
+  --hair-light: rgba(23, 25, 28, 0.12);
+
+  --display: var(--font-archivo), "Archivo", sans-serif;
+  --sans: var(--font-geist), "Geist", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --gutter: clamp(16px, 4vw, 64px);
+  --hero-h: clamp(620px, calc(100svh - 96px), 940px);
+  --horizon: 0.72;
+  --focus: var(--ink);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--graphite);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
+}
+
+h1,
+h2,
+h3,
+p,
+ol,
+ul,
+figure,
+pre {
+  margin: 0;
+}
+
+ol,
+ul {
+  padding: 0;
+  list-style: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+::selection {
+  background: var(--signal);
+  color: var(--signal-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ───────────── Shared bits ───────────── */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 24px;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.pill--paper {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.pill--paper:hover {
+  background: #fff;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.chip--paper {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.chip--signal {
+  background: var(--signal);
+  color: var(--signal-ink);
+}
+
+.chip--mist {
+  background: var(--mist);
+  color: #24343c;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.section-title {
+  font-family: var(--display);
+  font-stretch: 125%;
+  font-weight: 500;
+  font-size: clamp(30px, 3.4vw, 50px);
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  max-width: 17ch;
+  text-wrap: balance;
+}
+
+.section-lede {
+  margin-top: 20px;
+  max-width: 44ch;
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+/* ───────────── Scene: sky and floor behind the hero, cards and screens ───────────── */
+
+.scene {
+  position: relative;
+  isolation: isolate;
+  overflow-x: clip;
+  background:
+    radial-gradient(ellipse 46% 52% at 90% -6%, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 70%),
+    linear-gradient(180deg, var(--sky-1) 0, var(--sky-2) calc(var(--hero-h) * 0.48), var(--sky-3) calc(var(--hero-h) * var(--horizon)));
+  background-repeat: no-repeat;
+  background-size: 100% var(--hero-h), 100% 100%;
+}
+
+/* The floor: a soft horizon, then plaster with a little grain. */
+.scene::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: calc(var(--hero-h) * var(--horizon) - 36px) 0 0;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .32 0 0 0 0 .27 0 0 0 0 .21 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    linear-gradient(180deg, rgba(213, 203, 190, 0) 0, var(--plaster) 72px, var(--plaster-2) 520px, var(--plaster) 1100px);
+  -webkit-mask: linear-gradient(180deg, transparent 0, #000 64px);
+  mask: linear-gradient(180deg, transparent 0, #000 64px);
+}
+
+/* ───────────── Nav ───────────── */
+
+.nav {
+  position: absolute;
+  z-index: 10;
+  inset: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px var(--gutter) 0;
+  --focus: #fff;
+}
+
+.nav__logo {
+  display: block;
+  border-radius: 4px;
+}
+
+.nav__logo img {
+  width: 74px;
+  height: auto;
+}
+
+.nav__links {
+  display: flex;
+  gap: clamp(24px, 4vw, 64px);
+  font-size: 16px;
+  color: #fff;
+}
+
+.nav__links a {
+  text-decoration: none;
+  padding: 6px 2px;
+}
+
+.nav__links a:hover {
+  text-decoration: underline;
+  text-underline-offset: 6px;
+  text-decoration-thickness: 1px;
+}
+
+.nav .pill {
+  --focus: #fff;
+}
+
+/* ───────────── Hero ───────────── */
+
+.hero {
+  position: relative;
+  height: var(--hero-h);
+  --fs: clamp(44px, 7vw, 140px);
+  --title-top: 34%;
+}
+
+.hero__stage {
+  position: absolute;
+  inset: 0;
+}
+
+.hero__title {
+  position: absolute;
+  z-index: 1;
+  top: var(--title-top);
+  left: var(--gutter);
+  right: var(--gutter);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  font-family: var(--display);
+  font-stretch: 125%;
+  font-weight: 500;
+  font-size: var(--fs);
+  line-height: 0.84;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.hero__words {
+  position: relative;
+  display: block;
+}
+
+.hero__words--right {
+  text-align: right;
+}
+
+.hero__line {
+  display: block;
+  white-space: nowrap;
+}
+
+.hero__ink,
+.hero__layer {
+  display: block;
+}
+
+/* The layer being printed: a lime slice of the same letters, laid over the white. */
+.hero__layer {
+  position: absolute;
+  inset: 0;
+  color: var(--signal);
+  clip-path: inset(100% 0 0 0);
+}
+
+.hero__printer {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: 6.5%;
+  /* tall enough to own the hero, but tied to the width too, so the gap between the
+     two halves of the headline and the printer keep the same proportion */
+  height: min(76%, 41vw);
+  /* aspect-ratio comes from the image file itself, set inline in Hero.tsx */
+  /* a touch left of centre: the Z column on the right of the photo would otherwise
+     cover the E of "Ender", and the floating screen balances the weight */
+  translate: -56% 0;
+  /* where the hotend is in the photo (top gantry, the Ender 5's bed moves instead),
+     as a share of the box */
+  --pin-x: 52.5%;
+  --pin-y: 19%;
+  /* the floating Layer1 screen, beside the stock LCD it replaces */
+  --screen-right: -36%;
+  --screen-top: 53%;
+  --screen-w: 50%;
+}
+
+.hero__printer-img {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: bottom center;
+  filter: drop-shadow(0 18px 18px rgba(40, 34, 26, 0.22));
+}
+
+.hero__shadow {
+  position: absolute;
+  left: -6%;
+  right: -6%;
+  bottom: -3%;
+  height: 12%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(52, 44, 34, 0.42), rgba(52, 44, 34, 0) 100%);
+}
+
+.hero__reading {
+  position: absolute;
+  left: var(--pin-x);
+  bottom: calc(100% - var(--pin-y) + 96px);
+  translate: -50% 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px 0 14px;
+  border-radius: 999px;
+  background: rgba(247, 247, 243, 0.9);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: var(--ink);
+  font-size: 15px;
+  white-space: nowrap;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 8px 24px -10px rgba(30, 40, 52, 0.45);
+}
+
+.hero__reading strong {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.hero__reading-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--signal);
+  box-shadow: 0 0 0 3px rgba(200, 242, 81, 0.28);
+}
+
+/* A hairline from the reading down to a ring on the hotend. */
+.hero__pin {
+  position: absolute;
+  left: var(--pin-x);
+  top: calc(var(--pin-y) - 96px);
+  width: 22px;
+  height: 96px;
+  translate: -50% 0;
+  background: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)) center top / 1px calc(100% - 22px) no-repeat;
+}
+
+.hero__pin::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -11px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: radial-gradient(circle, #fff 0 4px, rgba(255, 255, 255, 0.25) 5px);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+/* The 3.5-inch screen, floating where it would mount on the frame. */
+.hero__screen {
+  position: absolute;
+  right: var(--screen-right, -30%);
+  top: var(--screen-top, 34%);
+  width: var(--screen-w, 46%);
+  padding: 6px;
+  border-radius: 12px;
+  background: linear-gradient(160deg, #2a2d32, #121316);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.12) inset,
+    0 30px 40px -18px rgba(28, 34, 42, 0.55),
+    0 6px 12px -6px rgba(28, 34, 42, 0.4);
+  transform: perspective(1100px) rotateY(-20deg) rotateX(6deg) rotateZ(1deg);
+  transform-origin: left center;
+}
+
+.hero__screen img {
+  width: 100%;
+  border-radius: 5px;
+}
+
+.hero__screen::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 5px;
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.16) 0 28%, rgba(255, 255, 255, 0) 46%);
+  pointer-events: none;
+}
+
+.hero__foot {
+  position: absolute;
+  z-index: 3;
+  top: calc(var(--title-top) + var(--fs) * 0.84 * 2 + clamp(28px, 4vh, 56px));
+  left: var(--gutter);
+  right: var(--gutter);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+}
+
+.hero__foot > * {
+  pointer-events: auto;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+  height: 64px;
+  padding: 0 6px 0 32px;
+  border-radius: 999px;
+  background: var(--graphite);
+  color: var(--on-dark);
+  font-size: 17px;
+  font-weight: 500;
+  text-decoration: none;
+  box-shadow: 0 0 0 3px rgba(21, 23, 26, 0.16);
+  --focus: #fff;
+}
+
+.cta__icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+  transition: rotate 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.cta:hover .cta__icon {
+  rotate: 45deg;
+}
+
+.hero__meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 16px;
+  color: var(--ink);
+}
+
+/* ───────────── Load sequence: the printer settles, then the headline prints ───────────── */
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero__printer-img,
+  .hero__shadow {
+    animation: settle 900ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  .hero__ink {
+    animation: print-in 1600ms steps(16, end) 250ms both;
+  }
+
+  .hero__layer {
+    animation:
+      layer-band 1500ms steps(15, end) 350ms both,
+      layer-off 400ms ease-out 1900ms forwards;
+  }
+
+  .hero__reading,
+  .hero__pin,
+  .hero__screen {
+    animation: appear 600ms cubic-bezier(0.2, 0.8, 0.2, 1) 1850ms both;
+  }
+}
+
+@keyframes settle {
+  from {
+    opacity: 0;
+    translate: 0 14px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes print-in {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* One band, one "layer" tall (1/16 of the block), climbing in step with print-in. */
+@keyframes layer-band {
+  from {
+    clip-path: inset(93.75% 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 93.75% 0);
+  }
+}
+
+@keyframes layer-off {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ───────────── Bento ───────────── */
+
+.bento {
+  position: relative;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(12px, 1.6vw, 26px);
+  max-width: 1760px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 2vw, 32px);
+}
+
+.card {
+  position: relative;
+  overflow: hidden;
+  min-height: clamp(360px, 27vw, 440px);
+  padding: clamp(24px, 2.4vw, 40px);
+  border-radius: 6px;
+}
+
+.card--paper {
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+}
+
+.card--graphite {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: var(--graphite);
+  color: var(--on-dark);
+  --focus: var(--signal);
+}
+
+.card--clay {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: var(--clay);
+}
+
+.card__kicker {
+  position: relative;
+  z-index: 1;
+  max-width: 20ch;
+  font-size: 16px;
+  color: var(--ink-2);
+}
+
+.spec {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: clamp(20px, 2.6vw, 44px);
+}
+
+.spec__value {
+  font-family: var(--display);
+  font-stretch: 125%;
+  font-weight: 500;
+  font-size: clamp(60px, 5vw, 96px);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+}
+
+.spec__tag {
+  margin-top: -6px;
+}
+
+.card__foot {
+  position: relative;
+  z-index: 1;
+  margin-top: auto;
+  padding-top: 24px;
+  max-width: 9ch;
+  font-size: clamp(26px, 2.2vw, 34px);
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+}
+
+.card__device {
+  padding: 5px;
+  border-radius: 12px;
+  background: linear-gradient(160deg, #2a2d32, #121316);
+}
+
+.card__device img {
+  width: 100%;
+  border-radius: 6px;
+}
+
+.card__device--tilt {
+  position: absolute;
+  right: -19%;
+  bottom: -6%;
+  width: 62%;
+  rotate: -7deg;
+  box-shadow: 0 26px 36px -20px rgba(28, 30, 34, 0.5);
+}
+
+.card__device--flat {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 0 0 1px var(--hair-dark);
+}
+
+.card__statement {
+  margin-top: clamp(24px, 2.4vw, 36px);
+  max-width: 22ch;
+  font-size: clamp(22px, 1.8vw, 28px);
+  font-weight: 500;
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.card__note {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 24px;
+  font-size: 14px;
+  color: var(--on-dark-2);
+}
+
+.card__note svg {
+  flex: none;
+  color: var(--signal);
+}
+
+.card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+}
+
+.card__title {
+  max-width: 12ch;
+  text-wrap: balance;
+  font-size: clamp(28px, 2.4vw, 38px);
+  font-weight: 500;
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+}
+
+.round-link {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--ink);
+  transition: rotate 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.round-link:hover {
+  rotate: 45deg;
+}
+
+.card__body {
+  margin-top: 16px;
+  max-width: 22ch;
+  font-size: 17px;
+  color: var(--ink-2);
+}
+
+.card--clay .chip {
+  margin-top: auto;
+  position: relative;
+  z-index: 1;
+}
+
+.card__device--peek {
+  position: absolute;
+  right: -18%;
+  bottom: -16%;
+  width: 70%;
+  rotate: 8deg;
+  box-shadow: 0 26px 40px -18px rgba(60, 44, 28, 0.45);
+}
+
+/* ───────────── Screens ───────────── */
+
+.screens {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: clamp(96px, 11vw, 168px) var(--gutter) clamp(96px, 11vw, 160px);
+}
+
+.screens__body {
+  display: grid;
+  grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+  gap: clamp(32px, 5vw, 88px);
+  align-items: center;
+  margin-top: clamp(48px, 6vw, 80px);
+}
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rail__item {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 18px;
+  align-items: start;
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  border-radius: 18px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.rail__item:hover {
+  background: rgba(23, 25, 28, 0.05);
+}
+
+.rail__icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  color: var(--ink-2);
+  background: rgba(23, 25, 28, 0.06);
+}
+
+.rail__item[aria-selected="true"] .rail__icon {
+  background: var(--signal);
+  color: var(--signal-ink);
+}
+
+.rail__text {
+  display: grid;
+  grid-template-rows: auto 0fr;
+  padding-top: 13px;
+  transition: grid-template-rows 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.rail__item[aria-selected="true"] .rail__text {
+  grid-template-rows: auto 1fr;
+}
+
+.rail__name {
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 26px;
+  color: var(--ink-2);
+}
+
+.rail__item[aria-selected="true"] .rail__name {
+  color: var(--ink);
+}
+
+.rail__desc {
+  overflow: hidden;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.rail__item[aria-selected="true"] .rail__desc {
+  padding-top: 6px;
+  padding-bottom: 8px;
+}
+
+.device {
+  padding: clamp(10px, 1.2vw, 16px);
+  border-radius: clamp(18px, 2vw, 28px);
+  background: linear-gradient(160deg, #2c2f34, #111215 60%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.1) inset,
+    0 50px 70px -40px rgba(60, 46, 30, 0.55),
+    0 12px 24px -12px rgba(60, 46, 30, 0.35);
+}
+
+.device__glass {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  border-radius: clamp(6px, 0.8vw, 10px);
+  background: #08090a;
+}
+
+.device__shot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 220ms ease-out;
+}
+
+.device__shot[data-active="true"] {
+  opacity: 1;
+}
+
+/* ───────────── Demo ───────────── */
+
+.demo-section {
+  background: var(--graphite);
+  padding: clamp(72px, 9vw, 128px) var(--gutter);
+}
+
+.demo {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(24px, 4vw, 64px);
+  align-items: center;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: clamp(24px, 3.4vw, 48px);
+  border-radius: 6px;
+  background: var(--clay);
+  color: var(--ink);
+  scroll-margin-top: 24px;
+  --focus: var(--ink);
+}
+
+.demo__title {
+  font-family: var(--display);
+  font-stretch: 125%;
+  font-weight: 500;
+  font-size: clamp(24px, 2.2vw, 32px);
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+
+.demo__text {
+  margin-top: 14px;
+  max-width: 46ch;
+  font-size: 16px;
+  color: var(--ink-2);
+}
+
+.demo__text code {
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.terminal {
+  position: relative;
+  padding: 22px 24px;
+  border-radius: 12px;
+  background: var(--graphite);
+  color: var(--on-dark);
+  --focus: var(--signal);
+}
+
+.terminal pre {
+  overflow-x: auto;
+  padding-right: 96px;
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.terminal pre code::before {
+  content: none;
+}
+
+.copy {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--graphite-3);
+  color: var(--on-dark);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.copy:hover {
+  background: #383d43;
+}
+
+.copy[data-copied="true"] {
+  background: var(--signal);
+  color: var(--signal-ink);
+}
+
+/* ───────────── Footer ───────────── */
+
+.footer {
+  background: var(--graphite);
+  color: var(--on-dark);
+  padding: 0 var(--gutter) 40px;
+  --focus: var(--signal);
+}
+
+.footer__top,
+.footer__fine {
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+.footer__top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  padding-top: 56px;
+  border-top: 1px solid var(--hair-dark);
+}
+
+.footer__mark {
+  width: clamp(140px, 16vw, 220px);
+  height: auto;
+}
+
+.footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 32px;
+  font-size: 16px;
+}
+
+.footer__links a {
+  text-decoration: none;
+  color: var(--on-dark-2);
+}
+
+.footer__links a:hover {
+  color: var(--on-dark);
+}
+
+.footer__fine {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 32px;
+  margin-top: 48px;
+  font-size: 13px;
+  color: #80858c;
+}
+
+/* ───────────── Smaller screens ───────────── */
+
+@media (max-width: 1100px) {
+  .bento {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .card--clay {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 900px) {
+  .screens__body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .device {
+    order: -1;
+  }
+
+  .demo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  :root {
+    --hero-h: 760px;
+  }
+
+  .nav {
+    padding-top: 20px;
+  }
+
+  .nav__links {
+    display: none;
+  }
+
+  .nav .pill {
+    height: 42px;
+    padding: 0 18px;
+    font-size: 15px;
+  }
+
+  /* The headline stacks: "Touch screen" from the left, "Ender 5 Pro" stepped in from
+     the right, and the printer stands in front of the last line. */
+  .hero {
+    --fs: clamp(40px, 13.6vw, 72px);
+    --title-top: 104px;
+  }
+
+  .hero__title {
+    flex-direction: column;
+    gap: 0.06em;
+  }
+
+  .hero__words--right {
+    align-self: flex-end;
+  }
+
+  .hero__printer {
+    height: 46%;
+    bottom: 18.5%;
+    translate: -50% 0;
+    --screen-w: 46%;
+    --screen-right: -9%;
+    --screen-top: 54%;
+  }
+
+  /* No room above the printer on a phone: the headline is there. */
+  .hero__reading,
+  .hero__pin {
+    display: none;
+  }
+
+  .hero__foot {
+    top: auto;
+    bottom: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .cta {
+    height: 56px;
+    padding-left: 24px;
+    gap: 14px;
+  }
+
+  .cta__icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .bento {
+    grid-template-columns: minmax(0, 1fr);
+    padding-top: 16px;
+  }
+
+  .card--clay {
+    grid-column: auto;
+  }
+
+  .footer__top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
