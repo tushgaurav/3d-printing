@@ -1,4 +1,4 @@
-# Ender 5 Pro — touchscreen UI
+# Ender 5 Pro — Raspberry Pi Based Touchscreen Controller
 
 A full-screen touch interface for the Ender 5 Pro, running on the 3.5" (480×320)
 SPI screen attached to the OctoPi Raspberry Pi. Think Bambu-style printer screen:
