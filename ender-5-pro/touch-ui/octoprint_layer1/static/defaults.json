@@ -53,6 +53,13 @@
     "unloadExtra": 30,
     "chunk": 50
   },
+  "level": {
+    "inset": 30,
+    "clearance": 5,
+    "paperZ": 0,
+    "travelFeed": 6000,
+    "zFeed": 600
+  },
   "speedModes": [
     {
       "name": "Quiet",

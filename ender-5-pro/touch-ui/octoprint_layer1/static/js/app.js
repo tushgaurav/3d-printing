@@ -4,7 +4,7 @@
 // URL options
 //   ?demo[=printing|paused|finished|heating|offline|error]  simulated printer
 //   ?page=files|heat|move|more|calibrate|pair               open a screen at start
-//   ?sheet=tune|filament|printer|system|display|network|phone|quick|temps|history|lock|locked
+//   ?sheet=tune|filament|level|printer|system|display|network|phone|quick|temps|history|lock|locked
 //                                                           open a sheet at start (quick = the status bar's quick info,
 //                                                           lock = the Lock Screen settings, locked = lock the screen)
 //   ?sheet=finished|asleep                                  demo only: the print-finished card, a sleeping screen
@@ -31,6 +31,7 @@ import { showPairing } from './sheets/pair.js';
 import { openCalibration } from './sheets/calibrate.js';
 import { openTune } from './sheets/tune.js';
 import { openFilament } from './sheets/filament.js';
+import { openLevel } from './sheets/level.js';
 import { openPrinter } from './sheets/printer.js';
 import { openSystem } from './sheets/system.js';
 import { openDisplay } from './sheets/display.js';
@@ -50,7 +51,7 @@ import { numberPad } from './ui.js';
 
 const SCREENS = [home, files, heat, move, more];
 const SHEETS = {
-  tune: openTune, filament: openFilament, printer: openPrinter, system: openSystem, display: openDisplay,
+  tune: openTune, filament: openFilament, level: openLevel, printer: openPrinter, system: openSystem, display: openDisplay,
   network: openNetwork, phone: openPhone, quick: openQuickInfo, temps: openTemps, history: openHistory,
   lock: openLockSettings, locked: lockScreen,
 };

@@ -133,6 +133,8 @@ first time the UI loads). Edit, then reload the screen (More → System → Relo
 | `filament.bowdenLength` | 420 | **Measure yours.** Load feeds this minus `fastFeedStopShort` fast, then purges slowly |
 | `filament.fastFeed` / `purgeFeed` | 1500 / 240 | mm/min. Stock Ender firmware caps E at 25 mm/s (1500) |
 | `move.steps` | 0.1, 1, 10, 50 | Step sizes (mm) on Move. The chosen step is both the jog distance and the extrude/retract length |
+| `level.inset` | 30 | Move → Level Bed: how far (mm) the corner spots sit in from the bed's edges. Set it so the nozzle stops over each knob |
+| `level.paperZ` / `clearance` | 0 / 5 | Z (mm) for the paper test, and how far the bed drops before moving between spots and when you leave the page |
 | `speedModes` | Quiet 50, Normal 100, Sport 125, Turbo 150 | Feed-rate presets (M220) |
 | `webcam.snapshot` / `stream` | `/webcam/?action=snapshot` / `…stream` | OctoPi's default webcam URLs |
 | `webcam.snapshotSeconds` | 3 | Home screen refresh. The live stream is only used full-screen, to spare the SPI screen |

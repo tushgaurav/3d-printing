@@ -299,11 +299,21 @@ export class MockClient extends Emitter {
   async flowrate(f) { this.emit('logs', [`Send: M221 S${f}`]); return this._ok(null); }
 
   async gcode(commands) {
+    const pos = this.pos || (this.pos = { x: 0, y: 0, z: 0 }); // so M114 can answer, as after M400
+    let homing = false;
+    let report = false;
     for (const c of [].concat(commands)) {
       const m = /^(M10[49]|M140|M190)\s+S(\d+)/i.exec(c);
       if (m) { if (/M1(04|09)/i.test(m[1])) this.t.tool0.target = +m[2]; else this.t.bed.target = +m[2]; }
+      if (/^G28\b/i.test(c)) { homing = true; Object.assign(pos, { x: 0, y: 0, z: 0 }); }
+      if (/^G[01]\b/i.test(c)) for (const [, axis, v] of c.matchAll(/\b([XYZ])(-?[\d.]+)/gi)) pos[axis.toLowerCase()] = +v;
+      if (/^M114\b/i.test(c)) report = true;
     }
     this.emit('logs', [].concat(commands).map((c) => `Send: ${c}`));
+    if (report) {
+      const line = `Recv: X:${pos.x.toFixed(2)} Y:${pos.y.toFixed(2)} Z:${pos.z.toFixed(2)} E:0.00 Count X:0 Y:0 Z:0`;
+      setTimeout(() => this.emit('logs', [line, 'Recv: ok']), homing ? 5000 : 1800);
+    }
     return this._ok(null);
   }
 

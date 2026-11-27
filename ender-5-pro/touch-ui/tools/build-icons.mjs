@@ -80,6 +80,7 @@ const ICONS = {
   qr: 'qr-code',
   lock: 'lock',
   history: 'history',
+  level: 'scan',
 };
 
 // Lucide has no hotend or heated bed, so these two are drawn here on Lucide's

@@ -1,10 +1,11 @@
 // Move: XY jog pad, Z (which moves the bed on an Ender 5), step size,
-// extrude/retract (by the same step) and motors off. Locked while printing.
+// extrude/retract (by the same step), Level Bed and motors off. Locked while printing.
 
 import { icon } from '../icons.js';
 import { refs, setText, show, toggle } from '../util.js';
 import { ACTIVE, IDLE, phaseOf } from '../model.js';
 import { toast, attempt } from '../ui.js';
+import { openLevel } from '../sheets/level.js';
 
 export default {
   id: 'move',
@@ -39,7 +40,7 @@ export default {
           ${cfg.move.steps.map((v) => `<button class="seg" data-step="${v}">${v}</button>`).join('')}
         </div>
         <div class="bottom row-actions">
-          <button class="btn tall" data-act="homeall">${icon('home')}Home All</button>
+          <button class="btn tall" data-act="level">${icon('level')}Level Bed</button>
           <button class="btn tall" data-act="extrude">${icon('extrude')}<span data-r="extrudeLabel"></span></button>
           <button class="btn tall" data-act="retract">${icon('retract')}<span data-r="retractLabel"></span></button>
           <button class="btn tall" data-act="motors">${icon('unlock')}Motors Off</button>
@@ -74,7 +75,7 @@ export default {
       }
       if (b.dataset.home) { attempt(() => ctx.client.home(b.dataset.home.split(','))); return; }
       switch (b.dataset.act) {
-        case 'homeall': attempt(() => ctx.client.home(['x', 'y', 'z'])); break;
+        case 'level': openLevel(ctx); break;
         case 'extrude': if (hotEnough()) attempt(() => ctx.client.extrude(step)); break;
         case 'retract': if (hotEnough()) attempt(() => ctx.client.extrude(-step)); break;
         case 'motors': attempt(async () => { await ctx.client.gcode('M84'); toast('Motors Off · Axes Can Be Moved by Hand', 'muted', 3500, 'unlock'); }); break;

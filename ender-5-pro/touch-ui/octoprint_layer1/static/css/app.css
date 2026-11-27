@@ -375,6 +375,25 @@ body.preview #app {
 .lock svg { width: 17px; height: 17px; color: var(--warn); }
 .locked .jog, .locked .seg, .locked .bottom .btn { opacity: 0.22; pointer-events: none; }
 
+/* ---------- level bed (from Move) ---------- */
+.level { height: 100%; display: grid; grid-template-columns: 226px minmax(0, 1fr); gap: 8px; }
+.bedmap { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 6px; padding: 6px; border-radius: var(--r-lg); box-shadow: inset 0 0 0 1.5px var(--surface-3); }
+.spot { border-radius: var(--r); background: var(--surface); box-shadow: var(--edge); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; color: var(--text-2); }
+.spot svg { width: 20px; height: 20px; color: var(--text); }
+.spot small { font-size: 10.5px; font-weight: 550; line-height: 1.1; text-align: center; }
+.spot:active { background: var(--surface-3); }
+.spot.active { background: var(--signal-dim); color: var(--signal-fg); box-shadow: inset 0 0 0 1.5px var(--signal-line); }
+.spot.active svg { color: var(--signal-fg); }
+.spot[data-state="moving"] { box-shadow: none; outline: 1.5px dashed var(--signal-line); outline-offset: -1.5px; }
+.spot[disabled] { opacity: 0.35; pointer-events: none; }
+.level .side { display: flex; flex-direction: column; gap: 8px; }
+.level .statusline { flex: 1; align-items: flex-start; line-height: 1.4; }
+.level .statusline i { margin-top: 6px; }
+.level .next { height: 56px; flex: none; justify-content: flex-start; padding: 0 14px; }
+.level .next > span { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; }
+.level .next small { font-size: 11.5px; font-weight: 550; opacity: 0.7; }
+.level .row-actions .btn { padding: 0 8px; gap: 6px; }
+
 /* ---------- files ---------- */
 .files { height: 100%; display: flex; flex-direction: column; gap: 8px; }
 .files-head { height: 36px; display: flex; align-items: center; gap: 6px; flex: none; padding-left: 4px; }
