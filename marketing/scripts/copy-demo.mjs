@@ -7,7 +7,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const src = path.resolve(here, "../../ender-5-pro/touch-ui/octoprint_layer1/static");
+const src = path.resolve(here, "../../octoprint_layer1/static");
 const dest = path.resolve(here, "../public/demo");
 
 try {

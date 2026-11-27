@@ -60,6 +60,12 @@
     "travelFeed": 6000,
     "zFeed": 600
   },
+  "afterPrint": {
+    "coolDown": true,
+    "lowerBed": true,
+    "lowerBedBy": 100,
+    "shutdownSeconds": 60
+  },
   "speedModes": [
     {
       "name": "Quiet",

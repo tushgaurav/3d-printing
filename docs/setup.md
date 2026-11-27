@@ -5,7 +5,7 @@ SPI screen attached to the OctoPi Raspberry Pi. Think Bambu-style printer screen
 live camera, a progress gauge, temperatures, file browser with thumbnails, jog
 controls, filament load/unload, speed/flow/fan tuning — all driven through OctoPrint.
 
-![screens: home while printing, files, temperature, move](docs/preview.png)
+![screens: home while printing, files, temperature, move](preview.png)
 
 ## How it fits together
 
@@ -21,16 +21,16 @@ controls, filament load/unload, speed/flow/fan tuning — all driven through Oct
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 
-* **`touch-ui/`** – an OctoPrint plugin. It only serves the web app; every printer
+* **`octoprint_layer1/`** – an OctoPrint plugin. It only serves the web app; every printer
   action goes through OctoPrint's normal API, so OctoPrint's permissions, safety
   checks and your existing plugins all still apply. The app pairs itself with
   OctoPrint using OctoPrint's *Application Keys* flow (you click **Allow** once).
 * **`pi-setup/`** – shell scripts for the Pi: screen driver, kiosk service, diagnostics.
-* **`deploy.ps1`** – copies everything to the Pi from Windows and runs the installers.
+* **`tools/deploy.ps1`** – copies everything to the Pi from Windows and runs the installers.
 
 The look: Geist for text, Geist Mono for live readings, [Lucide](https://lucide.dev)
 icons. All are bundled in the plugin, so the Pi needs no internet. To add an icon, see
-[touch-ui/README.md](touch-ui/README.md).
+[Development](../README.md#development) in the main README.
 
 Tested against OctoPrint 2.0.2 with its virtual printer: plugin loading, pairing,
 the live socket, every command the UI sends, and rejected-key handling. The kiosk
@@ -39,7 +39,7 @@ and screen-driver scripts could not be tested here (no Pi), see *Status* below.
 ## Try it on your PC first (no printer needed)
 
 ```powershell
-cd ender-5-pro\touch-ui\octoprint_layer1\static
+cd octoprint_layer1\static
 python -m http.server 8765
 ```
 
@@ -60,7 +60,7 @@ Copy the project over and set up the screen driver. The built-in `piscreen` driv
 works for most ILI9486 + XPT2046 3.5" screens (Waveshare (A) and its clones):
 
 ```powershell
-.\deploy.ps1                      # copies files to ~/layer1 and installs the plugin
+.\tools\deploy.ps1                # copies files to ~/layer1 and installs the plugin
 ssh pi@octopi.local
 sudo bash ~/layer1/pi-setup/setup-screen.sh piscreen
 sudo reboot
@@ -73,11 +73,11 @@ sudo bash ~/layer1/pi-setup/check-screen.sh test
 ```
 
 You should see coloured static on the small screen for 2 seconds. If not, see
-[docs/screen-setup.md](docs/screen-setup.md) (Waveshare's own driver, rotation, clones).
+[screen-setup.md](screen-setup.md) (Waveshare's own driver, rotation, clones).
 
 ### 2. Install the plugin
 
-`deploy.ps1` already did this. To do it by hand on the Pi:
+`tools/deploy.ps1` already did this. To do it by hand on the Pi:
 
 ```bash
 bash ~/layer1/pi-setup/install-plugin.sh
@@ -88,7 +88,7 @@ Check it in any browser: <http://octopi.local/plugin/layer1/>.
 ### 3. Install the kiosk
 
 ```powershell
-.\deploy.ps1 -Kiosk
+.\tools\deploy.ps1 -Kiosk
 ```
 
 or on the Pi: `sudo bash ~/layer1/pi-setup/install-kiosk.sh`.
@@ -135,6 +135,9 @@ first time the UI loads). Edit, then reload the screen (More → System → Relo
 | `move.steps` | 0.1, 1, 10, 50 | Step sizes (mm) on Move. The chosen step is both the jog distance and the extrude/retract length |
 | `level.inset` | 30 | Move → Level Bed: how far (mm) the corner spots sit in from the bed's edges. Set it so the nozzle stops over each knob |
 | `level.paperZ` / `clearance` | 0 / 5 | Z (mm) for the paper test, and how far the bed drops before moving between spots and when you leave the page |
+| `afterPrint.coolDown` / `lowerBed` | true / true | Tune → After Print: switch heaters, fan and motors off, and drop the bed, after every print that finishes. A choice made on the screen wins |
+| `afterPrint.lowerBedBy` | 100 | How far (mm) Lower Bed drops the bed. It never goes past the bottom of the build volume |
+| `afterPrint.shutdownSeconds` | 60 | Shut Down Pi: the countdown before the Pi shuts down, which the screen can cancel. Uses OctoPrint's shutdown command (Settings → Server → Commands) |
 | `speedModes` | Quiet 50, Normal 100, Sport 125, Turbo 150 | Feed-rate presets (M220) |
 | `webcam.snapshot` / `stream` | `/webcam/?action=snapshot` / `…stream` | OctoPi's default webcam URLs |
 | `webcam.snapshotSeconds` | 3 | Home screen refresh. The live stream is only used full-screen, to spare the SPI screen |
@@ -162,7 +165,7 @@ sudo layer1-kiosk reset-touch
 
 ## Troubleshooting
 
-* **Screen white or blank** — the driver isn't loaded: `sudo bash check-screen.sh`, then [docs/screen-setup.md](docs/screen-setup.md).
+* **Screen white or blank** — the driver isn't loaded: `sudo bash check-screen.sh`, then [screen-setup.md](screen-setup.md).
 * **Screen shows the console, not the UI** — `layer1-kiosk logs`. Look for the line
   `layer1-kiosk: using /dev/fbN`. If it picked the wrong framebuffer, set `FBDEV=/dev/fb1` in `/etc/layer1-kiosk.conf`.
 * **"No OctoPrint"** — OctoPrint isn't running or still starting: `sudo service octoprint status`.

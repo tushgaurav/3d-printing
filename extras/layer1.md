@@ -16,11 +16,10 @@ date: 2026-11-26
 
 homepage: https://layer1.nodebench.com
 source: https://github.com/tushgaurav/layer1
-archive: https://github.com/tushgaurav/layer1/archive/main.zip#subdirectory=ender-5-pro/touch-ui
+archive: https://github.com/tushgaurav/layer1/archive/main.zip
 
 tags:
 - touchscreen
-- tft
 - kiosk
 - ui
 - ender
@@ -52,6 +51,9 @@ compatibility:
   - linux
   python: ">=3.9,<4"
 
+attributes:
+ - ai-developed
+
 ---
 
 Layer1 turns the small 3.5" SPI touchscreen on an OctoPi Raspberry Pi into a full printer
@@ -78,7 +80,7 @@ It was built for the Creality Ender 5 Pro, and works with any printer OctoPrint 
 
 The plugin serves the touch UI at `/plugin/layer1/`. Getting it onto the small screen needs
 the screen driver and the kiosk service from the repository's `pi-setup` scripts. See the
-[setup guide](https://github.com/tushgaurav/layer1/blob/main/ender-5-pro/README.md).
+[setup guide](https://github.com/tushgaurav/layer1/blob/main/docs/setup.md).
 
 Slicer thumbnails come from the
 [PrusaSlicer Thumbnails](https://plugins.octoprint.org/plugins/prusaslicerthumbnails/) plugin.

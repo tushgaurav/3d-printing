@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "OctoPrint-Layer1"
-version = "0.2.0"
+version = "0.1.0"
 description = "Full-screen touch UI for an Ender 5 Pro on a 480x320 Raspberry Pi screen"
 readme = "README.md"
 license = "AGPL-3.0-or-later"

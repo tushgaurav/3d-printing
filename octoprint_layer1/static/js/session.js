@@ -1,7 +1,7 @@
 // Version, plus what this screen remembers: its OctoPrint application key, theme, lock, sleep,
 // brightness, whether Home shows the camera or the model, and the Files view (list or grid) and sort.
 
-export const UI_VERSION = '0.2.0';
+export const UI_VERSION = '0.1.0';
 
 const KEY = 'layer1.apiKey';
 

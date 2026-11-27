@@ -3,9 +3,10 @@
 
 The plugin serves a static single-page app, a small JSON config, a read-only
 Pi health summary for the quick-info panel, and the print history it records
-from OctoPrint's print events. All printer control happens in the browser
-through OctoPrint's normal REST and push APIs, authenticated with an
-application key, so nothing here bypasses OctoPrint's own permission checks.
+from OctoPrint's print events. Printer control happens in the browser through
+OctoPrint's normal REST and push APIs, authenticated with an application key.
+The one exception is After Print (after_print.py), which runs here so it works
+without a screen; its settings routes check OctoPrint's permissions like the API.
 """
 from __future__ import absolute_import, unicode_literals
 
@@ -19,7 +20,7 @@ import flask
 import octoprint.plugin
 from octoprint.access.permissions import Permissions
 
-from . import history, sysinfo
+from . import after_print, history, sysinfo
 
 
 def _deep_merge(base, override):
@@ -43,12 +44,21 @@ def _json_response(data):
 class Layer1Plugin(
     octoprint.plugin.BlueprintPlugin,
     octoprint.plugin.EventHandlerPlugin,
+    octoprint.plugin.SettingsPlugin,  # no settings of its own: OctoPrint only hands `_settings` to these
     octoprint.plugin.StartupPlugin,
 ):
     def initialize(self):
         self._history = history.PrintHistory(
             os.path.join(self.get_plugin_data_folder(), "history.json"),
             seed=self._octoprint_print_logs,
+            logger=self._logger,
+        )
+        self._after_print = after_print.AfterPrint(
+            os.path.join(self.get_plugin_data_folder(), "after_print.json"),
+            printer=self._printer,
+            config=self._ui_config,
+            shutdown_command=lambda: (self._settings.global_get(["server", "commands", "systemShutdownCommand"]) or "").strip(),
+            notify=lambda state: self._plugin_manager.send_plugin_message(self._identifier, {"afterPrint": state}),
             logger=self._logger,
         )
 
@@ -89,6 +99,10 @@ class Layer1Plugin(
             self._logger.error("Ignoring %s, it could not be read as JSON: %s", path, e)
             return {}
 
+    def _ui_config(self):
+        defaults = self._load_defaults()
+        return _deep_merge(defaults, self._load_user_config(defaults))
+
     # ~~ StartupPlugin
 
     def on_after_startup(self):
@@ -106,6 +120,10 @@ class Layer1Plugin(
                 self._history.record(event, payload)
             except Exception:
                 self._logger.exception("Could not add %s to the print history", event)
+        try:
+            self._after_print.on_event(event, payload)
+        except Exception:
+            self._logger.exception("After Print failed on %s", event)
 
     # ~~ BlueprintPlugin
 
@@ -121,15 +139,17 @@ class Layer1Plugin(
         # an application key.
         return False
 
+    def is_blueprint_csrf_protected(self):
+        # POSTs from the screen carry its API key, which OctoPrint exempts from CSRF checks
+        return True
+
     @octoprint.plugin.BlueprintPlugin.route("/", methods=["GET"])
     def index(self):
         return flask.redirect(flask.url_for(".static", filename="index.html"))
 
     @octoprint.plugin.BlueprintPlugin.route("/config", methods=["GET"])
     def ui_config(self):
-        defaults = self._load_defaults()
-        merged = _deep_merge(defaults, self._load_user_config(defaults))
-        return _json_response(merged)
+        return _json_response(self._ui_config())
 
     @octoprint.plugin.BlueprintPlugin.route("/sysinfo", methods=["GET"])
     @Permissions.STATUS.require(403)
@@ -153,12 +173,31 @@ class Layer1Plugin(
             "stats": history.summarize(entries),
         })
 
+    @octoprint.plugin.BlueprintPlugin.route("/after-print", methods=["GET"])
+    @Permissions.STATUS.require(403)
+    def after_print_state(self):
+        return _json_response(self._after_print.state())
+
+    @octoprint.plugin.BlueprintPlugin.route("/after-print", methods=["POST"])
+    @Permissions.CONTROL.require(403)
+    def after_print_update(self):
+        # {"coolDown"|"lowerBed"|"shutdown": bool} changes a choice; {"cancel": true} stops a
+        # shutdown countdown, {"now": true} skips it. Switching shutdown on needs SYSTEM too.
+        patch = flask.request.get_json(silent=True)
+        try:
+            state = self._after_print.update(patch, can_system=Permissions.SYSTEM.can())
+        except PermissionError as e:
+            return flask.make_response(json.dumps({"error": str(e)}), 403, {"Content-Type": "application/json"})
+        except ValueError as e:
+            return flask.make_response(json.dumps({"error": str(e)}), 409, {"Content-Type": "application/json"})
+        return _json_response(state)
+
     # ~~ Software Update hook
 
     def get_update_information(self):
         # OctoPrint compares the newest GitHub release's tag (e.g. "0.3.0", no "v")
         # with the installed version, and installs updates with pip from the tag's
-        # source zip. The plugin lives in a sub-folder of the repo, hence #subdirectory.
+        # source zip.
         return {
             "layer1": {
                 "displayName": "Layer1",
@@ -167,8 +206,7 @@ class Layer1Plugin(
                 "user": "tushgaurav",
                 "repo": "layer1",
                 "current": self._plugin_version,
-                "pip": "https://github.com/tushgaurav/layer1/archive/{target_version}.zip"
-                "#subdirectory=ender-5-pro/touch-ui",
+                "pip": "https://github.com/tushgaurav/layer1/archive/{target_version}.zip",
             }
         }
 

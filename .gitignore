@@ -1,0 +1,6 @@
+# Python bytecode and local builds (pip builds the plugin in-tree)
+__pycache__/
+*.py[cod]
+*.egg-info/
+/build/
+/dist/

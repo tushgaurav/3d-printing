@@ -1,10 +1,12 @@
 // Tune: speed modes (M220), flow (M221) and part-cooling fan (M106/M107).
 // OctoPrint doesn't report these back, so values are tracked from what we send
 // plus what the G-code stream sends (parsed from the terminal log in app.js).
+// The header opens After Print: what happens when this print finishes.
 
 import { icon } from '../icons.js';
 import { refs, setText, toggle, esc, clamp } from '../util.js';
 import { openSheet, attempt, toast } from '../ui.js';
+import { openAfterPrint } from './afterprint.js';
 
 const FAN_STEPS = [0, 25, 50, 75, 100];
 
@@ -12,7 +14,9 @@ export function openTune(ctx) {
   const { store, cfg } = ctx;
   openSheet({
     title: 'Tune',
-    render(body) {
+    render(body, sheet) {
+      sheet.head.insertAdjacentHTML('beforeend', `<button class="chipbtn" data-a="after">${icon('finish')}After Print</button>`);
+      sheet.head.querySelector('[data-a="after"]').addEventListener('click', () => openAfterPrint(ctx));
       body.innerHTML = `
         <div class="section"><div class="label">Print speed <em data-r="feedNote"></em></div>
           <div class="grid-auto">${cfg.speedModes.map((m) => `<button class="seg" data-feed="${m.factor}">${esc(m.name)}<small>${m.factor}%</small></button>`).join('')}</div>

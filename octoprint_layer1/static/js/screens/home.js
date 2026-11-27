@@ -12,6 +12,7 @@ import { toast, attempt, confirmDialog, choiceDialog } from '../ui.js';
 import { openTune } from '../sheets/tune.js';
 import { openLiveCamera } from '../sheets/camera.js';
 import { openModel3d } from '../sheets/model3d.js';
+import { openAfterPrint } from '../sheets/afterprint.js';
 import { storedMedia, saveMedia } from '../session.js';
 import { ModelView, canModel, loadModel, modelKey } from '../model3d.js';
 
@@ -33,6 +34,7 @@ export default {
           <div class="empty" data-r="empty"><span data-r="emptyIcon">${icon('camera')}</span><span data-r="emptyText"></span></div>
           <button class="chip hidden" data-r="chip"><i></i><span data-r="chipText">Live</span></button>
           <div class="expand hidden" data-r="expand">${icon('expand')}</div>
+          <button class="chip after hidden" data-r="after">${icon('power')}<span>Shut Down After</span></button>
         </div>
         <div class="caption">
           <div class="t" data-r="capT"></div>
@@ -116,6 +118,12 @@ export default {
       mediaPref = mediaPref === 'cam' ? 'model' : 'cam';
       saveMedia(mediaPref);
       render(store.get());
+    });
+
+    // Shut Down Pi is on (After Print): say so where nobody can miss it
+    r.after.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openAfterPrint(ctx);
     });
 
     r.media.addEventListener('click', () => {
@@ -303,6 +311,7 @@ export default {
     function render(s) {
       const ph = phaseOf(s);
       const meta = PHASES[ph];
+      show(r.after, !!(s.afterPrint && s.afterPrint.shutdown));
       const showJob = ACTIVE.has(ph) || ph === 'finished';
       toggle(r.root, 'is-job', showJob);
       setText(r.phase, meta.label);

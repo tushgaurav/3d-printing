@@ -394,6 +394,31 @@ body.preview #app {
 .level .next small { font-size: 11.5px; font-weight: 550; opacity: 0.7; }
 .level .row-actions .btn { padding: 0 8px; gap: 6px; }
 
+/* ---------- after print (Tune's header) ---------- */
+.apick { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.aopt { position: relative; width: 100%; min-height: 62px; border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--edge); padding: 9px 40px 9px 12px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; text-align: left; }
+.aopt b { font-size: 14.5px; font-weight: 650; display: flex; align-items: center; gap: 7px; }
+.aopt b svg { width: 16px; height: 16px; color: var(--text-2); }
+.aopt small { font-size: 11.5px; color: var(--text-3); margin-top: 3px; line-height: 1.3; }
+.aopt .ck { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--surface-3); display: grid; place-items: center; color: transparent; }
+.aopt .ck svg { width: 14px; height: 14px; stroke-width: 3; }
+.aopt:active { background: var(--surface-2); }
+.aopt.active { background: var(--signal-dim); box-shadow: inset 0 0 0 1.5px var(--signal-line); }
+.aopt.active b svg { color: var(--signal-fg); }
+.aopt.active .ck { background: var(--signal); color: var(--signal-ink); box-shadow: none; }
+.aopt.once.active { background: var(--warn-dim); box-shadow: inset 0 0 0 1.5px var(--warn); }
+.aopt.once.active b svg { color: var(--warn); }
+.aopt.once.active .ck { background: var(--warn); color: var(--canvas); }
+.aopt[disabled] { opacity: 0.4; pointer-events: none; }
+.media .chip.after { top: auto; bottom: 7px; color: #f4f4f1; }
+.media .chip.after svg { width: 13px; height: 13px; color: #ffbd4f; }
+.media .chip.after::after { inset: -10px -10px -7px -7px; }
+.modal.shutdown .sd-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.modal.shutdown .sd-head h3 { margin: 0; }
+.sd-icon { width: 44px; height: 44px; flex: none; border-radius: 50%; background: var(--warn-dim); color: var(--warn); display: grid; place-items: center; }
+.sd-icon svg { width: 22px; height: 22px; }
+.sd-count { margin-top: 2px; font-family: var(--mono); font-feature-settings: "ss09"; font-size: 15px; font-weight: 600; color: var(--warn); }
+
 /* ---------- files ---------- */
 .files { height: 100%; display: flex; flex-direction: column; gap: 8px; }
 .files-head { height: 36px; display: flex; align-items: center; gap: 6px; flex: none; padding-left: 4px; }
