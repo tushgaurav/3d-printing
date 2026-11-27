@@ -20,6 +20,7 @@ import { logo } from './logo.js';
 import { refs, setText, setHTML, toggle, setData, deepMerge, debounce, fmtTemp, fmtClock, setClock24 } from './util.js';
 import { PHASES, ACTIVE, phaseOf } from './model.js';
 import { initUI, toast, closeSheets, setScale } from './ui.js';
+import { setHostModel } from './host.js';
 
 const NET_POLL_MS = 30000; // the status bar's Wi-Fi icon; the Network page polls faster while open
 import { loadKey, saveKey, forgetKey, storedTheme, applyTheme, storedBrightness, applyBrightness } from './session.js';
@@ -111,26 +112,35 @@ function parseMatrix(text) {
   return m.length === 9 && m.every(Number.isFinite) ? m : null;
 }
 
-/** 480x320 shows 1:1. Anything else (a desktop preview) gets a scaled "device". */
+// The UI is designed at 480x320 and grows from there. A bigger screen gets a bigger canvas
+// (#app's own size), so there is more room for the camera, files and readings, and the
+// canvas is scaled up only as far as keeps touch targets a comfortable size: it stays
+// about 480 tall on a touch screen, 560 with a mouse. CSS container queries on #app (see
+// "bigger screens" in app.css) see the canvas size, not the screen's pixels.
+const BASE_W = 480;
+const BASE_H = 320;
+const MAX_W = 960; // a wider window (ultra-wide monitor) gets the canvas centred, not stretched
+
 function fitStage(kiosk) {
   const app = document.getElementById('app');
   // Chromium won't make a window narrower than 500px, so on a 480px-wide screen the
-  // kiosk viewport is wider than the screen. Fit to the visible screen and pin to its
-  // top-left, rather than centring in the (partly off-screen) window.
+  // kiosk viewport is wider than the screen. Fit to the visible screen instead.
   const w = kiosk ? Math.min(innerWidth, screen.width || innerWidth) : innerWidth;
   const h = kiosk ? Math.min(innerHeight, screen.height || innerHeight) : innerHeight;
-  const fit = Math.min(w / 480, h / 320);
-  const exact = Math.abs(fit - 1) < 0.05;
-  const scale = exact ? 1 : kiosk ? fit : Math.max(0.5, Math.min(3, Math.floor(fit * 0.9 * 10) / 10));
-  document.body.classList.toggle('preview', !exact && !kiosk);
+  // A phone held upright gets a "turn it sideways" card (#rotate); the layout is landscape.
+  document.body.classList.toggle('portrait', !kiosk && h > w);
   document.body.classList.toggle('kiosk', kiosk);
-  if (kiosk) {
-    const x = Math.max(0, Math.round((w - 480 * scale) / 2));
-    const y = Math.max(0, Math.round((h - 320 * scale) / 2));
-    app.style.transform = x || y || scale !== 1 ? `translate(${x}px, ${y}px) scale(${scale})` : '';
-  } else {
-    app.style.transform = scale === 1 ? '' : `scale(${scale})`;
-  }
+  const tallest = matchMedia('(pointer: fine)').matches ? 560 : 480;
+  const scale = w < BASE_W || h < BASE_H
+    ? Math.min(w / BASE_W, h / BASE_H) // smaller than the design: shrink it whole
+    : Math.max(1, Math.min(w / BASE_W, h / tallest));
+  const cw = Math.min(MAX_W, Math.max(BASE_W, Math.floor(w / scale)));
+  const ch = Math.max(BASE_H, Math.floor(h / scale));
+  const x = Math.max(0, Math.round((w - cw * scale) / 2));
+  const y = Math.max(0, Math.round((h - ch * scale) / 2));
+  app.style.width = `${cw}px`;
+  app.style.height = `${ch}px`;
+  app.style.transform = x || y || scale !== 1 ? `translate(${x}px, ${y}px) scale(${scale})` : '';
   setScale(scale);
 }
 
@@ -217,6 +227,8 @@ async function boot() {
     history.replaceState(null, '', location.pathname + location.search + (rest ? `#${rest}` : ''));
   }
 
+  document.body.insertAdjacentHTML('beforeend', `
+    <div id="rotate">${icon('again')}<b>Turn your phone sideways</b><span>Layer1 is laid out for landscape screens.</span></div>`);
   fitStage(kiosk);
   window.addEventListener('resize', () => fitStage(kiosk));
 
@@ -260,6 +272,7 @@ async function boot() {
     base: computeBase(),
     host: hash.get('host') || (loopback ? 'octopi.local' : location.host),
     loopback, // the page came from 127.0.0.1: other devices need ctx.host or the Pi's IP
+    kiosk, // this is the screen attached to the printer's computer, opened by the kiosk launcher
     // The launcher says there is a desktop underneath (#desktop=1), so offer "Exit to Desktop".
     desktop: hash.get('desktop') === '1',
     touchMatrix: parseMatrix(hash.get('tm')),
@@ -276,7 +289,7 @@ async function boot() {
       return filesLoading;
     },
     filesAge: () => Date.now() - filesAt,
-    /** Fetch the Pi's network state into the store (net / netError). */
+    /** Fetch the host's network state into the store (net / netError), and what the host is. */
     applyAfterPrint(st) {
       if (st && typeof st === 'object') store.set({ afterPrint: { ...st, at: Date.now() }, afterPrintError: null });
     },
@@ -290,7 +303,7 @@ async function boot() {
       if (!ctx.client || !ctx.client.sysinfo) return Promise.resolve();
       if (!netLoading) {
         netLoading = ctx.client.sysinfo()
-          .then((info) => { store.set({ net: (info && info.net) || null, netError: null }); })
+          .then((info) => { setHostModel(info && info.model); store.set({ net: (info && info.net) || null, netError: null }); })
           .catch((e) => { store.set({ net: null, netError: e && e.status === 403 ? 'No permission' : 'Not available' }); })
           .finally(() => { netLoading = null; });
       }
@@ -365,7 +378,14 @@ async function boot() {
       }
     });
     client.on('status', (st) => store.set(st));
-    client.on('plugin', (data) => { if (data.afterPrint) ctx.applyAfterPrint(data.afterPrint); });
+    client.on('plugin', (data) => {
+      if (data.afterPrint) ctx.applyAfterPrint(data.afterPrint);
+      // Layer1's settings were saved in OctoPrint: the config is read at load, so reload
+      if (data.configChanged) {
+        toast('Settings Changed · Reloading', 'muted', 3000, 'refresh');
+        setTimeout(() => location.reload(), 1500);
+      }
+    });
     client.on('temps', (list, replace) => ctx.temps.push(list, replace));
     client.on('logs', (lines) => {
       const patch = logPatch(lines);

@@ -9,6 +9,7 @@ import { refs, setText, setHTML, setData, toggle, clamp, fmtTemp, fmtDuration, f
 import { PHASES, ACTIVE, phaseOf, lastPrinted } from '../model.js';
 import { mount } from '../ui.js';
 import { wifiWord } from './network.js';
+import { hostWord, setHostModel } from '../host.js';
 
 const SYS_POLL_MS = 5000;
 const WARM = 40; // °C: a heater that is off but still above this shows "Cooling"
@@ -102,7 +103,7 @@ function stat(key, glyph, label) {
 // the label's icon takes the status colour (data-tone on the cell)
 function sysCell(key, glyph, label) {
   return `<div class="qcell qsys" data-r="${key}Cell">
-      <div class="qh"><span class="ic" data-r="${key}Icon">${icon(glyph)}</span><span>${label}</span></div>
+      <div class="qh"><span class="ic" data-r="${key}Icon">${icon(glyph)}</span><span data-r="${key}Label">${label}</span></div>
       <b data-r="${key}Main">…</b>
       <span class="qsub" data-r="${key}Sub1"></span>
       <span class="qsub" data-r="${key}Sub2"></span>
@@ -152,7 +153,7 @@ export function openQuickInfo(ctx) {
       <div class="q-sys">
         ${sysCell('pr', 'printer', 'Printer')}
         ${sysCell('net', 'wifi', 'Network')}
-        ${sysCell('pi', 'cpu', 'Pi')}
+        ${sysCell('pi', 'cpu', hostWord())}
         ${sysCell('st', 'disk', 'Storage')}
       </div>
     </div>`;
@@ -284,6 +285,8 @@ export function openQuickInfo(ctx) {
       }
       return;
     }
+    setHostModel(sys.model);
+    setText(r.piLabel, hostWord());
     const { tone, power } = piHealth(sys.cpuTemp, sys.throttled);
     setData(r.piCell, 'tone', tone);
     setHTML(r.piMain, sys.cpuTemp != null ? `${Math.round(sys.cpuTemp)}°C <small>CPU</small>` : '—');
@@ -313,7 +316,7 @@ export function openQuickInfo(ctx) {
     if (text !== lastText && s.link === 'online') { lastText = text; loadConnection(); }
   }
 
-  // ~~ polled data: Pi health and the serial connection
+  // ~~ polled data: host health and the serial connection
 
   let sysBusy = false;
   async function loadSys() {

@@ -1,13 +1,14 @@
 // After Print (Tune's header chip, or the reminder on Home): what the plugin does when a print
 // finishes (see after_print.py, which runs them even with no screen). Cool Down and Lower Bed
-// (Raise Z, unless printer.zMovesBed) are remembered for every print; Shut Down Pi is for one
-// print and clears itself. When a print finishes with it on, a countdown comes up over
-// everything with Keep Pi On.
+// (Raise Z, unless printer.zMovesBed) are remembered for every print; Shut Down Pi (System
+// when OctoPrint isn't on a Pi, see host.js) is for one print and clears itself. When a print
+// finishes with it on, a countdown comes up over everything with Keep Pi On.
 
 import { icon } from '../icons.js';
 import { refs, setText, toggle } from '../util.js';
 import { ACTIVE, phaseOf } from '../model.js';
 import { openSheet, attempt, toast, scrim } from '../ui.js';
+import { hostWord, hostNoun } from '../host.js';
 
 /** The remembered options. lowerBed moves Z up: the bed drops where Z moves it, else the nozzle rises. */
 function everyPrint(printer) {
@@ -35,13 +36,13 @@ export function openAfterPrint(ctx) {
     render(body) {
       const option = (o, cls = '') => `
         <button class="aopt ${cls}" data-key="${o.key}"><span class="ck">${icon('check')}</span>
-          <b>${icon(o.icon)}${o.name}</b><small data-r="${o.key}Note"></small></button>`;
+          <b>${icon(o.icon)}<span data-r="${o.key}Name">${o.name}</span></b><small data-r="${o.key}Note"></small></button>`;
       body.innerHTML = `
         <div class="section"><div class="label">Every print <em>remembered</em></div>
           <div class="apick">${every.map((o) => option(o)).join('')}</div>
         </div>
         <div class="section"><div class="label"><span data-r="onceLabel"></span> <em>then it switches itself off</em></div>
-          ${option({ key: 'shutdown', icon: 'power', name: 'Shut Down Pi' }, 'once')}
+          ${option({ key: 'shutdown', icon: 'power', name: `Shut Down ${hostWord()}` }, 'once')}
         </div>
         <div class="note" data-r="foot"></div>`;
       const r = refs(body);
@@ -57,27 +58,28 @@ export function openAfterPrint(ctx) {
         busy = true;
         attempt(async () => {
           await change(ctx, { [key]: on });
-          if (key === 'shutdown') toast(on ? 'Pi Shuts Down After This Print' : 'Pi Stays On', on ? 'warn' : 'muted', 3500, 'power');
+          if (key === 'shutdown') toast(on ? `${hostWord()} Shuts Down After This Print` : `${hostWord()} Stays On`, on ? 'warn' : 'muted', 3500, 'power');
         }).finally(() => { busy = false; });
       });
 
       function render(s) {
         const st = s.afterPrint;
         setText(r.onceLabel, ACTIVE.has(phaseOf(s)) ? 'This print only' : 'Next print only');
+        setText(r.shutdownName, `Shut Down ${hostWord()}`); // the host's model may arrive after this opened
         btns.forEach((b) => {
           const key = b.dataset.key;
           b.disabled = !st || (key === 'shutdown' && !st.canShutdown && !st.shutdown);
           toggle(b, 'active', !!(st && st[key]));
         });
         if (!st) {
-          setText(r.foot, s.afterPrintError ? `Couldn’t load: ${s.afterPrintError}. Update the Layer1 plugin on the Pi if it’s older than this screen.` : 'Loading…');
+          setText(r.foot, s.afterPrintError ? `Couldn’t load: ${s.afterPrintError}. Update the Layer1 plugin in OctoPrint if it’s older than this screen.` : 'Loading…');
           return;
         }
         every.forEach((o) => setText(r[`${o.key}Note`], o.note(st)));
         setText(r.shutdownNote, st.canShutdown
           ? `${st.shutdownSeconds} s after it finishes, with a countdown to cancel. Heaters go off first.`
           : 'Needs a shutdown command in OctoPrint → Settings → Server → Commands.');
-        setText(r.foot, 'These run on the Pi, so they happen even if this screen is asleep. A stopped or failed print runs none of them.');
+        setText(r.foot, 'These run in OctoPrint, so they happen even if this screen is asleep. A stopped or failed print runs none of them.');
       }
 
       render(store.get());
@@ -92,11 +94,11 @@ function showCountdown(ctx) {
   const el = scrim(`
     <div class="modal shutdown">
       <div class="sd-head"><span class="sd-icon">${icon('power')}</span>
-        <div><h3>Shutting down the Pi</h3><div class="sd-count" data-r="count"></div></div></div>
+        <div><h3>Shutting down the ${hostNoun()}</h3><div class="sd-count" data-r="count"></div></div></div>
       <p>The print finished. The printer stays on with its heaters off, so switch it off once the nozzle has cooled.</p>
       <div class="row-actions">
         <button class="btn ghost" data-a="now">Shut Down Now</button>
-        <button class="btn primary" data-a="keep">${icon('power')}Keep Pi On</button>
+        <button class="btn primary" data-a="keep">${icon('power')}Keep ${hostWord()} On</button>
       </div>
     </div>`);
   const r = refs(el);
@@ -117,7 +119,7 @@ function showCountdown(ctx) {
     const now = b.dataset.a === 'now';
     attempt(async () => {
       await change(ctx, now ? { now: true } : { cancel: true });
-      toast(now ? 'Shutting Down the Pi' : 'Pi Stays On', now ? 'warn' : 'ok', 3500, 'power');
+      toast(now ? `Shutting Down the ${hostWord()}` : `${hostWord()} Stays On`, now ? 'warn' : 'ok', 3500, 'power');
     }).finally(() => btns.forEach((x) => { x.disabled = false; }));
   });
   return () => { clearInterval(timer); el.remove(); };

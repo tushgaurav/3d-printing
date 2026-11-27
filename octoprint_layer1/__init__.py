@@ -1,11 +1,12 @@
 # coding=utf-8
-"""Layer1: a full-screen touch UI for OctoPrint, sized for a 480x320 screen.
+"""Layer1: a full-screen touch UI for OctoPrint, made for small touch screens.
 
-The plugin serves a static single-page app, a small JSON config, a read-only
-Pi health summary for the quick-info panel, and the print history it records
-from OctoPrint's print events. Inside OctoPrint's own UI it adds a setup page
-(Settings, and a first-run wizard step) that links to the touch UI and lists the
-steps for putting it on the Pi's screen.
+The plugin serves a static single-page app, its config (OctoPrint's settings for
+the plugin, edited in Settings > Layer1), a read-only Pi health summary for the
+quick-info panel, and the print history it records from OctoPrint's print events.
+Inside OctoPrint's own UI it adds a setup page (Settings, and a first-run wizard
+step) that links to the touch UI, lists the steps for putting it on the Pi's
+screen and, in Settings, edits the config.
 
 Printer control happens in the browser through OctoPrint's normal REST and push
 APIs, authenticated with an application key. The one exception is After Print
@@ -26,20 +27,30 @@ from octoprint.access.permissions import Permissions
 
 from . import after_print, history, sysinfo
 
-# What the printer keys fall back to when config.json leaves them empty and OctoPrint's
+# What the printer keys fall back to when the settings leave them empty and OctoPrint's
 # printer profile can't be read: the values of OctoPrint's own default profile.
 PROFILE_FALLBACK = {"name": "Printer", "buildVolume": [200, 200, 200], "origin": "lowerleft"}
 
+# Not imported from an old config.json: they come from OctoPrint's printer profile now, and
+# the old file was a full copy of the old defaults, which held one particular printer's numbers.
+NOT_IMPORTED = (("printer", "buildVolume"), ("printer", "origin"))
 
-def _deep_merge(base, override):
-    """Return base updated with override; nested dicts merge, everything else replaces."""
-    result = copy.deepcopy(base)
-    for key, value in (override or {}).items():
-        if isinstance(value, dict) and isinstance(result.get(key), dict):
-            result[key] = _deep_merge(result[key], value)
-        else:
-            result[key] = value
-    return result
+
+def _changes(defaults, data, path=()):
+    """(keys, value) for every value in data that differs from defaults. Dicts are compared
+    key by key, anything else (numbers, strings, lists) as a whole. Keys that defaults
+    doesn't have are skipped, since OctoPrint's settings only keep known keys."""
+    for key, value in data.items():
+        if key not in defaults:
+            continue
+        keys = path + (key,)
+        default = defaults[key]
+        if isinstance(default, dict):
+            if isinstance(value, dict):
+                for change in _changes(default, value, keys):
+                    yield change
+        elif value != default and keys not in NOT_IMPORTED:
+            yield list(keys), value
 
 
 def _json_response(data):
@@ -53,7 +64,7 @@ class Layer1Plugin(
     octoprint.plugin.AssetPlugin,
     octoprint.plugin.BlueprintPlugin,
     octoprint.plugin.EventHandlerPlugin,
-    octoprint.plugin.SettingsPlugin,  # no settings of its own: OctoPrint only hands `_settings` to these
+    octoprint.plugin.SettingsPlugin,
     octoprint.plugin.StartupPlugin,
     octoprint.plugin.TemplatePlugin,
     octoprint.plugin.WizardPlugin,
@@ -85,33 +96,60 @@ class Layer1Plugin(
     def _static_dir(self):
         return os.path.join(self._basefolder, "static")
 
-    def _user_config_path(self):
-        return os.path.join(self.get_plugin_data_folder(), "config.json")
-
     def _load_defaults(self):
         with io.open(os.path.join(self._static_dir(), "defaults.json"), encoding="utf-8") as f:
             return json.load(f)
 
-    def _load_user_config(self, defaults):
-        path = self._user_config_path()
+    # ~~ SettingsPlugin: the config lives in OctoPrint's settings (config.yaml, plugins.layer1),
+    # edited in Settings > Layer1. Keys the form leaves out can still be set in config.yaml.
+
+    def get_settings_defaults(self):
+        # The touch UI reads the same file for demo mode and when the plugin isn't there
+        return self._load_defaults()
+
+    def on_settings_save(self, data):
+        diff = octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
+        # Screens read the config once, when they load, so tell them to load it again.
+        # (Older OctoPrint returns None here instead of what changed.)
+        if diff is None or diff:
+            self._plugin_manager.send_plugin_message(self._identifier, {"configChanged": True})
+        return diff
+
+    def on_settings_initialized(self):
+        try:
+            self._import_config_json()
+        except Exception:
+            self._logger.exception("Could not import the old config.json")
+
+    def _import_config_json(self):
+        """Layer1 used to keep its settings in config.json in its data folder. Copy what
+        differs from the defaults into OctoPrint's settings once, then set the file aside,
+        so this runs only while the file is there."""
+        path = os.path.join(self.get_plugin_data_folder(), "config.json")
         if not os.path.exists(path):
-            # First run: drop a full copy of the defaults where the user can edit it.
-            try:
-                with io.open(path, "w", encoding="utf-8") as f:
-                    f.write(json.dumps(defaults, indent=2))
-            except (IOError, OSError) as e:
-                self._logger.warning("Could not write %s: %s", path, e)
-            return {}
+            return
         try:
             with io.open(path, encoding="utf-8") as f:
                 data = json.load(f)
-            return data if isinstance(data, dict) else {}
         except (IOError, OSError, ValueError) as e:
-            self._logger.error("Ignoring %s, it could not be read as JSON: %s", path, e)
-            return {}
+            self._logger.warning("Not importing %s, it could not be read as JSON: %s", path, e)
+            data = None
+        imported = []
+        if isinstance(data, dict):
+            for keys, value in _changes(self.get_settings_defaults(), data):
+                self._settings.set(keys, value)
+                imported.append(".".join(keys))
+            if imported:
+                self._settings.save()
+        done = path + ".imported"
+        os.replace(path, done)
+        self._logger.info(
+            "Imported %s from %s into OctoPrint's settings, and renamed it to %s",
+            ", ".join(imported) or "nothing", path, done,
+        )
 
     def _fill_from_profile(self, printer):
-        """Fill the printer keys config.json leaves empty from OctoPrint's printer profile
+        """Fill the printer keys the settings leave empty from OctoPrint's printer profile
         (the connected printer's, else the default one), so the screen matches whatever
         printer OctoPrint drives without any Layer1 setup."""
         if all(printer.get(key) for key in PROFILE_FALLBACK):
@@ -133,8 +171,8 @@ class Layer1Plugin(
                 printer[key] = found[key] or fallback
 
     def _ui_config(self):
-        defaults = self._load_defaults()
-        config = _deep_merge(defaults, self._load_user_config(defaults))
+        """The plugin's settings over the defaults, with the printer filled in from its profile."""
+        config = copy.deepcopy(self._settings.get_all_data(merged=True) or {})
         if not isinstance(config.get("printer"), dict):
             config["printer"] = {}
         self._fill_from_profile(config["printer"])
@@ -149,19 +187,17 @@ class Layer1Plugin(
         thread.daemon = True
         thread.start()
 
-    # ~~ Setup page: one template, shown in OctoPrint's Settings and as a setup wizard step
+    # ~~ Setup page: the setup steps, shown in OctoPrint's Settings (with the settings form
+    # below them) and as a setup wizard step
 
     def get_assets(self):
         return {"js": ["octoprint/layer1_setup.js"]}
 
     def get_template_configs(self):
         return [
-            {"type": "settings", "template": "layer1_setup.jinja2", "custom_bindings": True},
+            {"type": "settings", "template": "layer1_settings.jinja2", "custom_bindings": True},
             {"type": "wizard", "template": "layer1_setup.jinja2", "custom_bindings": True},
         ]
-
-    def get_template_vars(self):
-        return {"config_path": self._user_config_path()}
 
     def is_template_autoescaped(self):
         # OctoPrint 2.1 makes this the only option; until then it logs a warning without it

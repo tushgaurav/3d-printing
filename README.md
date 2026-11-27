@@ -11,9 +11,10 @@
 
 ---
 
-Layer1 is a full-screen touch interface that runs on a Raspberry Pi with a 3.5"
-screen through OctoPrint. It gives any printer the kind of built-in display you'd
-expect on a much newer machine.
+Layer1 is a full-screen touch interface for OctoPrint. It gives any printer the kind of
+built-in display you'd expect on a much newer machine. It was made for a 3.5" screen on the
+Raspberry Pi, and the layout grows to fill whatever it opens on: a 5" or 7" display, a
+tablet, or a phone turned sideways.
 
 <p align="center">
   <img src="docs/screen-files.jpg" width="235">&nbsp;
@@ -66,6 +67,8 @@ cd octoprint_layer1/static
 python -m http.server 8765
 # Open http://localhost:8765/index.html?demo=printing
 ```
+
+Resize the window to see the layout adapt. At 480×320 you get exactly what the 3.5" screen shows.
 
 **Install on the Pi.** See the full setup guide:
 [docs/setup.md](docs/setup.md)

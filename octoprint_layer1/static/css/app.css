@@ -52,7 +52,6 @@
   --scroll-ind: rgba(255, 255, 255, 0.28);
   --calib-bg: #000;
   --edge: none;              /* outline on surfaces: none in dark, a hairline in light */
-  --preview-bg: #1a1b1e radial-gradient(circle at 50% 40%, #26282c, #0e0f11 70%);
   --scheme: dark;
   --m3d-body: #c4c9cf;       /* 3D view: printed part, shaded by wall direction (x 0.42 .. 1) */
   --m3d-shade: 0.42;
@@ -118,7 +117,6 @@
   --scroll-ind: rgba(0, 0, 0, 0.3);
   --calib-bg: #f3f3ef;
   --edge: inset 0 0 0 1px rgba(20, 22, 26, 0.11);
-  --preview-bg: #c4c5be radial-gradient(circle at 50% 40%, #e8e8e3, #b5b6af 70%);
   --scheme: light;
   --m3d-body: #8b929b;
   --m3d-shade: 0.5;
@@ -147,23 +145,27 @@ svg { display: block; flex: none; }
 .hidden { display: none !important; }
 .num { font-family: var(--mono); font-feature-settings: "ss09"; letter-spacing: -0.02em; }
 
-/* ---------- stage: real screen = 1:1, desktop preview = scaled device ---------- */
-#stage { width: 100%; height: 100%; display: grid; place-items: center; }
-body.kiosk #stage { place-items: start; }     /* app.js positions it on the physical screen */
-body.kiosk #app { transform-origin: 0 0; }
+/* ---------- stage: the canvas fills the window ----------
+   app.js sizes #app to the screen (never under 480x320) and scales it to fit, pinned at the
+   top left. #app is a size container, so the "bigger screens" rules at the end can respond
+   to the canvas size. */
+#stage { position: relative; width: 100%; height: 100%; overflow: hidden; }
 body.kiosk, body.kiosk * { cursor: none !important; }  /* touch screen: no pointer parked where you last tapped */
-body.preview { background: var(--preview-bg); }
-body.preview #app {
-  border-radius: 4px;
-  box-shadow: 0 0 0 10px #000, 0 0 0 11px #2c2e33, 0 30px 70px rgba(0, 0, 0, 0.65);
-}
 
 #app {
-  position: relative; width: 480px; height: 320px; overflow: hidden; flex: none;
-  transform-origin: center center;
+  position: absolute; left: 0; top: 0; width: 480px; height: 320px; overflow: hidden;
+  transform-origin: 0 0; container: app / size;
   display: grid; grid-template-columns: var(--rail) 1fr; grid-template-rows: var(--bar) 1fr;
   background: var(--frame);
 }
+
+/* a phone held upright: the layout is landscape, so ask for that rather than shrink it */
+#rotate { display: none; position: fixed; inset: 0; z-index: 200; background: var(--frame); place-items: center; align-content: center; gap: 8px; padding: 24px; text-align: center; }
+#rotate svg { width: 40px; height: 40px; color: var(--signal-fg); margin-bottom: 8px; stroke-width: 1.75; }
+#rotate b { font-size: 19px; font-weight: 650; letter-spacing: -0.02em; }
+#rotate span { font-size: 14px; color: var(--text-2); }
+body.portrait #rotate { display: grid; }
+body.portrait #stage { visibility: hidden; }
 
 /* brand wordmark, used on boot and pairing (the status bar also shows the wordmark) */
 .boot-mark {
@@ -281,8 +283,11 @@ body.preview #app {
 .caption .t { font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .caption .s { font-size: 12px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* layer stack: the print, growing (35 layers of 4px + 2px gap = 210px) */
-.stack { grid-column: 2; grid-row: 1 / span 2; align-self: end; position: relative; height: 210px; width: 8px;
+/* layer stack: the print, growing (35 layers of 4px + 2px gap = 210px). On a bigger screen
+   it fills its cell and home.js fits as many whole layers as there is room for, setting
+   --track-h so the empty track ends on a whole layer too. */
+.stack { grid-column: 2; grid-row: 1 / span 2; align-self: end; position: relative; height: 210px; width: 8px; }
+.stack::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: var(--track-h, 100%);
   background: repeating-linear-gradient(to top, var(--surface-2) 0 4px, transparent 4px 6px); }
 .stack .fill { position: absolute; left: 0; right: 0; bottom: 0; height: 0;
   background: repeating-linear-gradient(to top, var(--stack-fill) 0 4px, transparent 4px 6px); }
@@ -837,3 +842,55 @@ html[data-dim] #app::after { content: ""; position: absolute; inset: 0; z-index:
 .calib .result h3 { font-size: 19px; font-weight: 650; letter-spacing: -0.02em; }
 .calib .result code { font-family: var(--mono); font-feature-settings: "ss09"; font-size: 11.5px; letter-spacing: -0.02em; background: var(--frame); border-radius: var(--r-sm); padding: 9px 11px; color: var(--signal-fg); word-break: break-all; user-select: text; -webkit-user-select: text; }
 .calib .result .row-actions { margin-top: auto; }
+
+/* ---------- bigger screens ----------
+   Everything above is laid out for the 480x320 canvas and stays exactly as it is there.
+   A bigger canvas (a 5" or 7" screen, a tablet, a phone on its side; see fitStage in app.js)
+   gives the extra room to the things worth seeing bigger: the camera, the layer gauge, the
+   big readings, file thumbnails, the jog pad. cqw/cqh are 1% of the canvas (#app). */
+@container app (min-width: 560px) or (min-height: 360px) {
+  /* rail: taller buttons, but the active block stays a compact pill */
+  #rail button::before { inset: max(5px, calc(50% - 30px)) 5px; }
+
+  /* home: the picture keeps about 4:3 at the height it gets, leaving the readings at least
+     168px; the gauge fills its column */
+  .home {
+    grid-template-columns: max(216px, min(calc((100cqh - 162px) * 4 / 3), calc(100cqw - 264px))) 8px minmax(0, 1fr);
+    grid-template-rows: minmax(162px, 1fr) auto 52px;
+  }
+  .stack { height: auto; align-self: stretch; }
+  /* the readings: the headline at the top, the details down level with the caption */
+  .info > .job-only, .info > .idle-only { flex: 1; display: flex; flex-direction: column; }
+  .info .job-only .rule, .info .lastbox { margin-top: auto; }
+  .info .pct b { font-size: clamp(62px, 15cqh, 92px); }
+  .info .pct span { font-size: clamp(20px, 4.5cqh, 28px); }
+  .info .left { font-size: clamp(17px, 4cqh, 22px); }
+  .info .title { font-size: clamp(28px, 7cqh, 40px); }
+
+  /* heat: the sparkline grows into the taller card, and so does the reading */
+  .hcard .spark { flex: 1 1 auto; height: auto; min-height: 22px; max-height: 120px; }
+  .hcard .actual b { font-size: clamp(50px, 13cqh, 76px); }
+  .hcard .actual span { font-size: clamp(17px, 4cqh, 24px); }
+  .heat { grid-template-rows: 1fr clamp(48px, 12cqh, 60px); }
+
+  /* move and level: the pad and the bed map take the extra width */
+  .move { grid-template-columns: minmax(198px, 1.6fr) minmax(64px, 0.5fr) minmax(0, 1fr); }
+  .lock { top: 30%; }
+  .level { grid-template-columns: minmax(226px, 1.2fr) minmax(0, 1fr); }
+
+  /* files: as many gallery columns as fit; the file page's picture as big as the height allows */
+  .scroll.grid { grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); }
+  .gthumb { height: auto; aspect-ratio: 3 / 2; }
+  .fdetail { grid-template-columns: auto minmax(0, 1fr); }
+  .fdetail .big-thumb { width: max(148px, min(42cqw, calc(100cqh - 152px))); height: auto; aspect-ratio: 1; }
+
+  /* lock screen: read from across the room, so it scales with the screen */
+  .ls-hero b { font-size: clamp(78px, 24cqh, 150px); }
+  .ls-hero span { font-size: clamp(22px, 6cqh, 36px); }
+  .ls-name { font-size: clamp(16px, 4.5cqh, 24px); }
+  .ls-sub { font-size: clamp(13px, 3.2cqh, 17px); }
+  .ls-thumb { width: clamp(132px, 44cqh, 260px); height: clamp(132px, 44cqh, 260px); }
+
+  /* quick info: the dials row grows a little; the plate below takes the rest */
+  .quick { grid-template-rows: clamp(128px, 34cqh, 180px) minmax(0, 1fr); }
+}

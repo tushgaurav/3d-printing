@@ -16,7 +16,7 @@ import { openAfterPrint } from '../sheets/afterprint.js';
 import { storedMedia, saveMedia } from '../session.js';
 import { ModelView, canModel, loadModel, modelKey } from '../model3d.js';
 
-const LAYERS = 35; // the gauge is 210px tall: 35 layers of 4px + 2px gap (see .stack in app.css)
+const PITCH = 6; // one layer of the gauge: 4px + a 2px gap (see .stack in app.css)
 
 export default {
   id: 'home',
@@ -240,13 +240,27 @@ export default {
 
     // ~~ render
 
+    // As many whole layers as the gauge has room for: 35 (210px) on the 480x320 screen,
+    // more where a bigger screen stretches it (and the empty track then ends on a whole layer).
+    let layers = 35;
+    let stackArgs = [0, null];
+    new ResizeObserver(() => {
+      if (!r.stack.clientHeight) return; // screen hidden
+      const fit = Math.max(10, Math.floor((r.stack.clientHeight + PITCH - 4) / PITCH));
+      if (fit === layers) return;
+      layers = fit;
+      r.stack.style.setProperty('--track-h', `${layers * PITCH - (PITCH - 4)}px`);
+      renderStack(...stackArgs);
+    }).observe(r.stack);
+
     function renderStack(pct, tone) {
-      const exact = (pct / 100) * LAYERS;
-      const done = Math.min(LAYERS, Math.floor(exact));
+      stackArgs = [pct, tone];
+      const exact = (pct / 100) * layers;
+      const done = Math.min(layers, Math.floor(exact));
       const frac = Math.round((exact - done) * 8) / 8; // quantised: fewer repaints
-      setStyle(r.fill, 'height', `${done * 6}px`);
-      setStyle(r.cur, 'bottom', `${done * 6}px`);
-      setStyle(r.cur, 'width', `${done < LAYERS ? frac * 100 : 0}%`);
+      setStyle(r.fill, 'height', `${done * PITCH}px`);
+      setStyle(r.cur, 'bottom', `${done * PITCH}px`);
+      setStyle(r.cur, 'width', `${done < layers ? frac * 100 : 0}%`);
       setData(r.stack, 'tone', tone === 'ok' || tone === 'warn' ? tone : null);
     }
 
@@ -302,7 +316,7 @@ export default {
         case 'disconnected': return ['Printer off', 'OctoPrint is running but the printer isn’t connected. Check power and the USB cable.'];
         case 'linking': return ['Connecting', (s.printer && s.printer.text) || 'Opening the serial port…'];
         case 'error': return ['Printer error', (s.printer && (s.printer.error || s.printer.text)) || 'Unknown error'];
-        case 'offline': return ['No OctoPrint', 'Can’t reach OctoPrint on this Pi. Retrying…'];
+        case 'offline': return ['No OctoPrint', 'Can’t reach OctoPrint. Retrying…'];
         case 'unauthorized': return ['Not paired', 'This screen needs to be paired with OctoPrint.'];
         default: return ['Starting', 'Talking to OctoPrint…'];
       }

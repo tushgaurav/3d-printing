@@ -1,0 +1,206 @@
+{#- Settings > Layer1: the setup steps (also the wizard step), then the settings form. The
+    form binds to OctoPrint's settings (plugins.layer1), so the dialog's Save button saves it;
+    see static/octoprint/layer1_setup.js. -#}
+{% set layer1_in_settings = true %}
+{% include "layer1_setup.jinja2" %}
+
+<h3>Settings</h3>
+<p>
+    Open screens reload by themselves when you save.
+    The <a href="https://github.com/tushgaurav/layer1/blob/main/docs/setup.md#settings" target="_blank" rel="noopener">setup guide</a>
+    lists every setting, including the few that are only in OctoPrint's <code>config.yaml</code>.
+</p>
+
+<!-- ko with: s -->
+<form class="form-horizontal" onsubmit="return false;">
+    <h4>Printer</h4>
+    <div class="control-group">
+        <label class="control-label">Name</label>
+        <div class="controls">
+            <input type="text" class="input-large" data-bind="value: printer.name, attr: {placeholder: $root.profileName}">
+            <span class="help-block">Shown on the screen. Leave it empty to use the name of OctoPrint's printer profile.</span>
+        </div>
+    </div>
+    <div class="control-group">
+        <div class="controls">
+            <label class="checkbox"><input type="checkbox" data-bind="checked: printer.zMovesBed"> Z moves the bed, not the nozzle (most CoreXY printers)</label>
+            <span class="help-block">Move then labels Z <em>Bed Up</em> and <em>Bed Down</em>, and After Print says <em>Lower Bed</em> instead of <em>Raise Z</em>.</span>
+        </div>
+    </div>
+    <div class="control-group">
+        <div class="controls">
+            <span class="help-block">
+                The build volume and where 0,0 is come from OctoPrint's
+                <a href="#" data-bind="click: $root.showPrinterProfiles">printer profile</a> (Settings &rarr; Printer Profiles).
+                Level Bed and After Print use them to stay inside the bed.
+            </span>
+        </div>
+    </div>
+
+    <h4>Temperatures</h4>
+    <div class="control-group">
+        <label class="control-label">Presets</label>
+        <div class="controls">
+            <table class="table table-condensed" style="width: auto; margin-bottom: 5px">
+                <thead><tr><th>Name</th><th>Nozzle</th><th>Bed</th><th></th></tr></thead>
+                <tbody data-bind="foreach: presets">
+                    <tr>
+                        <td><input type="text" class="input-small" data-bind="value: name"></td>
+                        <td><div class="input-append"><input type="number" min="0" class="input-mini" data-bind="layer1Number: nozzle"><span class="add-on">&deg;C</span></div></td>
+                        <td><div class="input-append"><input type="number" min="0" class="input-mini" data-bind="layer1Number: bed"><span class="add-on">&deg;C</span></div></td>
+                        <td><button type="button" class="btn btn-small" data-bind="click: $root.removePreset, enable: $parent.presets().length > 1"><i class="fas fa-trash-alt"></i> Remove</button></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button type="button" class="btn btn-small" data-bind="click: $root.addPreset"><i class="fas fa-plus"></i> Add Preset</button>
+            <span class="help-block">Buttons on the Heat screen, in this order. The first preset is also where + starts from a cold heater.</span>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Highest nozzle target</label>
+        <div class="controls">
+            <div class="input-append"><input type="number" min="0" class="input-mini" data-bind="layer1Number: limits.nozzleMax"><span class="add-on">&deg;C</span></div>
+            <span class="help-block">Hotends with a PTFE-lined throat shouldn't go above about 250 &deg;C. Raise it if yours is all-metal.</span>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Highest bed target</label>
+        <div class="controls">
+            <div class="input-append"><input type="number" min="0" class="input-mini" data-bind="layer1Number: limits.bedMax"><span class="add-on">&deg;C</span></div>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Lowest extrude temperature</label>
+        <div class="controls">
+            <div class="input-append"><input type="number" min="0" class="input-mini" data-bind="layer1Number: limits.minExtrudeTemp"><span class="add-on">&deg;C</span></div>
+            <span class="help-block">Below this the screen refuses to extrude or retract, like the firmware's cold-extrusion limit.</span>
+        </div>
+    </div>
+
+    <h4>Filament</h4>
+    <div class="control-group">
+        <label class="control-label">Feed length</label>
+        <div class="controls">
+            <div class="input-append"><input type="number" min="0" class="input-mini" data-bind="layer1Number: filament.bowdenLength"><span class="add-on">mm</span></div>
+            <span class="help-block">
+                <strong>Measure yours.</strong> On a Bowden setup, the length of the tube from the extruder to the hotend.
+                On a direct-drive extruder, the length from the extruder gears to the nozzle (a few tens of mm).
+                Load feeds this fast, then purges slowly.
+            </span>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Fast feed speed</label>
+        <div class="controls">
+            <div class="input-append"><input type="number" min="1" class="input-mini" data-bind="layer1Number: filament.fastFeed"><span class="add-on">mm/min</span></div>
+            <span class="help-block">Many stock firmwares cap the extruder at 1500 (25 mm/s).</span>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Purge</label>
+        <div class="controls">
+            <div class="input-append"><input type="number" min="0" class="input-mini" data-bind="layer1Number: filament.purgeLength"><span class="add-on">mm</span></div>
+            at
+            <div class="input-append"><input type="number" min="1" class="input-mini" data-bind="layer1Number: filament.purgeFeed"><span class="add-on">mm/min</span></div>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Extra on unload</label>
+        <div class="controls">
+            <div class="input-append"><input type="number" min="0" class="input-mini" data-bind="layer1Number: filament.unloadExtra"><span class="add-on">mm</span></div>
+            <span class="help-block">Unload pulls back the feed length plus this.</span>
+        </div>
+    </div>
+
+    <h4>Level Bed</h4>
+    <div class="control-group">
+        <label class="control-label">Corner inset</label>
+        <div class="controls">
+            <div class="input-append"><input type="number" min="0" class="input-mini" data-bind="layer1Number: level.inset"><span class="add-on">mm</span></div>
+            <span class="help-block">How far the corner spots sit in from the edges of the bed. Set it so the nozzle stops over each levelling knob.</span>
+        </div>
+    </div>
+
+    <h4>After Print</h4>
+    <div class="control-group">
+        <label class="control-label">Move Z up by</label>
+        <div class="controls">
+            <div class="input-append"><input type="number" min="0" class="input-mini" data-bind="layer1Number: afterPrint.lowerBedBy"><span class="add-on">mm</span></div>
+            <span class="help-block">For Raise Z (or Lower Bed). It never goes past the top of the build volume.</span>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Shutdown countdown</label>
+        <div class="controls">
+            <div class="input-append"><input type="number" min="0" class="input-mini" data-bind="layer1Number: afterPrint.shutdownSeconds"><span class="add-on">s</span></div>
+            <span class="help-block">How long the screen shows before the system shuts down after a print, so it can be cancelled. Uses OctoPrint's shutdown command (Settings &rarr; Server &rarr; Commands).</span>
+        </div>
+    </div>
+
+    <h4>Webcam</h4>
+    <div class="control-group">
+        <div class="controls">
+            <label class="checkbox"><input type="checkbox" data-bind="checked: webcam.enabled"> Show the camera</label>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Snapshot URL</label>
+        <div class="controls">
+            <input type="text" class="input-xlarge" data-bind="value: webcam.snapshot">
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Stream URL</label>
+        <div class="controls">
+            <input type="text" class="input-xlarge" data-bind="value: webcam.stream">
+            <span class="help-block">The defaults are OctoPi's. The stream is only used full screen; Home refreshes the snapshot.</span>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Snapshot every</label>
+        <div class="controls">
+            <div class="input-append"><input type="number" min="1" class="input-mini" data-bind="layer1Number: webcam.snapshotSeconds"><span class="add-on">s</span></div>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Orientation</label>
+        <div class="controls">
+            <label class="checkbox"><input type="checkbox" data-bind="checked: webcam.flipH"> Flip horizontally</label>
+            <label class="checkbox"><input type="checkbox" data-bind="checked: webcam.flipV"> Flip vertically</label>
+            <label class="checkbox"><input type="checkbox" data-bind="checked: webcam.rotate90"> Rotate 90&deg;</label>
+        </div>
+    </div>
+
+    <h4>Screen Defaults</h4>
+    <p>A choice made on a screen wins over these, on that screen.</p>
+    <div class="control-group">
+        <label class="control-label">Theme</label>
+        <div class="controls">
+            <select class="input-medium" data-bind="value: ui.theme">
+                <option value="dark">Dark</option>
+                <option value="light">Light</option>
+            </select>
+            <span class="help-block">Light is easier to read on cheap panels with greyish blacks.</span>
+        </div>
+    </div>
+    <div class="control-group">
+        <div class="controls">
+            <label class="checkbox"><input type="checkbox" data-bind="checked: ui.clock24"> 24-hour clock</label>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Lock after</label>
+        <div class="controls">
+            <div class="input-append"><input type="number" min="0" class="input-mini" data-bind="layer1Number: ui.autoLockMinutes"><span class="add-on">min</span></div>
+            <span class="help-block">Without a touch. 0 never locks.</span>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Sleep after</label>
+        <div class="controls">
+            <div class="input-append"><input type="number" min="0" class="input-mini" data-bind="layer1Number: ui.sleepMinutes"><span class="add-on">min</span></div>
+            <span class="help-block">Without a touch, the screen goes black. 0 never sleeps.</span>
+        </div>
+    </div>
+</form>
+<!-- /ko -->

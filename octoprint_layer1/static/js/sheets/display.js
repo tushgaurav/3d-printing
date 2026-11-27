@@ -19,7 +19,9 @@ export function openDisplay(ctx) {
   openSheet({
     title: 'Display',
     render(body, sheet) {
-      sheet.head.insertAdjacentHTML('beforeend', `<button class="chipbtn" data-a="calibrate">${icon('touch')}Calibrate Touch</button>`);
+      // Calibration is saved on the kiosk's computer (layer1-kiosk set-touch), so only the
+      // attached screen offers it; a phone or tablet browser has nothing to calibrate.
+      if (ctx.kiosk || ctx.demo) sheet.head.insertAdjacentHTML('beforeend', `<button class="chipbtn" data-a="calibrate">${icon('touch')}Calibrate Touch</button>`);
       body.innerHTML = `
         <div class="section"><div class="label">Theme</div>
           <div class="theme-pick">${OPTIONS.map((o) => `
@@ -55,7 +57,8 @@ export function openDisplay(ctx) {
         const sleep = e.target.closest('[data-sleep]');
         if (sleep) { saveSleep(+sleep.dataset.sleep); mark(); }
       });
-      sheet.head.querySelector('[data-a="calibrate"]').addEventListener('click', () => { sheet.close(); openCalibration(ctx); });
+      const cal = sheet.head.querySelector('[data-a="calibrate"]');
+      if (cal) cal.addEventListener('click', () => { sheet.close(); openCalibration(ctx); });
       return null;
     },
   });

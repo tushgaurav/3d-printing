@@ -1,4 +1,4 @@
-// Network: how the Pi is connected (Wi-Fi name and signal bars, or Ethernet and its speed)
+// Network: how the computer OctoPrint runs on is connected (Wi-Fi name and signal bars, or Ethernet and its speed)
 // and its addresses, plus "Open on Phone" for QR codes to OctoPrint and Layer1. When both
 // are connected, the one carrying traffic leads and the other gets a row. Opened from the
 // Wi-Fi icon at the end of the status bar, which shows the same state (see netGlyph).
@@ -104,7 +104,7 @@ export function openNetwork(ctx) {
         const rows = [['IP address', esc(net.ip || '—')], ['Host name', esc(host)]];
         if (!net.ip) {
           setText(r.name, 'Not connected');
-          setText(r.sub, 'The Pi has no network');
+          setText(r.sub, 'No network connection');
           rows.push(['Interface', '—']);
         } else if (net.wifi) {
           setText(r.name, net.ssid || 'Wi-Fi');
