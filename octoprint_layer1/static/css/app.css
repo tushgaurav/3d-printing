@@ -165,17 +165,17 @@ body.preview #app {
   background: var(--frame);
 }
 
-/* brand mark: lime tag, used on boot and pairing (the status bar shows the wordmark) */
+/* brand wordmark, used on boot and pairing (the status bar also shows the wordmark) */
 .boot-mark {
-  display: inline-grid; place-items: center;
-  background: var(--signal); color: var(--signal-ink);
-  font-family: var(--mono); font-feature-settings: "ss09"; font-weight: 700; letter-spacing: -0.04em; line-height: 1;
+  display: inline-block;
+  color: var(--text-1);
+  background: none; border-radius: 0;
 }
 
 /* ---------- boot ---------- */
 #boot { position: absolute; inset: 0; z-index: 90; background: var(--frame); display: none; place-items: center; align-content: center; gap: 14px; }
 #app.booting #boot { display: grid; }
-.boot-mark { font-size: 30px; width: 76px; height: 52px; border-radius: 14px; }
+.boot-mark { width: 120px; height: auto; }
 .boot-text { color: var(--text-3); font-size: 13px; }
 
 /* ---------- rail ---------- */
@@ -808,7 +808,7 @@ html[data-dim] #app::after { content: ""; position: absolute; inset: 0; z-index:
 .takeover { position: absolute; inset: 0; z-index: 70; background: var(--frame); padding: 8px; }
 .pair { height: 100%; display: grid; grid-template-columns: 136px 1fr; gap: 8px; }
 .pair .mark { display: grid; place-items: center; align-content: center; gap: 12px; background: var(--canvas); border-radius: var(--r-lg); padding: 12px; }
-.pair .mark .boot-mark { font-size: 26px; width: 66px; height: 46px; border-radius: 12px; }
+.pair .mark .boot-mark { width: 80px; height: auto; background: none; border-radius: 0; }
 .pair .mark span { font-size: 12px; color: var(--text-3); text-align: center; line-height: 1.35; }
 .pair .body { display: flex; flex-direction: column; min-width: 0; background: var(--canvas); border-radius: var(--r-lg); padding: 14px; }
 .pair h1 { font-size: 19px; font-weight: 650; letter-spacing: -0.03em; line-height: 1.15; margin-bottom: 12px; }

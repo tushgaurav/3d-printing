@@ -3,6 +3,7 @@
 // 3.5" screen.
 
 import { icon } from '../icons.js';
+import { logo } from '../logo.js';
 import { refs, setText, setData, show, esc, sleep } from '../util.js';
 import { APP_NAME, probeAppKeys, requestAppKey } from '../api.js';
 import { mount } from '../ui.js';
@@ -13,7 +14,7 @@ export function showPairing(ctx, { demo = false } = {}) {
     el.className = 'takeover';
     el.innerHTML = `
       <div class="pair">
-        <div class="mark"><div class="boot-mark">L1</div><span>Layer1<br>${esc(ctx.cfg.printer.name)}</span></div>
+        <div class="mark">${logo('boot-mark')}<span>Layer1<br>${esc(ctx.cfg.printer.name)}</span></div>
         <div class="body">
           <h1>Pair this screen with OctoPrint</h1>
           <ol>
