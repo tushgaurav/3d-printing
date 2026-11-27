@@ -24,6 +24,8 @@
   /* text */
   --ink: #17191c;
   --ink-2: #4f555b;
+  /* secondary text on the plaster floor, where --ink-2 dips under 4.5:1 */
+  --ink-soft: #43484e;
   --on-dark: #f4f4f1;
   --on-dark-2: #a4a8ae;
   --hair-dark: rgba(255, 255, 255, 0.09);
@@ -202,7 +204,7 @@ button {
   max-width: 44ch;
   font-size: 18px;
   line-height: 1.55;
-  color: var(--ink-2);
+  color: var(--ink-soft);
   text-wrap: pretty;
 }
 
@@ -330,10 +332,10 @@ button {
   height: min(76%, 41vw);
   /* aspect-ratio comes from the image file itself, set inline in Hero.tsx */
   /* a touch left of centre: the Z column on the right of the photo would otherwise
-     cover the E of "Ender", and the floating screen balances the weight */
+     cover the start of the right-hand words, and the floating screen balances the weight */
   translate: -56% 0;
-  /* where the hotend is in the photo (top gantry, the Ender 5's bed moves instead),
-     as a share of the box */
+  /* where the hotend is in the photo (on the top gantry, this printer's bed moves
+     instead), as a share of the box */
   --pin-x: 52.5%;
   --pin-y: 19%;
   /* the floating Layer1 screen, beside the stock LCD it replaces */
@@ -453,17 +455,67 @@ button {
 .hero__foot {
   position: absolute;
   z-index: 3;
-  top: calc(var(--title-top) + var(--fs) * 0.84 * 2 + clamp(28px, 4vh, 56px));
+  top: calc(var(--title-top) + var(--fs) * 0.84 * 2 + clamp(24px, 3.4vh, 48px));
   left: var(--gutter);
   right: var(--gutter);
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 24px;
   pointer-events: none;
 }
 
 .hero__foot > * {
   pointer-events: auto;
+}
+
+/* Left of the printer: kept narrow enough to clear its frame. */
+.hero__intro {
+  max-width: max(25vw, 300px);
+}
+
+.hero__lede {
+  max-width: 30ch;
+  font-size: 18px;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+/* each sentence keeps to its own line when there is room */
+.hero__lede span {
+  display: inline-block;
+  text-wrap: balance;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 24px;
+  margin-top: 24px;
+}
+
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 48px;
+  font-size: 16px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.text-link span {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 5px;
+  transition: text-decoration-color 160ms ease-out;
+}
+
+.text-link:hover span {
+  text-decoration-color: currentColor;
 }
 
 .cta {
@@ -497,8 +549,20 @@ button {
   rotate: 45deg;
 }
 
+.cta--signal {
+  background: var(--signal);
+  color: var(--signal-ink);
+  box-shadow: none;
+}
+
+.cta--signal .cta__icon {
+  background: var(--graphite);
+  color: var(--on-dark);
+}
+
 .hero__meta {
   display: flex;
+  flex: none;
   align-items: center;
   gap: 12px;
   font-size: 16px;
@@ -768,6 +832,65 @@ button {
   box-shadow: 0 26px 40px -18px rgba(60, 44, 28, 0.45);
 }
 
+/* ───────────── Features ───────────── */
+
+.features {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: clamp(96px, 11vw, 168px) var(--gutter) 0;
+}
+
+.features__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr);
+  gap: 20px clamp(32px, 5vw, 88px);
+  align-items: end;
+}
+
+.features__head .section-lede {
+  margin-top: 0;
+}
+
+.features__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: clamp(24px, 3vw, 56px);
+  margin-top: clamp(48px, 6vw, 88px);
+}
+
+.feature {
+  padding: 32px 0 48px;
+  border-top: 1px solid rgba(23, 25, 28, 0.16);
+}
+
+/* The same tile the Layer1 "More" screen puts its icons in. */
+.feature__icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--graphite);
+  color: var(--signal);
+}
+
+.feature__title {
+  margin-top: 24px;
+  font-size: 21px;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+}
+
+.feature__body {
+  margin-top: 10px;
+  max-width: 38ch;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+
 /* ───────────── Screens ───────────── */
 
 .screens {
@@ -858,6 +981,102 @@ button {
   cursor: default;
 }
 
+/* ───────────── Closing ───────────── */
+
+.closing {
+  background: var(--graphite);
+  color: var(--on-dark);
+  padding: clamp(88px, 10vw, 152px) var(--gutter) 0;
+  --focus: var(--signal);
+}
+
+.closing__body,
+.closing__tagline {
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+.closing__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.95fr);
+  gap: clamp(40px, 6vw, 104px);
+  align-items: center;
+}
+
+.closing__title {
+  max-width: 12ch;
+  font-family: var(--display);
+  font-stretch: 125%;
+  font-weight: 500;
+  font-size: clamp(40px, 4.8vw, 76px);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.closing__title em {
+  font-style: normal;
+  color: var(--signal);
+}
+
+.closing__lede {
+  margin-top: 28px;
+  max-width: 42ch;
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--on-dark-2);
+  text-wrap: pretty;
+}
+
+.closing .actions {
+  margin-top: 40px;
+}
+
+.closing .cta {
+  --focus: #fff;
+}
+
+.closing__device {
+  padding: clamp(8px, 1vw, 14px);
+  border-radius: clamp(16px, 1.8vw, 24px);
+  background: linear-gradient(160deg, #30343a, #121316 60%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.1) inset,
+    0 0 0 1px var(--hair-dark),
+    0 40px 80px -36px rgba(0, 0, 0, 0.75);
+  rotate: 2deg;
+}
+
+.closing__device img {
+  width: 100%;
+  border-radius: clamp(6px, 0.8vw, 10px);
+}
+
+.closing__tagline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 32px;
+  margin-top: clamp(72px, 9vw, 128px);
+  padding: 28px 0;
+  border-top: 1px solid var(--hair-dark);
+  font-size: 15px;
+  color: var(--on-dark-2);
+}
+
+.closing__tagline span {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.closing__tagline span::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--signal);
+}
+
 /* ───────────── Footer ───────────── */
 
 .footer {
@@ -921,17 +1140,30 @@ button {
   .card--clay {
     grid-column: span 2;
   }
+
+  .features__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 900px) {
-  .screens__body {
+  .screens__body,
+  .features__head,
+  .closing__body {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .closing__device {
+    max-width: 560px;
   }
 }
 
 @media (max-width: 760px) {
+  /* taller than the old 760px: the intro, both buttons and the OctoPrint chip
+     stack under the printer */
   :root {
-    --hero-h: 760px;
+    --hero-h: 900px;
+    --horizon: 0.6;
   }
 
   .nav {
@@ -944,7 +1176,7 @@ button {
     font-size: 15px;
   }
 
-  /* The headline stacks: "Touch screen" from the left, "Ender 5 Pro" stepped in from
+  /* The headline stacks: "Old printer" from the left, "New tricks" stepped in from
      the right, and the printer stands in front of the last line. */
   .hero {
     --fs: clamp(40px, 13.6vw, 72px);
@@ -961,8 +1193,8 @@ button {
   }
 
   .hero__printer {
-    height: 46%;
-    bottom: 18.5%;
+    height: 39%;
+    bottom: 32%;
     translate: -50% 0;
     --screen-w: 46%;
     --screen-right: -9%;
@@ -980,6 +1212,19 @@ button {
     bottom: 28px;
     flex-wrap: wrap;
     gap: 16px;
+  }
+
+  .hero__intro {
+    max-width: none;
+  }
+
+  .hero__lede {
+    font-size: 17px;
+  }
+
+  .hero .actions {
+    margin-top: 20px;
+    gap: 4px 24px;
   }
 
   .cta {
@@ -1000,6 +1245,14 @@ button {
 
   .card--clay {
     grid-column: auto;
+  }
+
+  .features__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .feature {
+    padding-bottom: 36px;
   }
 
   .footer__top {

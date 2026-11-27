@@ -88,6 +88,60 @@ export const Check = (p: IconProps) => (
   </Icon>
 );
 
+export const Webcam = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="10" r="8" />
+    <circle cx="12" cy="10" r="3" />
+    <path d="M7 22h10" />
+    <path d="M12 22v-4" />
+  </Icon>
+);
+
+export const SlidersHorizontal = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M10 5H3" />
+    <path d="M12 19H3" />
+    <path d="M14 3v4" />
+    <path d="M16 17v4" />
+    <path d="M21 12h-9" />
+    <path d="M21 19h-5" />
+    <path d="M21 5h-7" />
+    <path d="M8 10v4" />
+    <path d="M8 12H3" />
+  </Icon>
+);
+
+export const FolderOpen = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2" />
+  </Icon>
+);
+
+export const Layers = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" />
+    <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" />
+    <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" />
+  </Icon>
+);
+
+// Lucide "tablet", turned on its side like the Pi screen.
+export const TabletLandscape = (p: IconProps) => (
+  <Icon {...p}>
+    <rect width="20" height="16" x="2" y="4" rx="2" ry="2" />
+    <path d="M18 12h.01" />
+  </Icon>
+);
+
+export const Plug = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 22v-5" />
+    <path d="M15 8V2" />
+    <path d="M17 8a1 1 0 0 1 1 1v4a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1z" />
+    <path d="M9 8V2" />
+  </Icon>
+);
+
 // Brand marks (Simple Icons, CC0): filled shapes, not strokes.
 function Mark({ size = 18, children, ...rest }: IconProps) {
   return (

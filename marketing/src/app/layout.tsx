@@ -19,9 +19,9 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Layer1: a touchscreen for the Ender 5 Pro",
+  title: "Layer1: a modern touchscreen interface for OctoPrint",
   description:
-    "A Bambu-style touch interface for the Ender 5 Pro. Runs on a 3.5-inch Raspberry Pi screen through OctoPrint.",
+    "Layer1 turns a Raspberry Pi and touchscreen into a modern control panel for your 3D printer. Monitor prints, control your printer and browse files from a clean, touch-friendly interface, powered by OctoPrint.",
 };
 
 export const viewport: Viewport = {
