@@ -132,7 +132,7 @@ first time the UI loads). Edit, then reload the screen (More → System → Relo
 | `limits.minExtrudeTemp` | 170 | Below this, extrude/retract are refused (Marlin's cold-extrusion limit) |
 | `filament.bowdenLength` | 420 | **Measure yours.** Load feeds this minus `fastFeedStopShort` fast, then purges slowly |
 | `filament.fastFeed` / `purgeFeed` | 1500 / 240 | mm/min. Stock Ender firmware caps E at 25 mm/s (1500) |
-| `move.steps` / `extrudeAmount` | 0.1, 1, 10, 50 / 10 | Jog steps (mm) and extrude amount |
+| `move.steps` | 0.1, 1, 10, 50 | Step sizes (mm) on Move. The chosen step is both the jog distance and the extrude/retract length |
 | `speedModes` | Quiet 50, Normal 100, Sport 125, Turbo 150 | Feed-rate presets (M220) |
 | `webcam.snapshot` / `stream` | `/webcam/?action=snapshot` / `…stream` | OctoPi's default webcam URLs |
 | `webcam.snapshotSeconds` | 3 | Home screen refresh. The live stream is only used full-screen, to spare the SPI screen |
@@ -141,6 +141,7 @@ first time the UI loads). Edit, then reload the screen (More → System → Relo
 | `ui.quickInfoSeconds` | 15 | Quick info (tap the status bar) closes itself after this many seconds. `0` keeps it open until tapped |
 | `ui.autoLockMinutes` | 0 | Lock the screen after this many minutes without a touch. `0` never does. A choice made on the screen (More → Lock) wins |
 | `ui.sleepMinutes` | 0 | Turn the screen black after this many minutes without a touch (most SPI panels can't switch the backlight off). `0` never does. A choice made on the screen (More → Display) wins |
+| `ui.brightness` | 100 | Percent, 30–100. SPI panels can't dim their backlight, so this darkens the picture with a black layer (the backlight stays on). A choice made on the screen (More → Display) wins |
 | `ui.theme` | dark | `dark` or `light`. Light is easier to read on cheap panels with greyish blacks. A choice made on the screen (More → Display) is remembered and wins |
 
 **Kiosk** — `/etc/layer1-kiosk.conf` (framebuffer, touch matrix, Chromium flags).

@@ -1,5 +1,5 @@
 // Version, plus what this screen remembers: its OctoPrint application key, theme, lock, sleep,
-// whether Home shows the camera or the model, and the Files view (list or grid) and sort.
+// brightness, whether Home shows the camera or the model, and the Files view (list or grid) and sort.
 
 export const UI_VERSION = '0.2.0';
 
@@ -116,4 +116,30 @@ export function storedSleep() {
 
 export function saveSleep(minutes) {
   try { localStorage.setItem(SLEEP_KEY, String(minutes)); } catch { /* remembered for this page load only */ }
+}
+
+// Brightness: percent, 100 = full. SPI panels have no backlight control, so it's a black
+// layer over the whole UI (CSS: html[data-dim]). null = not chosen on the screen yet, so the
+// config default (ui.brightness) applies. index.html applies it before first paint; keep in step.
+const BRIGHTNESS_KEY = 'layer1.brightness';
+const MIN_BRIGHTNESS = 30; // any darker and the screen is too dim to find the setting again
+
+export function storedBrightness() {
+  try {
+    const v = localStorage.getItem(BRIGHTNESS_KEY);
+    return v != null && Number.isFinite(+v) ? +v : null;
+  } catch { return null; }
+}
+
+export function applyBrightness(pct) {
+  const p = Math.min(100, Math.max(MIN_BRIGHTNESS, Number.isFinite(+pct) ? +pct : 100));
+  const root = document.documentElement;
+  if (p >= 100) { delete root.dataset.dim; root.style.removeProperty('--dim'); return; }
+  root.dataset.dim = '';
+  root.style.setProperty('--dim', String(1 - p / 100));
+}
+
+export function saveBrightness(pct) {
+  try { localStorage.setItem(BRIGHTNESS_KEY, String(pct)); } catch { /* applied for this page load only */ }
+  applyBrightness(pct);
 }

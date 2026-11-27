@@ -632,6 +632,11 @@ body.preview #app {
 #app.asleep #rail, #app.asleep #status, #app.asleep #screens,
 #app.asleep #layer > :not(.sleep):not(.takeover):not(.calib) { visibility: hidden; }
 
+/* ---------- brightness: SPI panels can't dim their backlight, so darken the picture ----------
+   A black layer over everything (boot, sheets, lock, calibration); taps pass straight through.
+   session.js sets data-dim and --dim (0 = full brightness, 0.7 = 30%). */
+html[data-dim] #app::after { content: ""; position: absolute; inset: 0; z-index: 100; background: #000; opacity: var(--dim); pointer-events: none; }
+
 /* ---------- print finished card ---------- */
 .modal.donecard { width: 456px; display: grid; grid-template-columns: 150px minmax(0, 1fr); grid-template-rows: auto 48px; gap: 14px 16px; padding: 14px; }
 .dc-media { position: relative; width: 150px; height: 150px; border-radius: var(--r-lg); overflow: hidden; background: var(--surface-2); display: grid; place-items: center; color: var(--text-3); }

@@ -21,7 +21,7 @@ import { PHASES, ACTIVE, phaseOf } from './model.js';
 import { initUI, toast, closeSheets, setScale } from './ui.js';
 
 const NET_POLL_MS = 30000; // the status bar's Wi-Fi icon; the Network page polls faster while open
-import { loadKey, saveKey, forgetKey, storedTheme, applyTheme } from './session.js';
+import { loadKey, saveKey, forgetKey, storedTheme, applyTheme, storedBrightness, applyBrightness } from './session.js';
 import home from './screens/home.js';
 import files from './screens/files.js';
 import heat from './screens/heat.js';
@@ -213,6 +213,8 @@ async function boot() {
   setClock24(cfg.ui.clock24);
   // Theme: choice saved on this screen > ?theme= / #theme= > config default.
   applyTheme(storedTheme() || query.get('theme') || hash.get('theme') || cfg.ui.theme);
+  const bright = storedBrightness();
+  applyBrightness(bright != null ? bright : cfg.ui.brightness);
 
   const loopback = /^(127\.|localhost$|\[?::1\]?$)/.test(location.hostname);
   const store = createStore({

@@ -42,8 +42,7 @@
       10,
       50
     ],
-    "defaultStep": 10,
-    "extrudeAmount": 10
+    "defaultStep": 10
   },
   "filament": {
     "bowdenLength": 420,
@@ -88,6 +87,7 @@
     "quickInfoSeconds": 15,
     "filamentDensity": 1.24,
     "autoLockMinutes": 0,
-    "sleepMinutes": 0
+    "sleepMinutes": 0,
+    "brightness": 100
   }
 }

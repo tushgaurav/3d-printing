@@ -14,6 +14,14 @@
         || new URLSearchParams(location.hash.slice(1)).get('theme');
       if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
     } catch (e) { /* storage blocked: app.js still applies the default */ }
+    // Brightness too, so a dimmed screen doesn't flash full bright on reload (session.js).
+    try {
+      var b = +localStorage.getItem('layer1.brightness');
+      if (b >= 30 && b < 100) {
+        document.documentElement.dataset.dim = '';
+        document.documentElement.style.setProperty('--dim', String(1 - b / 100));
+      }
+    } catch (e) { /* app.js applies it */ }
   </script>
   <link rel="preload" href="fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/GeistMono-Variable.woff2" as="font" type="font/woff2" crossorigin>

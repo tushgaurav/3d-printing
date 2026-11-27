@@ -1,5 +1,5 @@
 // Move: XY jog pad, Z (which moves the bed on an Ender 5), step size,
-// extrude/retract and motors off. Locked while printing.
+// extrude/retract (by the same step) and motors off. Locked while printing.
 
 import { icon } from '../icons.js';
 import { refs, setText, show, toggle } from '../util.js';
@@ -14,7 +14,6 @@ export default {
   mount(el, ctx) {
     const { store, cfg } = ctx;
     const zBed = !!cfg.printer.zMovesBed;
-    const amount = cfg.move.extrudeAmount;
     let step = cfg.move.defaultStep;
 
     el.innerHTML = `
@@ -41,15 +40,20 @@ export default {
         </div>
         <div class="bottom row-actions">
           <button class="btn tall" data-act="homeall">${icon('home')}Home All</button>
-          <button class="btn tall" data-act="extrude">${icon('extrude')}Extrude ${amount}</button>
-          <button class="btn tall" data-act="retract">${icon('retract')}Retract ${amount}</button>
+          <button class="btn tall" data-act="extrude">${icon('extrude')}<span data-r="extrudeLabel"></span></button>
+          <button class="btn tall" data-act="retract">${icon('retract')}<span data-r="retractLabel"></span></button>
           <button class="btn tall" data-act="motors">${icon('unlock')}Motors Off</button>
         </div>
         <div class="lock hidden" data-r="lock">${icon('alert')}<span data-r="lockText"></span></div>
       </div>`;
     const r = refs(el);
     const stepButtons = [...el.querySelectorAll('[data-step]')];
-    const markStep = () => stepButtons.forEach((b) => toggle(b, 'active', +b.dataset.step === step));
+    // The step size drives the jog distance and the extrude/retract length.
+    const markStep = () => {
+      stepButtons.forEach((b) => toggle(b, 'active', +b.dataset.step === step));
+      setText(r.extrudeLabel, `Extrude ${step}`);
+      setText(r.retractLabel, `Retract ${step}`);
+    };
     markStep();
 
     function hotEnough() {
@@ -71,8 +75,8 @@ export default {
       if (b.dataset.home) { attempt(() => ctx.client.home(b.dataset.home.split(','))); return; }
       switch (b.dataset.act) {
         case 'homeall': attempt(() => ctx.client.home(['x', 'y', 'z'])); break;
-        case 'extrude': if (hotEnough()) attempt(() => ctx.client.extrude(amount)); break;
-        case 'retract': if (hotEnough()) attempt(() => ctx.client.extrude(-amount)); break;
+        case 'extrude': if (hotEnough()) attempt(() => ctx.client.extrude(step)); break;
+        case 'retract': if (hotEnough()) attempt(() => ctx.client.extrude(-step)); break;
         case 'motors': attempt(async () => { await ctx.client.gcode('M84'); toast('Motors Off · Axes Can Be Moved by Hand', 'muted', 3500, 'unlock'); }); break;
         default:
       }
