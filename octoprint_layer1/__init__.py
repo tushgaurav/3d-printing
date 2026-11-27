@@ -3,10 +3,14 @@
 
 The plugin serves a static single-page app, a small JSON config, a read-only
 Pi health summary for the quick-info panel, and the print history it records
-from OctoPrint's print events. Printer control happens in the browser through
-OctoPrint's normal REST and push APIs, authenticated with an application key.
-The one exception is After Print (after_print.py), which runs here so it works
-without a screen; its settings routes check OctoPrint's permissions like the API.
+from OctoPrint's print events. Inside OctoPrint's own UI it adds a setup page
+(Settings, and a first-run wizard step) that links to the touch UI and lists the
+steps for putting it on the Pi's screen.
+
+Printer control happens in the browser through OctoPrint's normal REST and push
+APIs, authenticated with an application key. The one exception is After Print
+(after_print.py), which runs here so it works without a screen; its settings
+routes check OctoPrint's permissions like the API.
 """
 from __future__ import absolute_import, unicode_literals
 
@@ -46,10 +50,13 @@ def _json_response(data):
 
 
 class Layer1Plugin(
+    octoprint.plugin.AssetPlugin,
     octoprint.plugin.BlueprintPlugin,
     octoprint.plugin.EventHandlerPlugin,
     octoprint.plugin.SettingsPlugin,  # no settings of its own: OctoPrint only hands `_settings` to these
     octoprint.plugin.StartupPlugin,
+    octoprint.plugin.TemplatePlugin,
+    octoprint.plugin.WizardPlugin,
 ):
     def initialize(self):
         self._history = history.PrintHistory(
@@ -142,6 +149,32 @@ class Layer1Plugin(
         thread.daemon = True
         thread.start()
 
+    # ~~ Setup page: one template, shown in OctoPrint's Settings and as a setup wizard step
+
+    def get_assets(self):
+        return {"js": ["octoprint/layer1_setup.js"]}
+
+    def get_template_configs(self):
+        return [
+            {"type": "settings", "template": "layer1_setup.jinja2", "custom_bindings": True},
+            {"type": "wizard", "template": "layer1_setup.jinja2", "custom_bindings": True},
+        ]
+
+    def get_template_vars(self):
+        return {"config_path": self._user_config_path()}
+
+    def is_template_autoescaped(self):
+        # OctoPrint 2.1 makes this the only option; until then it logs a warning without it
+        return True
+
+    def is_wizard_required(self):
+        # The wizard walks through installing the kiosk, so skip it on Pis that have one.
+        # Elsewhere OctoPrint shows it once per wizard version.
+        return not os.path.exists(sysinfo.KIOSK_UNIT)
+
+    def get_wizard_version(self):
+        return 1
+
     # ~~ EventHandlerPlugin
 
     def on_event(self, event, payload):
@@ -187,6 +220,12 @@ class Layer1Plugin(
         # The blueprint is public (see above), so this route checks for itself: it needs
         # the screen's application key, like every OctoPrint API call the page makes.
         return _json_response(sysinfo.collect(self._settings.global_get_basefolder("uploads")))
+
+    @octoprint.plugin.BlueprintPlugin.route("/setup", methods=["GET"])
+    @Permissions.SETTINGS.require(403)
+    def setup_status(self):
+        # For the setup page. Whether the screen is paired comes from OctoPrint's appkeys API.
+        return _json_response({"kiosk": sysinfo.kiosk()})
 
     @octoprint.plugin.BlueprintPlugin.route("/history", methods=["GET"])
     @Permissions.STATUS.require(403)

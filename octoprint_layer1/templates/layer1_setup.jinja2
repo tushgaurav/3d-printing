@@ -1,0 +1,68 @@
+<h3>Layer1 touch screen</h3>
+
+<p>
+    Layer1 is a full-screen touch interface for a 3.5" Raspberry Pi screen. This plugin
+    serves it at <a href="plugin/layer1/" target="_blank" rel="noopener">/plugin/layer1/</a>,
+    so you can try it in this browser before the screen is set up.
+</p>
+<p>
+    <a class="btn btn-primary" href="plugin/layer1/" target="_blank" rel="noopener"><i class="fas fa-external-link-alt"></i> Open Layer1</a>
+    <a class="btn" href="https://github.com/tushgaurav/layer1/blob/main/docs/setup.md" target="_blank" rel="noopener"><i class="fas fa-book"></i> Setup Guide</a>
+</p>
+
+<h4>Status</h4>
+<div class="form-horizontal">
+    <div class="control-group">
+        <label class="control-label">Kiosk service</label>
+        <div class="controls" style="padding-top: 5px">
+            <span class="label" data-bind="css: kioskCss, text: kioskText"></span>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Screen</label>
+        <div class="controls" style="padding-top: 5px">
+            <span class="label" data-bind="css: pairCss, text: pairText"></span>
+        </div>
+    </div>
+    <div class="control-group">
+        <div class="controls">
+            <button class="btn btn-small" data-bind="click: refresh, enable: !checking()"><i class="fas fa-sync-alt" data-bind="css: {'fa-spin': checking}"></i> Check Again</button>
+        </div>
+    </div>
+</div>
+
+<h4>Put it on the screen</h4>
+<p>
+    Run these on the Pi over SSH (<code>ssh pi@octopi.local</code>). Layer1 never changes your
+    system by itself; only these scripts do, when you run them.
+</p>
+<ol>
+    <li>
+        Get the setup scripts:
+        <pre>git clone https://github.com/tushgaurav/layer1 ~/layer1</pre>
+    </li>
+    <li>
+        Turn on the screen driver, then reboot. The built-in <code>piscreen</code> driver works for most
+        ILI9486 screens (Waveshare (A) and its clones). For others, see
+        <a href="https://github.com/tushgaurav/layer1/blob/main/docs/screen-setup.md" target="_blank" rel="noopener">screen setup</a>.
+        <pre>sudo bash ~/layer1/pi-setup/setup-screen.sh piscreen
+sudo reboot</pre>
+    </li>
+    <li>
+        Install the kiosk. It adds a minimal X server and Chromium (no desktop) and a service that
+        opens Layer1 on the screen at boot:
+        <pre>sudo bash ~/layer1/pi-setup/install-kiosk.sh</pre>
+    </li>
+    <li>
+        Pair the screen. It shows <strong>Pair this screen with OctoPrint</strong>. Click
+        <strong>Allow</strong> on the access request from Layer1 that appears here in OctoPrint.
+    </li>
+</ol>
+
+<h4>Settings</h4>
+<p>
+    Temperature presets, limits, filament lengths and webcam options are in
+    <code>{{ plugin_layer1_config_path }}</code>, which is created the first time Layer1 opens.
+    The <a href="https://github.com/tushgaurav/layer1/blob/main/docs/setup.md#settings" target="_blank" rel="noopener">setup guide</a>
+    lists every key.
+</p>

@@ -1,9 +1,11 @@
 # coding=utf-8
 """Raspberry Pi health for the quick-info panel and the network page: CPU temperature,
-power/throttling, network (with the Wi-Fi name), memory, disk and uptime.
+power/throttling, network (with the Wi-Fi name), memory, disk and uptime. Also
+whether the kiosk service is installed, for the setup page in OctoPrint's settings.
 
 Everything is read from /proc and /sys (no extra packages), except the Wi-Fi name,
-which comes from `iw` (or `iwgetid`) when installed. Each reading is independent
+which comes from `iw` (or `iwgetid`) when installed, and the kiosk's state, from
+`systemctl`. Each reading is independent
 and comes back as None when it isn't available, e.g. on a machine that isn't a
 Pi, so one missing file never hides the rest.
 """
@@ -283,6 +285,19 @@ def load():
 def model():
     text = _read("/proc/device-tree/model")
     return text.strip("\x00 \n") if text else None
+
+
+# Installed by pi-setup/install-kiosk.sh; it shows Layer1 on the Pi's own screen
+KIOSK_UNIT = "/etc/systemd/system/layer1-kiosk.service"
+
+
+def kiosk():
+    """'running', 'stopped' (installed but not active) or 'missing' for the kiosk service."""
+    if not os.path.exists(KIOSK_UNIT):
+        return "missing"
+    # is-active exits 0 only while the unit is active, and _run turns any other exit into None
+    state = (_run(["systemctl", "is-active", "layer1-kiosk.service"]) or "").strip()
+    return "running" if state == "active" else "stopped"
 
 
 def collect(disk_path):

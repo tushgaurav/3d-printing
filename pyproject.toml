@@ -34,6 +34,6 @@ layer1 = "octoprint_layer1"
 [tool.setuptools.packages.find]
 include = ["octoprint_layer1*"]
 
-# static/ and its sub-folders are found as namespace packages; ship their files.
+# static/, templates/ and their sub-folders are found as namespace packages; ship their files.
 [tool.setuptools.package-data]
-"*" = ["*.html", "*.json", "*.css", "*.js", "*.woff2", "*.txt"]
+"*" = ["*.html", "*.json", "*.css", "*.js", "*.woff2", "*.txt", "*.jinja2"]
