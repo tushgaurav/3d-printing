@@ -7,11 +7,11 @@
   unless you've set up an SSH key.
 
 .EXAMPLE
-  .\deploy.ps1                          # update the OctoPrint plugin only
+  .\tools\deploy.ps1                    # update the OctoPrint plugin only
 .EXAMPLE
-  .\deploy.ps1 -Kiosk                   # plugin + kiosk (X11 + Chromium on the Pi's screen)
+  .\tools\deploy.ps1 -Kiosk             # plugin + kiosk (X11 + Chromium on the Pi's screen)
 .EXAMPLE
-  .\deploy.ps1 -PiHost 192.168.1.50 -User pi -Kiosk
+  .\tools\deploy.ps1 -PiHost 192.168.1.50 -User pi -Kiosk
 #>
 param(
   [string]$PiHost = "octopi.local",
@@ -20,7 +20,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$here = Split-Path -Parent $MyInvocation.MyCommand.Path
+$root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)  # this script is in tools/
 $target = "$User@$PiHost"
 $remote = "layer1"
 
@@ -31,7 +31,10 @@ function Invoke-Remote([string]$command, [switch]$Tty) {
 
 Write-Host "==> Copying to ${target}:~/$remote" -ForegroundColor Cyan
 Invoke-Remote "rm -rf ~/$remote && mkdir -p ~/$remote"
-scp -r -q "$here\touch-ui" "$here\pi-setup" "$here\docs" "${target}:~/$remote/"
+# The plugin source (pyproject.toml needs README.md and LICENSE to build), the Pi scripts, the docs.
+$items = "octoprint_layer1", "pyproject.toml", "README.md", "LICENSE", "pi-setup", "docs" |
+  ForEach-Object { Join-Path $root $_ }
+scp -r -q @items "${target}:~/$remote/"
 if ($LASTEXITCODE -ne 0) { throw "scp failed" }
 # Windows editors may have saved CRLF line endings; bash needs LF.
 Invoke-Remote "find ~/$remote/pi-setup -type f -exec sed -i 's/\r$//' {} +"

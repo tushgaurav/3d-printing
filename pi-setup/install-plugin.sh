@@ -13,7 +13,7 @@ if [[ $EUID -eq 0 ]]; then
 fi
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SRC="$(cd "$HERE/../touch-ui" && pwd)"
+SRC="$(cd "$HERE/.." && pwd)"   # the repo root, where pyproject.toml is
 
 find_pip() {
   local p op

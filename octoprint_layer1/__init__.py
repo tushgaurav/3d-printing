@@ -197,7 +197,7 @@ class Layer1Plugin(
     def get_update_information(self):
         # OctoPrint compares the newest GitHub release's tag (e.g. "0.3.0", no "v")
         # with the installed version, and installs updates with pip from the tag's
-        # source zip. The plugin lives in a sub-folder of the repo, hence #subdirectory.
+        # source zip.
         return {
             "layer1": {
                 "displayName": "Layer1",
@@ -206,8 +206,7 @@ class Layer1Plugin(
                 "user": "tushgaurav",
                 "repo": "layer1",
                 "current": self._plugin_version,
-                "pip": "https://github.com/tushgaurav/layer1/archive/{target_version}.zip"
-                "#subdirectory=ender-5-pro/touch-ui",
+                "pip": "https://github.com/tushgaurav/layer1/archive/{target_version}.zip",
             }
         }
 

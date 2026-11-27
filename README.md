@@ -62,27 +62,41 @@ plugins all still apply.
 **Try it on your PC** (no printer needed):
 
 ```bash
-cd ender-5-pro/touch-ui/octoprint_layer1/static
+cd octoprint_layer1/static
 python -m http.server 8765
 # Open http://localhost:8765/index.html?demo=printing
 ```
 
 **Install on the Pi** — see the full setup guide:
-[ender-5-pro/README.md](ender-5-pro/README.md)
+[docs/setup.md](docs/setup.md)
 
 ## Project structure
 
 ```
-ender-5-pro/
-├── touch-ui/          OctoPrint plugin that serves the web app
-├── pi-setup/          Shell scripts: screen driver, kiosk service, diagnostics
-├── deploy.ps1         Deploy from Windows to the Pi over SSH
-└── docs/              Screen setup guides and screenshots
+octoprint_layer1/      The OctoPrint plugin; static/ is the touch UI itself
+pyproject.toml         Plugin packaging (pip installs from the repo root)
+pi-setup/              Shell scripts: screen driver, kiosk service, diagnostics
+tools/                 deploy.ps1 (Windows → Pi over SSH), build-icons.mjs, serve.py
+docs/                  Setup guide, screen setup, screenshots
+extras/layer1.md       Draft listing for the OctoPrint Plugin Repository
+marketing/             The website (layer1.nodebench.com)
 ```
+
+## Development
+
+- **UI:** `http://<octopi>/plugin/layer1/`
+- **Config:** `~/.octoprint/data/layer1/config.json`, created on first load. The keys are
+  listed in [docs/setup.md](docs/setup.md#settings).
+- **History:** `~/.octoprint/data/layer1/history.json` holds prints that ended. It is seeded
+  once from OctoPrint's per-file print logs and served at `/plugin/layer1/history`.
+- **Dev server:** `python tools/serve.py [port]` (default 8080) serves `octoprint_layer1/static/`
+  without caching and with the custom 404 page. Open `index.html?demo`.
+- **Icons:** `node tools/build-icons.mjs` regenerates `static/js/icons.js` from a pinned
+  Lucide version. To add one, put `ourName: 'lucide-name'` in that script's `ICONS` list.
 
 ## License
 
 Layer1 is licensed under the [GNU Affero General Public License v3.0](LICENSE) or later,
 the same license as OctoPrint.
 
-Geist fonts: [SIL OFL 1.1](ender-5-pro/touch-ui/octoprint_layer1/static/fonts/LICENSE-geist.txt) · Lucide icons: [ISC](ender-5-pro/touch-ui/octoprint_layer1/static/js/icons.LICENSE.txt)
+Geist fonts: [SIL OFL 1.1](octoprint_layer1/static/fonts/LICENSE-geist.txt) · Lucide icons: [ISC](octoprint_layer1/static/js/icons.LICENSE.txt)
