@@ -3,7 +3,8 @@
 
 Two actions are remembered and run after every print that finishes:
     coolDown   heaters, part fan and motors off (a safety net for slicer end G-code)
-    lowerBed   drop the bed and park the head at the back, so the part is easy to reach
+    lowerBed   move Z up (the bed drops, or the head rises, depending on the printer) and
+               park the head at the back, so the part is easy to reach
 One is switched on for a single print and then clears itself:
     shutdown   shut the Pi down a little after the print finishes, with a countdown
                the screen can cancel. The heaters go off first, whatever coolDown says.
@@ -153,9 +154,9 @@ class AfterPrint(object):
         self._push()
 
     def _lower_bed(self):
-        """The bed moves down (Z up) by lowerBedBy, never past the bottom, then the head parks at the back."""
-        config = self._config()
-        volume = (config.get("printer") or {}).get("buildVolume") or [220, 220, 300]
+        """Z goes up by lowerBedBy, never past the top of the build volume, then the head parks at the back."""
+        printer = self._config().get("printer") or {}
+        volume = printer.get("buildVolume") or [200, 200, 200]
         width, depth, height = (float(v) for v in volume[:3])
         try:
             drop = float(self._options().get("lowerBedBy", 100))
@@ -171,7 +172,11 @@ class AfterPrint(object):
         commands = []
         if drop > 0:
             commands += ["G91", "G1 Z%g F%d" % (round(drop, 2), Z_FEED)]
-        commands += ["G90", "G1 X%g Y%g F%d" % (width, depth, XY_FEED)]
+        commands.append("G90")
+        # With the origin in the middle (most deltas), the back corner may be out of reach,
+        # and the head is already clear of the part once it has gone up, so it stays put.
+        if printer.get("origin") != "center":
+            commands.append("G1 X%g Y%g F%d" % (width, depth, XY_FEED))
         return commands
 
     # ~~ shutdown

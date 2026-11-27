@@ -1,12 +1,9 @@
 {
   "printer": {
-    "name": "Ender 5 Pro",
-    "buildVolume": [
-      220,
-      220,
-      300
-    ],
-    "zMovesBed": true
+    "name": null,
+    "buildVolume": null,
+    "origin": null,
+    "zMovesBed": false
   },
   "limits": {
     "nozzleMax": 250,

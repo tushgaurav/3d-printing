@@ -1,8 +1,8 @@
-// Level Bed (from Move): the Ender 5 Pro has no probe, so the bed is levelled by hand with
-// the knobs under its corners. Tap a spot and the nozzle goes there at Z 0 (the first move
-// homes first); slide paper under it and turn that knob until the paper just drags. Next
-// Corner goes round the four corners in order, since turning one knob shifts the others.
-// Leaving the page lowers the bed off the nozzle again.
+// Level Bed (from Move): manual levelling with the knobs under the bed's corners, for printers
+// without a probe (or to tram one before probing). Tap a spot and the nozzle goes there at Z 0
+// (the first move homes first); slide paper under it and turn that knob until the paper just
+// drags. Next Corner goes round the four corners in order, since turning one knob shifts the
+// others. Leaving the page lifts the nozzle off the bed again.
 //
 // "Arrived" comes from the printer: each move ends with M400 (wait until the moves are done)
 // and M114 (report position), and that reply shows up in OctoPrint's terminal log. If it
@@ -26,15 +26,17 @@ const CORNERS = ['fl', 'fr', 'br', 'bl']; // Next Corner goes round the bed in t
 // M114's reply in the terminal log; OctoPrint 2 marks received lines "<<<", older ones "Recv:"
 const POSITION = /^(?:Recv:|<<<)\s*X:(-?\d+(?:\.\d+)?)\s*Y:(-?\d+(?:\.\d+)?)\s*Z:(-?\d+(?:\.\d+)?)/;
 
-/** Where a spot is in printer coordinates (X 0 is left, Y 0 is the front). */
+/** Where a spot is in printer coordinates (X grows to the right, Y to the back). */
 export function spotXY(id, cfg) {
   const [w, d] = cfg.printer.buildVolume;
   const inset = cfg.level.inset;
-  if (id === 'c') return { x: w / 2, y: d / 2 };
-  return { x: id[1] === 'l' ? inset : w - inset, y: id[0] === 'f' ? inset : d - inset };
+  // OctoPrint's printer profile puts 0,0 at the front left corner or in the middle of the bed
+  const [x0, y0] = cfg.printer.origin === 'center' ? [-w / 2, -d / 2] : [0, 0];
+  if (id === 'c') return { x: x0 + w / 2, y: y0 + d / 2 };
+  return { x: x0 + (id[1] === 'l' ? inset : w - inset), y: y0 + (id[0] === 'f' ? inset : d - inset) };
 }
 
-/** Lower the bed, go over the spot, bring the bed up to paper height, then report back. */
+/** Lift Z clear, go over the spot, come down to paper height, then report back. */
 export function moveSequence(p, lv, home) {
   return [
     ...(home ? ['G28'] : []),
@@ -96,7 +98,7 @@ export function openLevel(ctx) {
           state = 'moving';
           target = { x: p.x, y: p.y, z: lv.paperZ };
           clearTimeout(waitTimer);
-          // homing a bed that is far down takes a while on an Ender 5
+          // homing Z from far away takes a while on a tall printer
           waitTimer = setTimeout(() => { if (state === 'moving') { state = 'there'; render(store.get()); } }, (home ? 90 : 20) * 1000);
           render(store.get());
         });

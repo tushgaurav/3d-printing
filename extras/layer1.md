@@ -7,7 +7,7 @@ layout: plugin
 
 id: layer1
 title: Layer1
-description: A full-screen touch interface for a 3.5" (480x320) Raspberry Pi screen, built for the Ender 5 Pro.
+description: A full-screen touch interface for a 3.5" (480x320) Raspberry Pi screen, for any printer OctoPrint can drive.
 authors:
 - Tushar Gaurav
 license: AGPLv3
@@ -22,8 +22,6 @@ tags:
 - touchscreen
 - kiosk
 - ui
-- ender
-- creality
 - raspberry pi
 
 # Copy from marketing/src/assets/screens/ (1440x960 PNGs of the 480x320 UI at 3x).
@@ -61,7 +59,8 @@ display, in the style of the built-in screens on newer printers. It runs full-sc
 Chromium kiosk on the Pi and talks to OctoPrint through its normal API, so permissions,
 safety checks and your other plugins all still apply.
 
-It was built for the Creality Ender 5 Pro, and works with any printer OctoPrint can drive.
+It works with any printer OctoPrint can drive, and takes the printer's name and build volume
+from its OctoPrint printer profile.
 
 ## Features
 
@@ -69,7 +68,7 @@ It was built for the Creality Ender 5 Pro, and works with any printer OctoPrint 
   finish time, and Pause, Tune and Stop.
 - **Files**: OctoPrint's library with slicer thumbnails, folders, sorting, and list or grid view.
 - **Heat**: nozzle and bed, ±5° steps, a keypad for exact targets, and material presets.
-- **Move**: XY pad, bed up and down, configurable steps, extrude and retract. Locked while printing.
+- **Move**: XY and Z jog, configurable steps, extrude and retract. Locked while printing.
 - **More**: filament load, unload and purge; speed, flow and fan tuning; camera, connection,
   system and display settings.
 - **Network**: Wi-Fi or Ethernet details, the IP address, and QR codes that open OctoPrint and

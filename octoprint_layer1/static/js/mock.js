@@ -1,4 +1,4 @@
-// Demo mode: a simulated Ender 5 Pro so the UI can be tried in any browser
+// Demo mode: a simulated printer so the UI can be tried in any browser
 // without OctoPrint. Open index.html?demo (or ?demo=printing, paused,
 // finished, heating, offline, error).
 
@@ -74,7 +74,7 @@ function makeHistory(files) {
   const runs = [
     ['Z_endstop_spacer.gcode', 'done', 30, 610],
     ['Fan_duct_v2.gcode', 'done', 24, 4380],  // since deleted: History can't print it again
-    ['Spool_holder_Ender5.gcode', 'done', 13, 7710],
+    ['Spool_holder.gcode', 'done', 13, 7710],
     ['Cable_chain_link_x12.gcode', 'cancelled', 12, 380],
     ['Raspberry_Pi_4_case_base.gcode', 'done', 8, 11530],
     ['Calibration_cube_20mm.gcode', 'done', 7, 2390],
@@ -140,7 +140,7 @@ function makeFiles() {
     file('Calibration_cube_20mm.gcode', 2460, 2360, 140, 'cube', 6 * 86400,
       { success: 1, failure: 1, last: { date: now - 6 * 86400, success: false } }),
     file('Raspberry_Pi_4_case_base.gcode', 11200, 18400, 350, 'case', 9 * 86400, ok(8, 11530)),
-    file('Spool_holder_Ender5.gcode', 7600, 9800, 45, 'spool', 14 * 86400, ok(13, 7710)),
+    file('Spool_holder.gcode', 7600, 9800, 45, 'spool', 14 * 86400, ok(13, 7710)),
     file('Cable_chain_link_x12.gcode', 3900, 4100, 265, 'chain', 20 * 86400, null),
     {
       name: 'Functional parts', display: 'Functional parts', path: 'Functional parts', type: 'folder', typePath: ['folder'], origin: 'local',
@@ -153,6 +153,8 @@ function makeFiles() {
 }
 
 export const DEMO_CAMERA = CAMERA;
+// stands in for OctoPrint's printer profile; the demo parts are centred on a 220 × 220 bed
+export const DEMO_PRINTER = { name: 'Demo Printer', buildVolume: [220, 220, 250], origin: 'lowerleft' };
 
 export class MockClient extends Emitter {
   constructor(cfg, scenario = 'idle') {
@@ -402,8 +404,8 @@ export class MockClient extends Emitter {
 
   connection() {
     return this._ok({
-      current: { state: this._status().printer.text, port: '/dev/ttyUSB0', baudrate: 115200, printerProfile: 'ender5pro' },
-      options: { printerProfiles: [{ id: 'ender5pro', name: 'Creality Ender 5 Pro' }] },
+      current: { state: this._status().printer.text, port: '/dev/ttyUSB0', baudrate: 115200, printerProfile: 'demo' },
+      options: { printerProfiles: [{ id: 'demo', name: DEMO_PRINTER.name }] },
     });
   }
 

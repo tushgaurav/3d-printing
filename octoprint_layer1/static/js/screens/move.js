@@ -1,5 +1,6 @@
-// Move: XY jog pad, Z (which moves the bed on an Ender 5), step size,
-// extrude/retract (by the same step), Level Bed and motors off. Locked while printing.
+// Move: XY jog pad, Z (labelled Bed Up / Bed Down when printer.zMovesBed says Z moves the
+// bed, as on most CoreXY printers), step size, extrude/retract (by the same step), Level Bed
+// and motors off. Locked while printing.
 
 import { icon } from '../icons.js';
 import { refs, setText, show, toggle } from '../util.js';

@@ -1,5 +1,5 @@
-// Filament load / unload for a Bowden setup (Ender 5 Pro).
-// Moves are split into short chunks because stock Marlin refuses single
+// Filament load / unload for a Bowden setup (set filament.bowdenLength for your printer).
+// Moves are split into short chunks because Marlin refuses single
 // extrusions longer than EXTRUDE_MAXLENGTH (often 200 mm).
 
 import { icon } from '../icons.js';

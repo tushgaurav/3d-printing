@@ -22,6 +22,10 @@ from octoprint.access.permissions import Permissions
 
 from . import after_print, history, sysinfo
 
+# What the printer keys fall back to when config.json leaves them empty and OctoPrint's
+# printer profile can't be read: the values of OctoPrint's own default profile.
+PROFILE_FALLBACK = {"name": "Printer", "buildVolume": [200, 200, 200], "origin": "lowerleft"}
+
 
 def _deep_merge(base, override):
     """Return base updated with override; nested dicts merge, everything else replaces."""
@@ -99,9 +103,35 @@ class Layer1Plugin(
             self._logger.error("Ignoring %s, it could not be read as JSON: %s", path, e)
             return {}
 
+    def _fill_from_profile(self, printer):
+        """Fill the printer keys config.json leaves empty from OctoPrint's printer profile
+        (the connected printer's, else the default one), so the screen matches whatever
+        printer OctoPrint drives without any Layer1 setup."""
+        if all(printer.get(key) for key in PROFILE_FALLBACK):
+            return
+        try:
+            profile = self._printer_profile_manager.get_current_or_default() or {}
+        except Exception:
+            self._logger.exception("Could not read OctoPrint's printer profile")
+            profile = {}
+        volume = profile.get("volume") or {}
+        size = [volume.get(key) for key in ("width", "depth", "height")]
+        found = {
+            "name": profile.get("name"),
+            "buildVolume": size if all(size) else None,
+            "origin": volume.get("origin"),
+        }
+        for key, fallback in PROFILE_FALLBACK.items():
+            if not printer.get(key):
+                printer[key] = found[key] or fallback
+
     def _ui_config(self):
         defaults = self._load_defaults()
-        return _deep_merge(defaults, self._load_user_config(defaults))
+        config = _deep_merge(defaults, self._load_user_config(defaults))
+        if not isinstance(config.get("printer"), dict):
+            config["printer"] = {}
+        self._fill_from_profile(config["printer"])
+        return config
 
     # ~~ StartupPlugin
 
@@ -212,7 +242,7 @@ class Layer1Plugin(
 
 
 __plugin_name__ = "Layer1"
-__plugin_description__ = "Full-screen touch UI for an Ender 5 Pro on a small Raspberry Pi screen"
+__plugin_description__ = "Full-screen touch UI for any printer, on a small Raspberry Pi screen"
 __plugin_author__ = "Tushar Gaurav"
 __plugin_url__ = "https://layer1.nodebench.com"
 __plugin_license__ = "AGPLv3"

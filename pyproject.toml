@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "OctoPrint-Layer1"
 version = "0.1.0"
-description = "Full-screen touch UI for an Ender 5 Pro on a 480x320 Raspberry Pi screen"
+description = "Full-screen touch UI for OctoPrint on a 480x320 Raspberry Pi screen"
 readme = "README.md"
 license = "AGPL-3.0-or-later"
 license-files = ["LICENSE"]
@@ -15,7 +15,7 @@ requires-python = ">=3.9,<4"
 # OctoPrint itself is intentionally NOT listed: installing into OctoPrint's own
 # virtualenv must never try to upgrade or reinstall OctoPrint.
 dependencies = []
-keywords = ["octoprint", "plugin", "touchscreen", "kiosk", "ender 5 pro", "raspberry pi"]
+keywords = ["octoprint", "plugin", "touchscreen", "kiosk", "touch ui", "raspberry pi"]
 classifiers = [
   "Framework :: OctoPrint",
   "Programming Language :: Python :: 3",

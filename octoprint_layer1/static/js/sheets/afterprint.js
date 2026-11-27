@@ -1,17 +1,24 @@
 // After Print (Tune's header chip, or the reminder on Home): what the plugin does when a print
 // finishes (see after_print.py, which runs them even with no screen). Cool Down and Lower Bed
-// are remembered for every print; Shut Down Pi is for one print and clears itself. When a
-// print finishes with it on, a countdown comes up over everything with Keep Pi On.
+// (Raise Z, unless printer.zMovesBed) are remembered for every print; Shut Down Pi is for one
+// print and clears itself. When a print finishes with it on, a countdown comes up over
+// everything with Keep Pi On.
 
 import { icon } from '../icons.js';
 import { refs, setText, toggle } from '../util.js';
 import { ACTIVE, phaseOf } from '../model.js';
 import { openSheet, attempt, toast, scrim } from '../ui.js';
 
-const EVERY = [
-  { key: 'coolDown', icon: 'cool', name: 'Cool Down', note: () => 'Heaters, fan and motors off' },
-  { key: 'lowerBed', icon: 'down', name: 'Lower Bed', note: (st) => `Drops ${st.lowerBedBy} mm, head to the back` },
-];
+/** The remembered options. lowerBed moves Z up: the bed drops where Z moves it, else the nozzle rises. */
+function everyPrint(printer) {
+  const park = printer.origin === 'center' ? '' : ', head to the back'; // see after_print.py
+  return [
+    { key: 'coolDown', icon: 'cool', name: 'Cool Down', note: () => 'Heaters, fan and motors off' },
+    printer.zMovesBed
+      ? { key: 'lowerBed', icon: 'down', name: 'Lower Bed', note: (st) => `Drops ${st.lowerBedBy} mm${park}` }
+      : { key: 'lowerBed', icon: 'up', name: 'Raise Z', note: (st) => `Up ${st.lowerBedBy} mm${park}` },
+  ];
+}
 
 async function change(ctx, patch) {
   const st = await ctx.client.setAfterPrint(patch);
@@ -21,6 +28,7 @@ async function change(ctx, patch) {
 
 export function openAfterPrint(ctx) {
   const { store } = ctx;
+  const every = everyPrint(ctx.cfg.printer);
   if (!store.get().afterPrint) ctx.refreshAfterPrint();
   openSheet({
     title: 'After Print',
@@ -30,7 +38,7 @@ export function openAfterPrint(ctx) {
           <b>${icon(o.icon)}${o.name}</b><small data-r="${o.key}Note"></small></button>`;
       body.innerHTML = `
         <div class="section"><div class="label">Every print <em>remembered</em></div>
-          <div class="apick">${EVERY.map((o) => option(o)).join('')}</div>
+          <div class="apick">${every.map((o) => option(o)).join('')}</div>
         </div>
         <div class="section"><div class="label"><span data-r="onceLabel"></span> <em>then it switches itself off</em></div>
           ${option({ key: 'shutdown', icon: 'power', name: 'Shut Down Pi' }, 'once')}
@@ -65,7 +73,7 @@ export function openAfterPrint(ctx) {
           setText(r.foot, s.afterPrintError ? `Couldn’t load: ${s.afterPrintError}. Update the Layer1 plugin on the Pi if it’s older than this screen.` : 'Loading…');
           return;
         }
-        EVERY.forEach((o) => setText(r[`${o.key}Note`], o.note(st)));
+        every.forEach((o) => setText(r[`${o.key}Note`], o.note(st)));
         setText(r.shutdownNote, st.canShutdown
           ? `${st.shutdownSeconds} s after it finishes, with a countdown to cancel. Heaters go off first.`
           : 'Needs a shutdown command in OctoPrint → Settings → Server → Commands.');

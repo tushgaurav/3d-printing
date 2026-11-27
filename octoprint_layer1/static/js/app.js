@@ -14,7 +14,7 @@
 //   #desktop=1                                              a desktop is underneath: System offers "Exit to Desktop"
 
 import { OctoClient } from './api.js';
-import { MockClient, DEMO_CAMERA } from './mock.js';
+import { MockClient, DEMO_CAMERA, DEMO_PRINTER } from './mock.js';
 import { icon } from './icons.js';
 import { logo } from './logo.js';
 import { refs, setText, setHTML, toggle, setData, deepMerge, debounce, fmtTemp, fmtClock, setClock24 } from './util.js';
@@ -86,14 +86,23 @@ function computeBase() {
   return i >= 0 ? location.pathname.slice(0, i + 1) : '/';
 }
 
+// The plugin fills printer.name / buildVolume / origin from OctoPrint's printer profile.
+// These stand in when it couldn't (no plugin route): OctoPrint's own default profile.
+const PRINTER_FALLBACK = { name: 'Printer', buildVolume: [200, 200, 200], origin: 'lowerleft' };
+
 async function loadConfig(demo) {
   const defaults = await fetch('defaults.json', { cache: 'no-store' }).then((r) => r.json());
-  if (demo) return defaults;
-  try {
-    const r = await fetch('../config', { cache: 'no-store' });
-    if (r.ok) return deepMerge(defaults, await r.json());
-  } catch { /* plugin route missing: fall back to defaults */ }
-  return defaults;
+  let cfg = defaults;
+  if (demo) {
+    cfg.printer = { ...cfg.printer, ...DEMO_PRINTER };
+  } else {
+    try {
+      const r = await fetch('../config', { cache: 'no-store' });
+      if (r.ok) cfg = deepMerge(defaults, await r.json());
+    } catch { /* plugin route missing: fall back to defaults */ }
+  }
+  for (const [key, value] of Object.entries(PRINTER_FALLBACK)) cfg.printer[key] ||= value;
+  return cfg;
 }
 
 function parseMatrix(text) {
