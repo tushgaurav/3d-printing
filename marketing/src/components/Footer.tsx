@@ -20,12 +20,18 @@ export function Footer() {
             <a href={SETUP_GUIDE}>Setup guide</a>
           </li>
           <li>
+            <a href="#features">Features</a>
+          </li>
+          <li>
             <a href="#screens">Screens</a>
           </li>
         </ul>
       </div>
       <div className="footer__fine">
-        <p>Layer1 is a community project. It isn’t made by or affiliated with Creality.</p>
+        <p>
+          Layer1 is an open-source community project. It isn’t made by or affiliated with
+          OctoPrint or any printer maker.
+        </p>
       </div>
     </footer>
   );

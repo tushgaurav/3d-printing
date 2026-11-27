@@ -45,9 +45,9 @@ export function Hero() {
 
       <div className="hero__stage" id="top">
         <h1 className="hero__title">
-          <PrintedWords side="left" lines={["Touch", "screen"]} />
-          <span className="sr-only"> for the </span>
-          <PrintedWords side="right" lines={["Ender", "5 Pro"]} />
+          <PrintedWords side="left" lines={["Old", "printer"]} />
+          <span className="sr-only">, </span>
+          <PrintedWords side="right" lines={["New", "tricks"]} />
         </h1>
 
         <div
@@ -57,7 +57,7 @@ export function Hero() {
           <span className="hero__shadow" aria-hidden="true" />
           <Image
             src={printer}
-            alt="A Creality Ender 5 Pro 3D printer"
+            alt="A desktop 3D printer with its stock knob-and-LCD screen"
             className="hero__printer-img"
             sizes="(max-width: 760px) 80vw, 46vw"
             preload
@@ -85,12 +85,24 @@ export function Hero() {
         </div>
 
         <div className="hero__foot">
-          <a className="cta" href={SETUP_GUIDE}>
-            <span>Install Guide</span>
-            <span className="cta__icon">
-              <ArrowUpRight size={20} />
-            </span>
-          </a>
+          <div className="hero__intro">
+            <p className="hero__lede">
+              <span>Your printer might be a few years old.</span>{" "}
+              <span>Its interface doesn’t have to be.</span>
+            </p>
+            <div className="actions">
+              <a className="cta" href={SETUP_GUIDE}>
+                <span>Get Started</span>
+                <span className="cta__icon">
+                  <ArrowUpRight size={20} />
+                </span>
+              </a>
+              <a className="text-link" href={REPO}>
+                <GitHubMark size={18} />
+                <span>Explore on GitHub</span>
+              </a>
+            </div>
+          </div>
           <p className="hero__meta">
             <span>Runs on</span>
             <span className="chip chip--paper chip--brand">
