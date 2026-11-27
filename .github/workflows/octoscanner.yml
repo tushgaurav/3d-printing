@@ -1,0 +1,55 @@
+# Scans the plugin with octoscanner's rules (https://github.com/jacopotediosi/octoscanner),
+# the static checks OctoPrint's plugin reviewers run on registry submissions: XSS,
+# unprotected APIs, packaging, and APIs deprecated or removed between OctoPrint versions.
+#
+# This runs Semgrep with octoscanner's rules directly, as octoscanner's README suggests for
+# CI, with the same flags octoscanner uses, so results match. (octoscanner itself reports
+# a crashed scan as a clean one; Semgrep fails the job.)
+#
+# A finding that isn't a problem: put `# nosemgrep: RULE-ID` (`// nosemgrep: RULE-ID` in JS)
+# on the line it points at, with the reason in a comment beside it.
+name: octoscanner
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # Update both together, after scanning with the new rules locally (see README.md)
+  OCTOSCANNER_REF: db5d3f532d7d3c5151e8bd408f1330b43d9fe9b9 # 2026-08-26
+  SEMGREP_VERSION: "1.187.0"
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Semgrep
+        run: pip install "semgrep==$SEMGREP_VERSION"
+
+      # Outside the workspace, so the rules themselves aren't scanned
+      - name: Get octoscanner's rules
+        run: |
+          git init -q "$RUNNER_TEMP/octoscanner"
+          git -C "$RUNNER_TEMP/octoscanner" fetch -q --depth 1 https://github.com/jacopotediosi/octoscanner "$OCTOSCANNER_REF"
+          git -C "$RUNNER_TEMP/octoscanner" checkout -q FETCH_HEAD
+
+      - name: Scan
+        run: >
+          semgrep scan
+          --config "$RUNNER_TEMP/octoscanner/rules"
+          --error
+          --metrics=off
+          --disable-version-check
+          --no-rewrite-rule-ids
+          .

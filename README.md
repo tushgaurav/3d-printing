@@ -96,6 +96,17 @@ marketing/             The website (layer1.nodebench.com)
   without caching and with the custom 404 page. Open `index.html?demo`.
 - **Icons:** `node tools/build-icons.mjs` regenerates `static/js/icons.js` from a pinned
   Lucide version. To add one, put `ourName: 'lucide-name'` in that script's `ICONS` list.
+- **Checks:** every push and pull request is scanned with the rules of
+  [octoscanner](https://github.com/jacopotediosi/octoscanner), the static checks OctoPrint's
+  plugin reviewers run ([`.github/workflows/octoscanner.yml`](.github/workflows/octoscanner.yml)).
+  To run the same scan locally, check out octoscanner at the commit pinned there, then:
+
+  ```bash
+  pip install semgrep
+  semgrep scan --config /path/to/octoscanner/rules --error --metrics=off --no-rewrite-rule-ids .
+  ```
+
+  A finding that isn't a problem gets `# nosemgrep: RULE-ID` on its line, with the reason.
 
 ## License
 
