@@ -88,7 +88,8 @@ function computeBase() {
 }
 
 // The plugin fills printer.name / buildVolume / origin from OctoPrint's printer profile.
-// These stand in when it couldn't (no plugin route): OctoPrint's own default profile.
+// These stand in when it couldn't (not paired yet, or no plugin route): OctoPrint's own
+// default profile.
 const PRINTER_FALLBACK = { name: 'Printer', buildVolume: [200, 200, 200], origin: 'lowerleft' };
 
 async function loadConfig(demo) {
@@ -97,8 +98,11 @@ async function loadConfig(demo) {
   if (demo) {
     cfg.printer = { ...cfg.printer, ...DEMO_PRINTER };
   } else {
+    // The settings need the screen's key. Before it is paired, or with a key OctoPrint
+    // no longer accepts, the defaults stand in until pairing reloads the page.
+    const key = loadKey();
     try {
-      const r = await fetch('../config', { cache: 'no-store' });
+      const r = await fetch('../config', { cache: 'no-store', headers: key ? { 'X-Api-Key': key } : {} });
       if (r.ok) cfg = deepMerge(defaults, await r.json());
     } catch { /* plugin route missing: fall back to defaults */ }
   }
@@ -432,6 +436,13 @@ async function boot() {
   function pairThenStart() {
     showPairing(ctx).then((key) => {
       saveKey(key);
+      // Reload so the settings load with the new key. If the browser can't keep it
+      // (private mode), a reload would ask to pair again, so carry on with the defaults.
+      if (loadKey() === key) {
+        toast('Paired with OctoPrint · Loading Settings', 'ok', 3000, 'link');
+        setTimeout(() => location.reload(), 1000);
+        return;
+      }
       toast('Paired with OctoPrint', 'ok', 3500, 'link');
       startClient(key);
     });

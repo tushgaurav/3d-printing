@@ -60,7 +60,9 @@ def _json_response(data):
     return response
 
 
-class Layer1Plugin(
+# octoscanner flags the public blueprint (SEC-API-0003). It is public on purpose, so the kiosk
+# can load the page before it is paired; see is_blueprint_protected.
+class Layer1Plugin(  # nosemgrep: SEC-API-0003
     octoprint.plugin.AssetPlugin,
     octoprint.plugin.BlueprintPlugin,
     octoprint.plugin.EventHandlerPlugin,
@@ -234,8 +236,9 @@ class Layer1Plugin(
 
     def is_blueprint_protected(self):
         # The page and its assets are public so the kiosk browser can load them
-        # before it has been paired. Every API call the page makes still needs
-        # an application key.
+        # before it has been paired. That is all that is public: every other route
+        # here checks an OctoPrint permission itself, and so does every OctoPrint API
+        # call the page makes, so nothing works until someone approves its app key.
         return False
 
     def is_blueprint_csrf_protected(self):
@@ -247,7 +250,10 @@ class Layer1Plugin(
         return flask.redirect(flask.url_for(".static", filename="index.html"))
 
     @octoprint.plugin.BlueprintPlugin.route("/config", methods=["GET"])
+    @Permissions.STATUS.require(403)
     def ui_config(self):
+        # Needs the screen's app key: the settings include the webcam URLs. Before it is
+        # paired, the page uses defaults.json.
         return _json_response(self._ui_config())
 
     @octoprint.plugin.BlueprintPlugin.route("/sysinfo", methods=["GET"])
