@@ -170,6 +170,7 @@ export class MockClient extends Emitter {
     this.progress = null;
     this.speedup = 1;
     this.gcodes = new Map(); // path -> generated demo G-code
+    this.after = { coolDown: true, lowerBed: true, shutdown: false, pendingAt: null, timer: null };
     const benchy = this.fileList[0];
     if (scenario === 'printing' || scenario === 'paused' || scenario === 'finished') {
       this._startJob(benchy, scenario === 'finished' ? 1 : 0.47);
@@ -262,6 +263,7 @@ export class MockClient extends Emitter {
         this.t.tool0.target = 0; this.t.bed.target = 0;
         this._logPrint('done');
         this.emit('event', 'PrintDone', { name: this.job.file.name, path: this.job.file.path, origin: 'local', time: this.progress.printTime });
+        if (this.after.shutdown) this.demoShutdown();
       }
     }
     this.emit('status', this._status());
@@ -284,6 +286,7 @@ export class MockClient extends Emitter {
     const f = this._flat().find((x) => x.path === path);
     if (!f) throw new ApiError(404, 'File not found');
     this._startJob(f, 0);
+    if (this._stopShutdown()) this._pushAfter();
     this.t.tool0.target = 205; this.t.bed.target = 60;
     this.speedup = 25;
     this.emit('event', 'PrintStarted', { name: f.name, path: f.path });
@@ -327,8 +330,57 @@ export class MockClient extends Emitter {
       this.t.tool0.target = 0; this.t.bed.target = 0;
       this._logPrint('cancelled');
       this.emit('event', 'PrintCancelled', {});
+      if (this.after.shutdown) { this.after.shutdown = false; this._pushAfter(); }
     }, 1500);
     return this._ok(null);
+  }
+
+  // ~~ After Print (the plugin's after_print.py)
+
+  _afterState() {
+    const a = this.after;
+    const o = this.cfg.afterPrint;
+    return {
+      coolDown: a.coolDown, lowerBed: a.lowerBed, shutdown: a.shutdown, canShutdown: true,
+      shutdownSeconds: o.shutdownSeconds, lowerBedBy: o.lowerBedBy, error: null,
+      pending: a.pendingAt ? { action: 'shutdown', seconds: Math.max(0, Math.round((a.pendingAt - Date.now()) / 1000)) } : null,
+    };
+  }
+
+  _pushAfter() { this.emit('plugin', { afterPrint: this._afterState() }); }
+
+  _stopShutdown() {
+    clearTimeout(this.after.timer);
+    const was = !!this.after.pendingAt;
+    this.after.pendingAt = null;
+    return was;
+  }
+
+  /** A print finished with Shut Down Pi on: count down, then "the Pi" goes away. */
+  demoShutdown() {
+    this._stopShutdown();
+    this.after.shutdown = false;
+    const secs = this.cfg.afterPrint.shutdownSeconds;
+    this.after.pendingAt = Date.now() + secs * 1000;
+    this.after.timer = setTimeout(() => this._shutDown(), secs * 1000);
+    this._pushAfter();
+  }
+
+  _shutDown() {
+    this._stopShutdown();
+    this._pushAfter();
+    setTimeout(() => { this.state = 'offline'; }, 1500);
+  }
+
+  afterPrint() { return this._ok(this._afterState()); }
+
+  async setAfterPrint(patch) {
+    await wait(120);
+    for (const k of ['coolDown', 'lowerBed', 'shutdown']) if (k in patch) this.after[k] = !!patch[k];
+    if (patch.cancel) this._stopShutdown();
+    if (patch.now && this.after.pendingAt) this._shutDown();
+    else this._pushAfter();
+    return this._afterState();
   }
 
   /** The print that just ended, into the demo's History (like the plugin's history.py). */

@@ -68,6 +68,7 @@ const P = {
   "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"/>", // lock
   "history": "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/><path d=\"M12 7v5l4 2\"/>", // history
   "level": "<path d=\"M3 7V5a2 2 0 0 1 2-2h2\"/><path d=\"M17 3h2a2 2 0 0 1 2 2v2\"/><path d=\"M21 17v2a2 2 0 0 1-2 2h-2\"/><path d=\"M7 21H5a2 2 0 0 1-2-2v-2\"/>", // scan
+  "finish": "<path d=\"M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528\"/>", // flag
   "nozzle": "<path d=\"M10 2v4\"/><path d=\"M14 2v4\"/><rect x=\"5\" y=\"6\" width=\"14\" height=\"7\" rx=\"2\"/><path d=\"m9 13 2 5h2l2-5\"/><path d=\"M12 21h.01\"/>", // custom
   "bed": "<rect x=\"2\" y=\"15\" width=\"20\" height=\"4\" rx=\"1\"/><path d=\"M7 12c2-3-2-3 0-6\"/><path d=\"M12 12c2-3-2-3 0-6\"/><path d=\"M17 12c2-3-2-3 0-6\"/>", // custom
 };

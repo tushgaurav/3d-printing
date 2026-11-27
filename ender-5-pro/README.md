@@ -135,6 +135,9 @@ first time the UI loads). Edit, then reload the screen (More → System → Relo
 | `move.steps` | 0.1, 1, 10, 50 | Step sizes (mm) on Move. The chosen step is both the jog distance and the extrude/retract length |
 | `level.inset` | 30 | Move → Level Bed: how far (mm) the corner spots sit in from the bed's edges. Set it so the nozzle stops over each knob |
 | `level.paperZ` / `clearance` | 0 / 5 | Z (mm) for the paper test, and how far the bed drops before moving between spots and when you leave the page |
+| `afterPrint.coolDown` / `lowerBed` | true / true | Tune → After Print: switch heaters, fan and motors off, and drop the bed, after every print that finishes. A choice made on the screen wins |
+| `afterPrint.lowerBedBy` | 100 | How far (mm) Lower Bed drops the bed. It never goes past the bottom of the build volume |
+| `afterPrint.shutdownSeconds` | 60 | Shut Down Pi: the countdown before the Pi shuts down, which the screen can cancel. Uses OctoPrint's shutdown command (Settings → Server → Commands) |
 | `speedModes` | Quiet 50, Normal 100, Sport 125, Turbo 150 | Feed-rate presets (M220) |
 | `webcam.snapshot` / `stream` | `/webcam/?action=snapshot` / `…stream` | OctoPi's default webcam URLs |
 | `webcam.snapshotSeconds` | 3 | Home screen refresh. The live stream is only used full-screen, to spare the SPI screen |

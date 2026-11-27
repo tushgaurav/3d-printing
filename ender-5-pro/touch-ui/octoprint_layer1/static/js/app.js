@@ -4,10 +4,11 @@
 // URL options
 //   ?demo[=printing|paused|finished|heating|offline|error]  simulated printer
 //   ?page=files|heat|move|more|calibrate|pair               open a screen at start
-//   ?sheet=tune|filament|level|printer|system|display|network|phone|quick|temps|history|lock|locked
+//   ?sheet=tune|after|filament|level|printer|system|display|network|phone|quick|temps|history|lock|locked
 //                                                           open a sheet at start (quick = the status bar's quick info,
 //                                                           lock = the Lock Screen settings, locked = lock the screen)
-//   ?sheet=finished|asleep                                  demo only: the print-finished card, a sleeping screen
+//   ?sheet=finished|asleep|shutdown                         demo only: the print-finished card, a sleeping screen,
+//                                                           the After Print shutdown countdown
 //   ?theme=light|dark  or  #theme=…                         default theme (a choice saved on the screen wins)
 //   #key=…&tm=…&host=…&kiosk=1                              passed in by the kiosk launcher
 //   #desktop=1                                              a desktop is underneath: System offers "Exit to Desktop"
@@ -30,6 +31,7 @@ import more from './screens/more.js';
 import { showPairing } from './sheets/pair.js';
 import { openCalibration } from './sheets/calibrate.js';
 import { openTune } from './sheets/tune.js';
+import { openAfterPrint, initAfterPrint } from './sheets/afterprint.js';
 import { openFilament } from './sheets/filament.js';
 import { openLevel } from './sheets/level.js';
 import { openPrinter } from './sheets/printer.js';
@@ -51,7 +53,7 @@ import { numberPad } from './ui.js';
 
 const SCREENS = [home, files, heat, move, more];
 const SHEETS = {
-  tune: openTune, filament: openFilament, level: openLevel, printer: openPrinter, system: openSystem, display: openDisplay,
+  tune: openTune, after: openAfterPrint, filament: openFilament, level: openLevel, printer: openPrinter, system: openSystem, display: openDisplay,
   network: openNetwork, phone: openPhone, quick: openQuickInfo, temps: openTemps, history: openHistory,
   lock: openLockSettings, locked: lockScreen,
 };
@@ -234,6 +236,8 @@ async function boot() {
     netError: null,
     dismissedJob: null,
     historyRev: 0,  // bumps when a print ends, so an open History page reloads
+    afterPrint: null, // the plugin's After Print state (see sheets/afterprint.js); `at` is when it arrived
+    afterPrintError: null,
   });
 
   let filesAt = 0;
@@ -264,6 +268,15 @@ async function boot() {
     },
     filesAge: () => Date.now() - filesAt,
     /** Fetch the Pi's network state into the store (net / netError). */
+    applyAfterPrint(st) {
+      if (st && typeof st === 'object') store.set({ afterPrint: { ...st, at: Date.now() }, afterPrintError: null });
+    },
+    refreshAfterPrint() {
+      if (!ctx.client) return Promise.resolve();
+      return ctx.client.afterPrint()
+        .then((st) => ctx.applyAfterPrint(st))
+        .catch((e) => { if (!store.get().afterPrint) store.set({ afterPrintError: e.message }); });
+    },
     refreshNet() {
       if (!ctx.client || !ctx.client.sysinfo) return Promise.resolve();
       if (!netLoading) {
@@ -324,6 +337,7 @@ async function boot() {
   app.classList.remove('booting');
   initLock(ctx); // stays locked across a reload, and starts the auto-lock timer
   initSleep(ctx);
+  initAfterPrint(ctx);
 
   // ~~ client
 
@@ -333,7 +347,7 @@ async function boot() {
     client.on('link', (link) => {
       store.set({ link });
       if (link === 'online' && !filesAt) ctx.refreshFiles();
-      if (link === 'online') ctx.refreshNet();
+      if (link === 'online') { ctx.refreshNet(); ctx.refreshAfterPrint(); }
       if (link === 'unauthorized' && !demo) {
         client.stop();
         forgetKey();
@@ -342,6 +356,7 @@ async function boot() {
       }
     });
     client.on('status', (st) => store.set(st));
+    client.on('plugin', (data) => { if (data.afterPrint) ctx.applyAfterPrint(data.afterPrint); });
     client.on('temps', (list, replace) => ctx.temps.push(list, replace));
     client.on('logs', (lines) => {
       const patch = logPatch(lines);
@@ -415,6 +430,7 @@ async function boot() {
 function demoExtras(ctx, sheet) {
   if (sheet === 'camera') setTimeout(() => openLiveCamera(ctx), 400);
   if (sheet === 'asleep') sleep(ctx);
+  if (sheet === 'shutdown') setTimeout(() => ctx.client.demoShutdown(), 600);
   if (sheet === 'finished') {
     const unsub = ctx.store.subscribe((s) => {
       if (!s.job || !s.files) return;

@@ -182,7 +182,7 @@ export class OctoClient extends Emitter {
     const kind = data[0];
     if (kind === 'o') {
       // subscribe before auth so we never receive unfiltered data
-      this._send({ subscribe: { state: { logs: true, messages: false }, events: true, plugins: false } });
+      this._send({ subscribe: { state: { logs: true, messages: false }, events: true, plugins: ['layer1'] } });
       this._send({ throttle: this.throttle });
       this._send({ auth: `${this.user}:${this.session}` });
     } else if (kind === 'a' || kind === 'm') {
@@ -214,6 +214,8 @@ export class OctoClient extends Emitter {
         if (temps.length || type === 'history') this.emit('temps', temps, type === 'history');
       } else if (type === 'event' && payload) {
         this.emit('event', payload.type, payload.payload || {});
+      } else if (type === 'plugin' && payload && payload.plugin === 'layer1') {
+        this.emit('plugin', payload.data || {});
       } else if (type === 'connected') {
         this.emit('connected', payload || {});
       } else if (type === 'reauthRequired') {
@@ -299,6 +301,8 @@ export class OctoClient extends Emitter {
   sysinfo() { return this.get('plugin/layer1/sysinfo'); }
   /** Prints that ended, newest first, from this plugin: { entries, total, stats } (see history.py). */
   history(limit = 100) { return this.get(`plugin/layer1/history?limit=${limit}`); }
+  afterPrint() { return this.get('plugin/layer1/after-print'); }
+  setAfterPrint(patch) { return this.post('plugin/layer1/after-print', patch); }
 }
 
 // ~~ pairing via OctoPrint's Application Keys workflow
