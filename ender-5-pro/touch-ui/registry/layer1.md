@@ -20,7 +20,6 @@ archive: https://github.com/tushgaurav/layer1/archive/main.zip#subdirectory=ende
 
 tags:
 - touchscreen
-- tft
 - kiosk
 - ui
 - ender
@@ -51,6 +50,9 @@ compatibility:
   os:
   - linux
   python: ">=3.9,<4"
+
+attributes:
+ - ai-developed
 
 ---
 
