@@ -1,4 +1,4 @@
-// System: OctoPrint/Pi power commands, screen reload, unpair, and exit to the desktop
+// System: OctoPrint and host power commands, screen reload, unpair, and exit to the desktop
 // when the launcher said there is one.
 
 import { icon } from '../icons.js';
@@ -6,19 +6,27 @@ import { refs, setText, esc } from '../util.js';
 import { ACTIVE, phaseOf } from '../model.js';
 import { openSheet, attempt, toast, confirmDialog } from '../ui.js';
 import { UI_VERSION, forgetKey } from '../session.js';
+import { hostWord, isPi } from '../host.js';
 
-const LABELS = {
+// "Pi" on a Raspberry Pi, "System" elsewhere (see host.js)
+const labels = () => ({
   restart: { label: 'Restart OctoPrint', icon: 'refresh', body: 'The screen reconnects by itself in about a minute.' },
   restart_safe: { label: 'Safe Mode', icon: 'refresh', body: 'Restarts OctoPrint with third-party plugins disabled, including this screen’s plugin.' },
-  reboot: { label: 'Reboot Pi', icon: 'refresh', body: 'The whole Raspberry Pi restarts. Back in about two minutes.' },
-  shutdown: { label: 'Shut Down', icon: 'power', body: 'Wait until the Pi’s green light stops blinking before you unplug it.' },
-};
+  reboot: {
+    label: `Reboot ${hostWord()}`, icon: 'refresh',
+    body: isPi() ? 'The whole Raspberry Pi restarts. Back in about two minutes.' : 'The computer OctoPrint runs on restarts. Back in a few minutes.',
+  },
+  shutdown: {
+    label: 'Shut Down', icon: 'power',
+    body: isPi() ? 'Wait until the Pi’s green light stops blinking before you unplug it.' : 'The computer OctoPrint runs on shuts down. Wait until it is off before you unplug it.',
+  },
+});
 
-/** Close the full-screen browser and reveal the Pi's desktop underneath. */
+/** Close the full-screen browser and reveal the desktop underneath. */
 export async function exitToDesktop() {
   const ok = await confirmDialog({
     title: 'Exit to desktop?',
-    body: 'The printer screen closes and the Pi’s desktop comes back. To open it again, double-tap “Printer screen” on the desktop.',
+    body: 'The printer screen closes and the desktop comes back. To open it again, double-tap “Printer screen” on the desktop.',
     confirm: 'Exit',
   });
   if (!ok) return;
@@ -54,8 +62,10 @@ export function openSystem(ctx) {
       });
 
       attempt(async () => {
-        const list = (await ctx.client.systemCommands()) || [];
-        commands = list.filter((c) => LABELS[c.action] && c.action !== 'restart_safe');
+        // the host's model decides "Reboot Pi" or "Reboot System", so wait for it too
+        const [list] = await Promise.all([ctx.client.systemCommands(), ctx.refreshNet()]);
+        const LABELS = labels();
+        commands = (list || []).filter((c) => LABELS[c.action] && c.action !== 'restart_safe');
         r.power.innerHTML = commands.length
           ? commands.map((c, i) => `<button class="btn tall ${c.action === 'shutdown' ? 'danger' : ''}" data-cmd="${i}" style="height:60px">${icon(LABELS[c.action].icon)}${esc(LABELS[c.action].label)}</button>`).join('')
           : '<div class="note">No power commands are configured in OctoPrint (Settings → Server → Commands).</div>';
@@ -76,7 +86,7 @@ export function openSystem(ctx) {
         }
         if (b.dataset.cmd != null) {
           const c = commands[+b.dataset.cmd];
-          const info = LABELS[c.action];
+          const info = labels()[c.action];
           const printing = ACTIVE.has(phaseOf(ctx.store.get()));
           const ok = await confirmDialog({
             title: `${info.label}?`,

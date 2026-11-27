@@ -79,8 +79,8 @@ function makeHistory(files) {
     ['Raspberry_Pi_4_case_base.gcode', 'done', 8, 11530],
     ['Calibration_cube_20mm.gcode', 'done', 7, 2390],
     ['Calibration_cube_20mm.gcode', 'failed', 6, 840, 'Heating failed, system stopped! Heater_ID: 0'],
-    ['Benchy_0.2mm_PLA_E5P.gcode', 'cancelled', 1.1, 260],
-    ['Benchy_0.2mm_PLA_E5P.gcode', 'done', 1, 5232],
+    ['Benchy_0.2mm_PLA.gcode', 'cancelled', 1.1, 260],
+    ['Benchy_0.2mm_PLA.gcode', 'done', 1, 5232],
   ];
   return runs.map(([name, result, daysAgo, duration, error], i) => {
     const f = file(name);
@@ -135,7 +135,7 @@ function makeFiles() {
   });
   const ok = (daysAgo, t) => ({ success: 1, failure: 0, last: { date: now - daysAgo * 86400, success: true, printTime: t } });
   return [
-    file('Benchy_0.2mm_PLA_E5P.gcode', 5400, 5120, 20, 'boat', 7200, ok(1, 5232)),
+    file('Benchy_0.2mm_PLA.gcode', 5400, 5120, 20, 'boat', 7200, ok(1, 5232)),
     file('Filament_clip_x4_PETG.gcode', 1320, 1450, 200, 'clip', 1.5 * 86400, null),
     file('Calibration_cube_20mm.gcode', 2460, 2360, 140, 'cube', 6 * 86400,
       { success: 1, failure: 1, last: { date: now - 6 * 86400, success: false } }),

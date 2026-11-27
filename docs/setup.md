@@ -1,7 +1,9 @@
 # Layer1 — Touchscreen Controller for OctoPrint
 
-Layer1 is a full-screen touch interface for any printer OctoPrint can drive, running on the
-3.5" (480×320) SPI screen attached to the OctoPi Raspberry Pi. Think Bambu-style printer screen:
+Layer1 is a full-screen touch interface for any printer OctoPrint can drive. It was made for
+the 3.5" (480×320) SPI screen attached to the OctoPi Raspberry Pi, and grows to fill bigger
+screens: a 5" or 7" display, a tablet, or a phone held sideways (held upright, it asks you to
+turn the phone). Think Bambu-style printer screen:
 live camera, a progress gauge, temperatures, file browser with thumbnails, jog
 controls, filament load/unload, speed/flow/fan tuning — all driven through OctoPrint.
 
@@ -48,7 +50,7 @@ Open <http://localhost:8765/index.html?demo=printing>. Other scenarios:
 `?demo=error`. Jump to a screen with `&page=files|heat|move|more|calibrate`, open a
 page with `&sheet=temps|history|lock|locked|finished|asleep` (and the others listed at
 the top of `app.js`), and add `&theme=light` for the light theme.
-Make the browser window 480×320 to see it at real size.
+Resize the window to see the layout adapt; at 480×320 it is exactly what the 3.5" screen shows.
 
 ## Install on the Pi
 
@@ -122,34 +124,51 @@ the UI shows a placeholder.
 
 ## Settings
 
-**Layer1** — `~/.octoprint/data/layer1/config.json` on the Pi (created the
-first time the UI loads). Edit, then reload the screen (More → System → Reload Screen).
+**Layer1** — OctoPrint → Settings → Layer1 has a form for most of these. When you save, open
+screens reload by themselves. The keys marked *config.yaml* aren't in the form:
+set them in OctoPrint's `~/.octoprint/config.yaml` under `plugins: layer1:` and restart
+OctoPrint, for example
+
+```yaml
+plugins:
+  layer1:
+    move:
+      steps: [0.1, 1, 10, 50]
+    speedModes:
+    - {name: Quiet, factor: 50}
+    - {name: Normal, factor: 100}
+```
+
+Earlier versions kept these in `~/.octoprint/data/layer1/config.json`. If that file is there,
+Layer1 copies whatever differs from the defaults into OctoPrint's settings once, at startup,
+and renames it `config.json.imported`. The build volume and origin aren't copied: they come
+from OctoPrint's printer profile.
 
 | Key | Default | Meaning |
 |---|---|---|
-| `printer.name` | from OctoPrint | Shown on Home, the lock screen and the pairing screen. Empty (`null`) uses the name of OctoPrint's printer profile (Settings → Printer Profiles) |
-| `printer.buildVolume` / `origin` | from OctoPrint | `[width, depth, height]` in mm and `lowerleft` or `center`. Empty uses OctoPrint's printer profile. Level Bed and After Print use them to stay inside the bed |
+| `printer.name` | from OctoPrint | Shown on Home, the lock screen and the pairing screen. Empty uses the name of OctoPrint's printer profile (Settings → Printer Profiles) |
+| `printer.buildVolume` / `origin` | from OctoPrint | `[width, depth, height]` in mm and `lowerleft` or `center`. Empty uses OctoPrint's printer profile, which is the place to set them. Level Bed and After Print use them to stay inside the bed *(config.yaml)* |
 | `printer.zMovesBed` | false | Set `true` if Z moves the bed rather than the nozzle (most CoreXY printers): Move then labels Z *Bed Up / Bed Down* and After Print says *Lower Bed* instead of *Raise Z* |
 | `presets` | PLA 200/60, PETG 235/75, TPU 225/50, ABS 245/100 | Material presets (nozzle/bed °C) |
 | `limits.nozzleMax` / `bedMax` | 250 / 100 | Highest target the UI allows. Hotends with a PTFE-lined throat shouldn't go above ~250 °C; raise it if yours is all-metal. |
 | `limits.minExtrudeTemp` | 170 | Below this, extrude/retract are refused (Marlin's cold-extrusion limit) |
 | `filament.bowdenLength` | 420 | **Measure yours.** Load feeds this minus `fastFeedStopShort` fast, then purges slowly. On a direct-drive extruder set it to the extruder-to-nozzle length (a few tens of mm) |
 | `filament.fastFeed` / `purgeFeed` | 1500 / 240 | mm/min. Many stock firmwares cap E at 25 mm/s (1500) |
-| `move.steps` | 0.1, 1, 10, 50 | Step sizes (mm) on Move. The chosen step is both the jog distance and the extrude/retract length |
+| `move.steps` | 0.1, 1, 10, 50 | Step sizes (mm) on Move. The chosen step is both the jog distance and the extrude/retract length *(config.yaml)* |
 | `level.inset` | 30 | Move → Level Bed: how far (mm) the corner spots sit in from the bed's edges. Set it so the nozzle stops over each knob |
-| `level.paperZ` / `clearance` | 0 / 5 | Z (mm) for the paper test, and how far Z goes up before moving between spots and when you leave the page |
-| `afterPrint.coolDown` / `lowerBed` | true / true | Tune → After Print: switch heaters, fan and motors off, and move Z up (drop the bed or raise the nozzle), after every print that finishes. A choice made on the screen wins |
+| `level.paperZ` / `clearance` | 0 / 5 | Z (mm) for the paper test, and how far Z goes up before moving between spots and when you leave the page *(config.yaml)* |
+| `afterPrint.coolDown` / `lowerBed` | true / true | Tune → After Print: switch heaters, fan and motors off, and move Z up (drop the bed or raise the nozzle), after every print that finishes. A choice made on the screen wins *(config.yaml)* |
 | `afterPrint.lowerBedBy` | 100 | How far (mm) Z goes up. It never goes past the top of the build volume |
-| `afterPrint.shutdownSeconds` | 60 | Shut Down Pi: the countdown before the Pi shuts down, which the screen can cancel. Uses OctoPrint's shutdown command (Settings → Server → Commands) |
-| `speedModes` | Quiet 50, Normal 100, Sport 125, Turbo 150 | Feed-rate presets (M220) |
+| `afterPrint.shutdownSeconds` | 60 | Shut Down Pi (*Shut Down System* when OctoPrint isn't on a Pi): the countdown before it shuts down, which the screen can cancel. Uses OctoPrint's shutdown command (Settings → Server → Commands) |
+| `speedModes` | Quiet 50, Normal 100, Sport 125, Turbo 150 | Feed-rate presets (M220) *(config.yaml)* |
 | `webcam.snapshot` / `stream` | `/webcam/?action=snapshot` / `…stream` | OctoPi's default webcam URLs |
 | `webcam.snapshotSeconds` | 3 | Home screen refresh. The live stream is only used full-screen, to spare the SPI screen |
 | `webcam.flipH` / `flipV` / `rotate90` | false | Camera orientation |
 | `ui.clock24` | false | 24-hour clock |
-| `ui.quickInfoSeconds` | 15 | Quick info (tap the status bar) closes itself after this many seconds. `0` keeps it open until tapped |
+| `ui.quickInfoSeconds` | 15 | Quick info (tap the status bar) closes itself after this many seconds. `0` keeps it open until tapped *(config.yaml)* |
 | `ui.autoLockMinutes` | 0 | Lock the screen after this many minutes without a touch. `0` never does. A choice made on the screen (More → Lock) wins |
 | `ui.sleepMinutes` | 0 | Turn the screen black after this many minutes without a touch (most SPI panels can't switch the backlight off). `0` never does. A choice made on the screen (More → Display) wins |
-| `ui.brightness` | 100 | Percent, 30–100. SPI panels can't dim their backlight, so this darkens the picture with a black layer (the backlight stays on). A choice made on the screen (More → Display) wins |
+| `ui.brightness` | 100 | Percent, 30–100. SPI panels can't dim their backlight, so this darkens the picture with a black layer (the backlight stays on). A choice made on the screen (More → Display) wins *(config.yaml)* |
 | `ui.theme` | dark | `dark` or `light`. Light is easier to read on cheap panels with greyish blacks. A choice made on the screen (More → Display) is remembered and wins |
 
 **Kiosk** — `/etc/layer1-kiosk.conf` (framebuffer, touch matrix, Chromium flags).
@@ -183,7 +202,7 @@ sudo layer1-kiosk reset-touch
 
 | Part | Tested |
 |---|---|
-| Layer1 in a browser (every screen, demo mode) | ✅ Chrome at 480×320 |
+| Layer1 in a browser (every screen, demo mode) | ✅ Chrome at 480×320; headless Chromium at 800×480, 1024×600, 844×390 (phone sideways) and 1440×900 |
 | Plugin + UI against real OctoPrint 2.0.2 (virtual printer): pairing, socket, commands, bad-key → re-pair | ✅ |
 | UI on a real 3.5" panel (Pi 4, Raspberry Pi OS trixie, LCD-show `tft35a`, Chromium kiosk, demo mode) | ✅ Renders 1:1 on the ILI9486 panel. Touch not checked yet |
 | Kiosk service, X11 on the SPI framebuffer, touch matrix | ⚠️ Written for Raspberry Pi OS (Bullseye/Bookworm), not yet run on a Pi |

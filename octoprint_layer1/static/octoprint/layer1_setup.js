@@ -1,14 +1,75 @@
 /*
  * Layer1's setup page inside OctoPrint's own UI (Settings > Layer1, and a step of the
- * first-run wizard; both use templates/layer1_setup.jinja2). This is not part of the
- * touch UI. It shows whether the kiosk service is installed and the screen is paired.
+ * first-run wizard; both show templates/layer1_setup.jinja2). This is not part of the
+ * touch UI. It shows whether the kiosk service is installed and the screen is paired,
+ * and in Settings it edits Layer1's settings (templates/layer1_settings.jinja2), which
+ * are OctoPrint's settings for the plugin, so the dialog's Save button saves them.
  */
 $(function () {
     // The name the touch UI asks for its application key under (APP_NAME in js/api.js)
     var APP_NAME = "Layer1";
 
-    function Layer1SetupViewModel() {
+    // A number field. Knockout's value binding writes strings, which OctoPrint would save
+    // as "250"; this writes numbers, and puts the old value back on input that isn't one.
+    ko.bindingHandlers.layer1Number = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            var target = valueAccessor();
+            if (!ko.isWriteableObservable(target)) return;
+            var number = ko.pureComputed({
+                read: target,
+                write: function (value) {
+                    var n = parseFloat(value);
+                    if (isFinite(n)) {
+                        target(n);
+                    } else {
+                        number.notifySubscribers(target());
+                    }
+                }
+            });
+            ko.applyBindingsToNode(element, {value: number}, bindingContext);
+        }
+    };
+
+    function Layer1SetupViewModel(parameters) {
         var self = this;
+        self.settingsViewModel = parameters[0];
+        self.printerProfiles = parameters[1];
+
+        // OctoPrint's settings for the plugin (plugins.layer1), as observables. Looked up
+        // again when Settings opens, in case they weren't loaded yet when the page bound.
+        self.s = ko.observable(null);
+        var findSettings = function () {
+            var plugins = self.settingsViewModel.settings && self.settingsViewModel.settings.plugins;
+            var mine = (plugins && plugins.layer1) || null;
+            if (mine !== self.s()) self.s(mine);
+        };
+        self.onBeforeBinding = findSettings;
+
+        self.profileName = ko.pureComputed(function () {
+            var data = self.printerProfiles && self.printerProfiles.currentProfileData;
+            var name = data && ko.unwrap((ko.unwrap(data) || {}).name);
+            return name ? "From the printer profile: " + name : "From the printer profile";
+        });
+
+        self.showPrinterProfiles = function () {
+            $('a[href="#settings_printerProfiles"]').first().tab("show");
+        };
+
+        self.addPreset = function () {
+            self.s().presets.push({name: ko.observable("New"), nozzle: ko.observable(200), bed: ko.observable(60)});
+        };
+        self.removePreset = function (preset) {
+            var presets = self.s().presets;
+            if (presets().length > 1) presets.remove(preset);
+        };
+
+        self.onSettingsBeforeSave = function () {
+            var s = self.s();
+            if (!s) return;
+            // An empty name means "use the printer profile's", which the plugin reads as null
+            var name = s.printer.name();
+            if (typeof name === "string") s.printer.name(name.trim() || null);
+        };
 
         self.kiosk = ko.observable(null); // "running" | "stopped" | "missing", null if unknown
         self.pairedUsers = ko.observable(null); // users who approved a Layer1 key, null if unknown
@@ -89,7 +150,10 @@ $(function () {
                 .always(settled);
         };
 
-        self.onSettingsShown = self.refresh;
+        self.onSettingsShown = function () {
+            findSettings();
+            self.refresh();
+        };
 
         // OctoPrint passes "#wizard_plugin_layer1" when the wizard opens on this step and
         // "wizard_plugin_layer1" when someone moves to it
@@ -100,7 +164,7 @@ $(function () {
 
     OCTOPRINT_VIEWMODELS.push({
         construct: Layer1SetupViewModel,
-        dependencies: [],
+        dependencies: ["settingsViewModel", "printerProfilesViewModel"],
         elements: ["#settings_plugin_layer1", "#wizard_plugin_layer1"]
     });
 });

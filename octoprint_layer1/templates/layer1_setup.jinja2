@@ -1,8 +1,8 @@
 <h3>Layer1 touch screen</h3>
 
 <p>
-    Layer1 is a full-screen touch interface for a 3.5" Raspberry Pi screen. This plugin
-    serves it at <a href="plugin/layer1/" target="_blank" rel="noopener">/plugin/layer1/</a>,
+    Layer1 is a full-screen touch interface for a small screen on the Raspberry Pi that runs
+    OctoPrint. This plugin serves it at <a href="plugin/layer1/" target="_blank" rel="noopener">/plugin/layer1/</a>,
     so you can try it in this browser before the screen is set up.
 </p>
 <p>
@@ -59,10 +59,9 @@ sudo reboot</pre>
     </li>
 </ol>
 
-<h4>Settings</h4>
+{% if not layer1_in_settings %}
 <p>
-    Temperature presets, limits, filament lengths and webcam options are in
-    <code>{{ plugin_layer1_config_path }}</code>, which is created the first time Layer1 opens.
-    The <a href="https://github.com/tushgaurav/layer1/blob/main/docs/setup.md#settings" target="_blank" rel="noopener">setup guide</a>
-    lists every key.
+    Temperature presets, filament lengths, the webcam and the rest of Layer1's settings are in
+    OctoPrint's Settings, under Layer1.
 </p>
+{% endif %}

@@ -109,7 +109,7 @@ export function fmtTemp(v) {
   return v == null || !isFinite(v) ? '—' : String(Math.round(v));
 }
 
-/** "Benchy_0.2mm_PLA_E5P_1h12m.gcode" -> "Benchy_0.2mm_PLA_E5P_1h12m" */
+/** "Benchy_0.2mm_PLA_1h12m.gcode" -> "Benchy_0.2mm_PLA_1h12m" */
 export function displayName(file) {
   const name = (file && (file.display || file.name)) || '';
   return name.replace(/\.(gcode|gco|g|gc)$/i, '');
