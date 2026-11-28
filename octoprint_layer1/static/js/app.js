@@ -4,7 +4,7 @@
 // URL options
 //   ?demo[=printing|paused|finished|heating|offline|error]  simulated printer
 //   ?page=files|heat|move|more|calibrate|pair               open a screen at start
-//   ?sheet=tune|after|filament|level|printer|system|display|network|phone|quick|temps|history|lock|locked
+//   ?sheet=tune|after|filament|level|printer|system|display|network|phone|quick|temps|history|maintenance|lock|locked
 //                                                           open a sheet at start (quick = the status bar's quick info,
 //                                                           lock = the Lock Screen settings, locked = lock the screen)
 //   ?sheet=finished|asleep|shutdown                         demo only: the print-finished card, a sleeping screen,
@@ -45,6 +45,7 @@ import { openQuickInfo, toggleQuickInfo, closeQuickInfo } from './sheets/quickin
 import { openLiveCamera } from './sheets/camera.js';
 import { openTemps } from './sheets/temps.js';
 import { openHistory } from './sheets/history.js';
+import { openMaintenance, initMaintenance } from './sheets/maintenance.js';
 import { openLockSettings } from './sheets/lock.js';
 import { initLock, lockScreen } from './lock.js';
 import { initSleep, sleep, wake } from './sleep.js';
@@ -56,7 +57,7 @@ const SCREENS = [home, files, heat, move, more];
 const SHEETS = {
   tune: openTune, after: openAfterPrint, filament: openFilament, level: openLevel, printer: openPrinter, system: openSystem, display: openDisplay,
   network: openNetwork, phone: openPhone, quick: openQuickInfo, temps: openTemps, history: openHistory,
-  lock: openLockSettings, locked: lockScreen,
+  maintenance: openMaintenance, lock: openLockSettings, locked: lockScreen,
 };
 
 let lastError = '';
@@ -263,6 +264,8 @@ async function boot() {
     historyRev: 0,  // bumps when a print ends, so an open History page reloads
     afterPrint: null, // the plugin's After Print state (see sheets/afterprint.js); `at` is when it arrived
     afterPrintError: null,
+    maintenance: null, // the plugin's maintenance tasks, { tasks, due } (see sheets/maintenance.js)
+    maintenanceError: null,
   });
 
   let filesAt = 0;
@@ -302,6 +305,19 @@ async function boot() {
       return ctx.client.afterPrint()
         .then((st) => ctx.applyAfterPrint(st))
         .catch((e) => { if (!store.get().afterPrint) store.set({ afterPrintError: e.message }); });
+    },
+    applyMaintenance(st) {
+      if (st && Array.isArray(st.tasks)) store.set({ maintenance: st, maintenanceError: null });
+    },
+    refreshMaintenance() {
+      if (!ctx.client || !ctx.client.maintenance) return Promise.resolve();
+      return ctx.client.maintenance()
+        .then((st) => ctx.applyMaintenance(st))
+        .catch((e) => {
+          if (store.get().maintenance) return;
+          // an older plugin (OctoPrint not restarted since the update) has no /maintenance yet
+          store.set({ maintenanceError: e && e.status === 404 ? 'Restart OctoPrint to finish updating Layer1.' : (e && e.message) || String(e) });
+        });
     },
     refreshNet() {
       if (!ctx.client || !ctx.client.sysinfo) return Promise.resolve();
@@ -364,6 +380,7 @@ async function boot() {
   initLock(ctx); // stays locked across a reload, and starts the auto-lock timer
   initSleep(ctx);
   initAfterPrint(ctx);
+  initMaintenance(ctx);
 
   // ~~ client
 
@@ -373,7 +390,7 @@ async function boot() {
     client.on('link', (link) => {
       store.set({ link });
       if (link === 'online' && !filesAt) ctx.refreshFiles();
-      if (link === 'online') { ctx.refreshNet(); ctx.refreshAfterPrint(); }
+      if (link === 'online') { ctx.refreshNet(); ctx.refreshAfterPrint(); ctx.refreshMaintenance(); }
       if (link === 'unauthorized' && !demo) {
         client.stop();
         forgetKey();
@@ -384,6 +401,7 @@ async function boot() {
     client.on('status', (st) => store.set(st));
     client.on('plugin', (data) => {
       if (data.afterPrint) ctx.applyAfterPrint(data.afterPrint);
+      if (data.maintenance) ctx.applyMaintenance(data.maintenance);
       // Layer1's settings were saved in OctoPrint: the config is read at load, so reload
       if (data.configChanged) {
         toast('Settings Changed · Reloading', 'muted', 3000, 'refresh');

@@ -63,12 +63,27 @@ $(function () {
             if (presets().length > 1) presets.remove(preset);
         };
 
+        self.addTask = function () {
+            self.s().maintenance.tasks.push({name: ko.observable("New task"), hours: ko.observable(100)});
+        };
+        self.removeTask = function (task) {
+            self.s().maintenance.tasks.remove(task);
+        };
+
         self.onSettingsBeforeSave = function () {
             var s = self.s();
             if (!s) return;
             // An empty name means "use the printer profile's", which the plugin reads as null
             var name = s.printer.name();
             if (typeof name === "string") s.printer.name(name.trim() || null);
+            // Tasks are matched by name, so " Replace nozzle" must stay "Replace nozzle".
+            // A task left without a name is dropped.
+            var tasks = s.maintenance.tasks;
+            _.each(tasks.slice(), function (task) {
+                var text = String(ko.unwrap(task.name) || "").trim();
+                if (text) task.name(text);
+                else tasks.remove(task);
+            });
         };
 
         self.kiosk = ko.observable(null); // "running" | "stopped" | "missing", null if unknown

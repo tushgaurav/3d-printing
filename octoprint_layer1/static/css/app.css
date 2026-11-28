@@ -191,6 +191,8 @@ body.portrait #stage { visibility: hidden; }
 #rail button.active::before { background: var(--rail-active-fill); }
 #rail button:active::before { background: var(--surface-2); }
 #rail button.active:active::before { background: var(--rail-active-press); }
+/* something waiting on that screen (maintenance that's due, on More) */
+#rail button.alert::after { content: ""; position: absolute; top: calc(50% - 15px); left: calc(50% + 6px); width: 9px; height: 9px; border-radius: 50%; background: var(--warn); box-shadow: 0 0 0 2px var(--frame); }
 
 /* ---------- status bar ---------- */
 /* spans the full width so the wordmark isn't boxed into the rail column */
@@ -480,8 +482,10 @@ body.portrait #stage { visibility: hidden; }
 .fdetail .row-actions .btn { height: 52px; }
 
 /* ---------- more ---------- */
-.more { height: 100%; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(2, 1fr); gap: 8px; }
-.tile { border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--edge); display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; padding: 12px; text-align: left; }
+.more { height: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(3, 1fr); gap: 8px; }
+.tile { position: relative; border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--edge); display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; padding: 10px 12px; text-align: left; }
+/* something waiting behind a tile (maintenance that's due) */
+.tile .badge { position: absolute; top: 10px; right: 10px; min-width: 22px; height: 22px; padding: 0 7px; border-radius: 11px; background: var(--warn); color: var(--canvas); font-size: 12.5px; font-weight: 700; font-style: normal; line-height: 22px; text-align: center; }
 .tile .ti { width: 38px; height: 38px; border-radius: var(--r); background: var(--surface-2); display: grid; place-items: center; color: var(--signal-fg); }
 .tile .ti svg { width: 20px; height: 20px; }
 .tile b { display: block; font-size: 15px; font-weight: 650; letter-spacing: -0.02em; }
@@ -644,6 +648,22 @@ body.portrait #stage { visibility: hidden; }
 .hres.bad svg { color: var(--danger); }
 .hres.stopped svg { color: var(--warn); width: 11px; height: 11px; stroke-width: 3; }
 .herr { margin-top: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* maintenance: a ring that fills as the hours go by, amber once a task is nearly or fully due */
+.mrow:active { background: var(--surface); }  /* only its button is tappable */
+.mring { position: relative; width: 44px; height: 44px; display: grid; place-items: center; color: var(--text-3); }
+.mring .rg { position: absolute; inset: 4px; width: 36px; height: 36px; }
+.mring .track, .mring .bar { fill: none; stroke-width: 3; }
+.mring .track { stroke: var(--surface-3); }
+.mring .bar { stroke: var(--signal-fg); stroke-linecap: round; }
+.mring .i { width: 16px; height: 16px; }
+.mrow[data-tone="soon"] .bar, .mrow[data-tone="due"] .bar { stroke: var(--warn); }
+.mrow[data-tone="due"] .mring { color: var(--warn); }
+.mrow .meta b { font-weight: 600; color: var(--warn); }
+.mrow .chipbtn { padding: 0 12px; background: var(--surface-2); box-shadow: none; }
+.mrow .chipbtn:active { background: var(--surface-3); }
+.mrow[data-tone="due"] .chipbtn { background: var(--warn-dim); color: var(--warn); }
+.msum.due { color: var(--warn); font-weight: 550; }
 
 /* ---------- lock screen ----------
    Covers rail and bar; the print (or the time, when idle) is the headline, readable
