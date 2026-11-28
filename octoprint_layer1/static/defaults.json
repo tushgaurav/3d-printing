@@ -63,6 +63,26 @@
     "lowerBedBy": 100,
     "shutdownSeconds": 60
   },
+  "maintenance": {
+    "tasks": [
+      {
+        "name": "Lubricate Z screw",
+        "hours": 100
+      },
+      {
+        "name": "Check belt tension",
+        "hours": 100
+      },
+      {
+        "name": "Check screws and wheels",
+        "hours": 200
+      },
+      {
+        "name": "Replace nozzle",
+        "hours": 500
+      }
+    ]
+  },
   "speedModes": [
     {
       "name": "Quiet",

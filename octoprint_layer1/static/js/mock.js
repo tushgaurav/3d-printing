@@ -89,6 +89,22 @@ function makeHistory(files) {
     return entry;
   });
 }
+// ~~ maintenance: where the demo's tasks stand, in the settings' order. One is due and one
+// nearly is, so More shows its dot and Maintenance shows every state.
+// [share of the interval printed, days since it was last done (null: never marked done)]
+const MAINTENANCE_STORY = [[1.04, 41], [0.93, 26], [0.38, 12], [0.12, null]];
+
+function makeMaintenance(tasks) {
+  const now = Date.now() / 1000;
+  const out = new Map();
+  (tasks || []).forEach((t, i) => {
+    const [share, daysAgo] = MAINTENANCE_STORY[i] || [0, null];
+    const at = now - (daysAgo != null ? daysAgo : 60) * 86400;
+    out.set(t.name, { printed: share * t.hours * 3600, since: at, done: daysAgo != null ? at : null });
+  });
+  return out;
+}
+
 const svgUri = (svg) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 
 // ~~ fake slicer thumbnails: tiny isometric models
@@ -163,6 +179,7 @@ export class MockClient extends Emitter {
     this.base = './';
     this.fileList = makeFiles();
     this.historyList = makeHistory(this.fileList);
+    this.maint = makeMaintenance(cfg.maintenance && cfg.maintenance.tasks);
     // the heaters carry on from the last half hour's story (see TEMP_STORIES)
     this.tempLog = tempStory(scenario);
     const last = this.tempLog[this.tempLog.length - 1];
@@ -391,7 +408,34 @@ export class MockClient extends Emitter {
     const f = this.job.file;
     const id = this.historyList.reduce((m, e) => Math.max(m, e.id), 0) + 1;
     // a demo print runs sped up: log the time it would have taken
-    this.historyList.push({ id, path: f.path, name: f.name, origin: 'local', end: Date.now() / 1000, duration: this.progress ? this.progress.printTime : null, result });
+    const duration = this.progress ? this.progress.printTime : null;
+    this.historyList.push({ id, path: f.path, name: f.name, origin: 'local', end: Date.now() / 1000, duration, result });
+    // ...and it counts toward every maintenance task, as in maintenance.py
+    for (const m of this.maint.values()) m.printed += duration || 0;
+    this.emit('plugin', { maintenance: this._maintState() });
+  }
+
+  // ~~ Maintenance (the plugin's maintenance.py)
+
+  _maintState() {
+    const tasks = ((this.cfg.maintenance && this.cfg.maintenance.tasks) || []).map((t) => {
+      const m = this.maint.get(t.name) || { printed: 0, since: Date.now() / 1000, done: null };
+      const limit = t.hours * 3600;
+      return { name: t.name, hours: t.hours, printed: Math.round(m.printed), since: m.since, done: m.done, due: m.printed >= limit, soon: m.printed >= limit * 0.9 };
+    });
+    return { tasks, due: tasks.filter((t) => t.due).length };
+  }
+
+  maintenance() { return this._ok(this._maintState()); }
+
+  async maintenanceDone(name) {
+    await wait(120);
+    if (!this.maint.has(name)) throw new ApiError(404, `There is no maintenance task called '${name}'`);
+    const now = Date.now() / 1000;
+    this.maint.set(name, { printed: 0, since: now, done: now });
+    const st = this._maintState();
+    this.emit('plugin', { maintenance: st });
+    return st;
   }
 
   history(limit = 100) {

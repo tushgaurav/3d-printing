@@ -36,6 +36,7 @@ tablet, or a phone turned sideways.
 - **Filament management:** load, unload, and purge with Bowden-length support
 - **Tune while printing:** speed modes, flow rate, and part fan
 - **Print history:** every print that finished, failed, or was stopped, with totals and Print Again (earlier prints are imported from OctoPrint)
+- **Maintenance reminders:** tasks like oiling the Z screw or checking belts, each due after so many hours of printing; a dot on More when one is due, and Mark Done to start its count again
 - **Lock screen:** shows the print big from across the room; hold to unlock, with optional auto-lock after 1, 5, or 15 minutes
 - **Print finished card:** a camera photo of the part, time taken vs. the estimate, filament used, bed cool-down, and Print Again
 - **Screen sleep:** goes dark after 2–30 minutes without a touch; a tap wakes it, and so does a print finishing, failing, or pausing
@@ -92,6 +93,8 @@ marketing/             The website (layer1.nodebench.com)
   listed in [docs/setup.md](docs/setup.md#settings).
 - **History:** `~/.octoprint/data/layer1/history.json` holds prints that ended. It is seeded
   once from OctoPrint's per-file print logs and served at `/plugin/layer1/history`.
+- **Maintenance:** `~/.octoprint/data/layer1/maintenance.json` holds when each task's count
+  started. The hours come from the history; the state is served at `/plugin/layer1/maintenance`.
 - **Dev server:** `python tools/serve.py [port]` (default 8080) serves `octoprint_layer1/static/`
   without caching and with the custom 404 page. Open `index.html?demo`.
 - **Icons:** `node tools/build-icons.mjs` regenerates `static/js/icons.js` from a pinned

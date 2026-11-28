@@ -301,6 +301,9 @@ export class OctoClient extends Emitter {
   sysinfo() { return this.get('plugin/layer1/sysinfo'); }
   /** Prints that ended, newest first, from this plugin: { entries, total, stats } (see history.py). */
   history(limit = 100) { return this.get(`plugin/layer1/history?limit=${limit}`); }
+  /** Maintenance tasks from this plugin: { tasks, due } (see maintenance.py). */
+  maintenance() { return this.get('plugin/layer1/maintenance'); }
+  maintenanceDone(name) { return this.post('plugin/layer1/maintenance', { done: name }); }
   afterPrint() { return this.get('plugin/layer1/after-print'); }
   setAfterPrint(patch) { return this.post('plugin/layer1/after-print', patch); }
 }

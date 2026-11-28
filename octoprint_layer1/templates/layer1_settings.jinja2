@@ -137,6 +137,28 @@
         </div>
     </div>
 
+    <h4>Maintenance</h4>
+    <div class="control-group">
+        <label class="control-label">Tasks</label>
+        <div class="controls">
+            <table class="table table-condensed" style="width: auto; margin-bottom: 5px" data-bind="visible: maintenance.tasks().length">
+                <thead><tr><th>Task</th><th>Every</th><th></th></tr></thead>
+                <tbody data-bind="foreach: maintenance.tasks">
+                    <tr>
+                        <td><input type="text" class="input-large" data-bind="value: name"></td>
+                        <td><div class="input-append"><input type="number" min="1" class="input-mini" data-bind="layer1Number: hours"><span class="add-on">h</span></div></td>
+                        <td><button type="button" class="btn btn-small" data-bind="click: $root.removeTask"><i class="fas fa-trash-alt"></i> Remove</button></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button type="button" class="btn btn-small" data-bind="click: $root.addTask"><i class="fas fa-plus"></i> Add Task</button>
+            <span class="help-block">
+                Hours of printing, counted from Layer1's print history. When a task is due, the screen shows a dot on More;
+                Maintenance there marks it done, which starts its count again. Renaming a task also starts it again.
+            </span>
+        </div>
+    </div>
+
     <h4>Webcam</h4>
     <div class="control-group">
         <div class="controls">

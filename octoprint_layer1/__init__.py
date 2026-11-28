@@ -3,7 +3,8 @@
 
 The plugin serves a static single-page app, its config (OctoPrint's settings for
 the plugin, edited in Settings > Layer1), a read-only Pi health summary for the
-quick-info panel, and the print history it records from OctoPrint's print events.
+quick-info panel, the print history it records from OctoPrint's print events, and
+the maintenance reminders worked out from that history (maintenance.py).
 Inside OctoPrint's own UI it adds a setup page (Settings, and a first-run wizard
 step) that links to the touch UI, lists the steps for putting it on the Pi's
 screen and, in Settings, edits the config.
@@ -25,7 +26,7 @@ import flask
 import octoprint.plugin
 from octoprint.access.permissions import Permissions
 
-from . import after_print, history, sysinfo
+from . import after_print, history, maintenance, sysinfo
 
 # What the printer keys fall back to when the settings leave them empty and OctoPrint's
 # printer profile can't be read: the values of OctoPrint's own default profile.
@@ -83,6 +84,13 @@ class Layer1Plugin(  # nosemgrep: SEC-API-0003
             config=self._ui_config,
             shutdown_command=lambda: (self._settings.global_get(["server", "commands", "systemShutdownCommand"]) or "").strip(),
             notify=lambda state: self._plugin_manager.send_plugin_message(self._identifier, {"afterPrint": state}),
+            logger=self._logger,
+        )
+        self._maintenance = maintenance.Maintenance(
+            os.path.join(self.get_plugin_data_folder(), "maintenance.json"),
+            entries=self._history.entries,
+            config=self._ui_config,
+            notify=lambda state: self._plugin_manager.send_plugin_message(self._identifier, {"maintenance": state}),
             logger=self._logger,
         )
 
@@ -217,10 +225,17 @@ class Layer1Plugin(  # nosemgrep: SEC-API-0003
 
     def on_event(self, event, payload):
         if event in history.EVENTS:
+            entry = None
             try:
-                self._history.record(event, payload)
+                entry = self._history.record(event, payload)
             except Exception:
                 self._logger.exception("Could not add %s to the print history", event)
+            if entry:
+                # the hours just printed count toward every maintenance task
+                try:
+                    self._maintenance.push()
+                except Exception:
+                    self._logger.exception("Could not update the maintenance reminders")
         try:
             self._after_print.on_event(event, payload)
         except Exception:
@@ -283,6 +298,25 @@ class Layer1Plugin(  # nosemgrep: SEC-API-0003
             "total": len(entries),
             "stats": history.summarize(entries),
         })
+
+    @octoprint.plugin.BlueprintPlugin.route("/maintenance", methods=["GET"])
+    @Permissions.STATUS.require(403)
+    def maintenance_state(self):
+        return _json_response(self._maintenance.state())
+
+    @octoprint.plugin.BlueprintPlugin.route("/maintenance", methods=["POST"])
+    @Permissions.CONTROL.require(403)
+    def maintenance_update(self):
+        # {"done": "<task name>"} marks that task done, which starts its count again
+        patch = flask.request.get_json(silent=True)
+        name = patch.get("done") if isinstance(patch, dict) else None
+        if not isinstance(name, str) or not name:
+            return flask.make_response(json.dumps({"error": "Expected {\"done\": \"<task name>\"}"}), 400, {"Content-Type": "application/json"})
+        try:
+            state = self._maintenance.mark_done(name)
+        except ValueError as e:
+            return flask.make_response(json.dumps({"error": str(e)}), 404, {"Content-Type": "application/json"})
+        return _json_response(state)
 
     @octoprint.plugin.BlueprintPlugin.route("/after-print", methods=["GET"])
     @Permissions.STATUS.require(403)

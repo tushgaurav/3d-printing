@@ -82,6 +82,7 @@ const ICONS = {
   history: 'history',
   level: 'scan',
   finish: 'flag',
+  wrench: 'wrench',
 };
 
 // Lucide has no hotend or heated bed, so these two are drawn here on Lucide's

@@ -48,7 +48,7 @@ python -m http.server 8765
 Open <http://localhost:8765/index.html?demo=printing>. Other scenarios:
 `?demo`, `?demo=paused`, `?demo=finished`, `?demo=heating`, `?demo=offline`,
 `?demo=error`. Jump to a screen with `&page=files|heat|move|more|calibrate`, open a
-page with `&sheet=temps|history|lock|locked|finished|asleep` (and the others listed at
+page with `&sheet=temps|history|maintenance|lock|locked|finished|asleep` (and the others listed at
 the top of `app.js`), and add `&theme=light` for the light theme.
 Resize the window to see the layout adapt; at 480×320 it is exactly what the 3.5" screen shows.
 
@@ -114,7 +114,7 @@ that starts the UI on the small screen at boot.
 | **Files** | OctoPrint's library with thumbnails, folders, a sort picker (*Recent*, *Name*, or print time *Shortest* / *Longest*), and a list or grid (gallery) view; the button next to Refresh switches, and both choices are remembered. Tap a file for details, then **Print**. |
 | **Heat** | Nozzle and bed: ±5° buttons, tap the target for a keypad, presets (PLA, PETG, TPU, ABS, Cool). |
 | **Move** | XY pad, Z (*Z+ / Z−*, or *Bed Up / Bed Down* with `printer.zMovesBed`), steps 0.1–50 mm, extrude/retract, motors off. Locked while printing. |
-| **More** | Filament load/unload/purge, Tune (speed modes, flow, part fan), Camera, Printer connection, System (restart/reboot/shut down, unpair), Display (dark/light theme, touch calibration). |
+| **More** | Filament load/unload/purge, Tune (speed modes, flow, part fan), Camera, History, Maintenance (tasks due after so many hours of printing; the rail's More button gets a dot while one is due, and **Mark Done** starts its count again), Printer connection, System (restart/reboot/shut down, unpair), Display (dark/light theme, touch calibration), Lock. |
 | **Status bar** | Tap it anywhere for **Quick info**: nozzle and bed (state, temperature, target), the job (percent, time left, finish time; the last print when idle), fan / speed / flow / Z, the printer connection (port, baud), the network (address, IP, Wi-Fi signal) and the Pi (CPU temperature, under-voltage or throttling, free disk, uptime). Read-only: tap anywhere to close; it also closes by itself after `ui.quickInfoSeconds`. |
 
 Thumbnails come from your slicer via the
@@ -160,6 +160,7 @@ from OctoPrint's printer profile.
 | `afterPrint.coolDown` / `lowerBed` | true / true | Tune → After Print: switch heaters, fan and motors off, and move Z up (drop the bed or raise the nozzle), after every print that finishes. A choice made on the screen wins *(config.yaml)* |
 | `afterPrint.lowerBedBy` | 100 | How far (mm) Z goes up. It never goes past the top of the build volume |
 | `afterPrint.shutdownSeconds` | 60 | Shut Down Pi (*Shut Down System* when OctoPrint isn't on a Pi): the countdown before it shuts down, which the screen can cancel. Uses OctoPrint's shutdown command (Settings → Server → Commands) |
+| `maintenance.tasks` | Lubricate Z screw 100, Check belt tension 100, Check screws and wheels 200, Replace nozzle 500 | More → Maintenance: each task (`name`, `hours`) is due after that many hours of printing, counted from the print history since it was last marked done. A new task starts at 0 h. Tasks are matched by name, so renaming one starts its count again |
 | `speedModes` | Quiet 50, Normal 100, Sport 125, Turbo 150 | Feed-rate presets (M220) *(config.yaml)* |
 | `webcam.snapshot` / `stream` | `/webcam/?action=snapshot` / `…stream` | OctoPi's default webcam URLs |
 | `webcam.snapshotSeconds` | 3 | Home screen refresh. The live stream is only used full-screen, to spare the SPI screen |
